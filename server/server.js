@@ -81,11 +81,29 @@ const db = require('./db');
 
 // --- REST API Endpoints ---
 
+// Root Landing & Status Route
+app.get('/', (req, res) => {
+    res.status(200).json({
+        service: 'ExamFort Secure Lockdown Backend & Telemetry Service',
+        status: 'ONLINE',
+        version: '2.4.0',
+        uptime: `${Math.floor(process.uptime())} seconds`,
+        endpoints: {
+            health: '/api/health',
+            download_client: '/download',
+            api_login: 'POST /api/auth/login',
+            api_verify_candidate: 'POST /api/auth/verify-candidate',
+            api_exams: '/api/exams'
+        },
+        timestamp: new Date().toISOString()
+    });
+});
+
 // 1. Health check (For Render / Railway deployment verification)
 app.get('/api/health', (req, res) => {
     res.status(200).json({
         status: 'ONLINE',
-        database: db.isInitialized ? 'MYSQL_CONNECTED' : 'STANDBY',
+        database: db.isInitialized ? 'DATABASE_CONNECTED' : 'STANDBY',
         uptime: process.uptime(),
         timestamp: new Date().toISOString(),
         service: 'ExamFort Real-time Security & Assessment Engine',
