@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aptitude Assessment Test - ExamFort</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="assessment-body">
+    <div class="examfort-window assessment-window-container">
+        
+        <!-- LIVE WATERMARK PATTERN -->
+        <div class="security-watermark-overlay" id="watermark-overlay"></div>
+
+        <!-- MAIN VIEWPORT -->
+        <main class="assessment-main-content">
+            
+            <!-- TOP HEADER (MATCHES SCREENSHOT EXACTLY) -->
+            <header class="assessment-top-header">
+                <div class="assessment-header-left">
+                    <button class="btn-back-link" id="btn-back-instructions" type="button">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                        <span>Back to Instructions</span>
+                    </button>
+                    <div class="assessment-brand-row">
+                        <div class="assessment-icon-box" id="header-assessment-icon-box">
+                            <svg id="header-assessment-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="16 18 22 12 16 6"></polyline>
+                                <polyline points="8 6 2 12 8 18"></polyline>
+                            </svg>
+                        </div>
+                        <div class="assessment-title-group">
+                            <span class="assessment-category-badge" id="lbl-header-category">Coding Test</span>
+                            <h1 class="assessment-main-heading" id="lbl-header-test-title">Coding Assessment</h1>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RIGHT STATS CARD -->
+                <div class="assessment-header-right-card">
+                    <div class="stat-item">
+                        <div class="stat-icon-wrap">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                        </div>
+                        <div class="stat-text-col">
+                            <span class="stat-label">Date</span>
+                            <strong class="stat-value" id="lbl-exam-date">31 May 2025</strong>
+                        </div>
+                    </div>
+
+                    <div class="stat-item">
+                        <div class="stat-icon-wrap">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                        </div>
+                        <div class="stat-text-col">
+                            <span class="stat-label">Time</span>
+                            <strong class="stat-value" id="lbl-exam-time">10:00 AM - 12:00 PM</strong>
+                        </div>
+                    </div>
+
+                    <div class="stat-item">
+                        <div class="stat-icon-wrap">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 8 14"></polyline></svg>
+                        </div>
+                        <div class="stat-text-col">
+                            <span class="stat-label">Duration</span>
+                            <strong class="stat-value" id="lbl-exam-duration">120 Min</strong>
+                        </div>
+                    </div>
+
+                    <div class="stat-item">
+                        <div class="stat-icon-wrap">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                        </div>
+                        <div class="stat-text-col">
+                            <span class="stat-label">Questions</span>
+                            <strong class="stat-value" id="lbl-header-questions-count">13 / 13</strong>
+                        </div>
+                    </div>
+
+                    <div class="stat-item">
+                        <div class="stat-icon-wrap">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                        </div>
+                        <div class="stat-text-col">
+                            <span class="stat-label">Marks</span>
+                            <strong class="stat-value" id="lbl-exam-total-marks">120</strong>
+                        </div>
+                    </div>
+
+                    <div class="stat-item timer-stat-item">
+                        <div class="stat-icon-wrap">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 10"></polyline></svg>
+                        </div>
+                        <div class="stat-text-col">
+                            <span class="stat-label">Time Left</span>
+                            <strong class="stat-value timer-highlight" id="lbl-exam-timer">01:59:35</strong>
+                        </div>
+                    </div>
+
+                    <div class="stat-item warning-stat-item" id="header-stat-warnings-wrap">
+                        <div class="stat-icon-wrap icon-warning-stat">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                        </div>
+                        <div class="stat-text-col">
+                            <span class="stat-label">Warnings</span>
+                            <strong class="stat-value warning-highlight" id="lbl-header-warnings">0 / 10</strong>
+                        </div>
+                    </div>
+
+                    <button class="btn-end-test-header" id="btn-pause-test" title="End Test & Submit">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="9" x2="15" y2="15"></line><line x1="15" y1="9" x2="9" y2="15"></line></svg>
+                        <span>End Test</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- SECTION QUICK NAVIGATION TABS BAR (VISIBLE ACROSS ALL MODES) -->
+            <div class="assessment-section-tabs-bar" id="assessment-section-tabs-bar">
+                <!-- Dynamically populated via assessment-engine.js -->
+            </div>
+
+            <!-- WORKSPACE SPLIT (LEFT: QUESTION CARD, RIGHT: PROGRESS & QUICK JUMP) -->
+            <div class="assessment-workspace-grid">
+                
+                <!-- LEFT QUESTION WORKSPACE -->
+                <section class="question-workspace-panel" id="question-workspace-panel">
+                    
+                    <!-- 1. MCQ MODE VIEW -->
+                    <div class="question-card-inner" id="mode-mcq-view">
+                        
+                        <!-- QUESTION TOP META BAR -->
+                        <div class="q-meta-top-row">
+                            <div class="q-meta-left">
+                                <span class="q-number-pill" id="lbl-mcq-qnum">Question 1</span>
+                                <button class="btn-mark-review-action" id="btn-mcq-review">
+                                    <svg class="bookmark-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m19 21-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
+                                    <span id="lbl-review-text">Mark for Review</span>
+                                </button>
+                            </div>
+                            <div class="q-grading-right">
+                                <span class="badge-positive-mark" id="lbl-mcq-marks">+1.00</span>
+                                <span class="badge-negative-mark">-0.25</span>
+                                <span class="label-negative-marking">Negative Marking</span>
+                            </div>
+                        </div>
+
+                        <!-- QUESTION PROMPT TEXT -->
+                        <div class="question-prompt-scrollable">
+                            <div class="question-text-content" id="lbl-mcq-text">
+                                Loading assessment question...
+                            </div>
+                        </div>
+
+                        <!-- MCQ OPTIONS CONTAINER (PIXEL-PERFECT MATCH) -->
+                        <div class="mcq-options-list" id="mcq-options-container">
+                            <!-- Dynamically rendered via JS -->
+                        </div>
+
+                        <!-- BOTTOM NAVIGATION BAR -->
+                        <div class="question-card-footer">
+                            <button class="btn-nav-outline-prev" id="btn-mcq-prev">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                                <span>Previous</span>
+                            </button>
+                            <button class="btn-nav-solid-next" id="btn-mcq-next">
+                                <span>Save & Next</span>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 2. CODING MODE VIEW (MATCHES SCREENSHOT 1 EXACTLY) -->
+                    <div class="question-card-inner coding-card-container hidden" id="mode-coding-view">
+                        
+                        <div class="coding-workspace-grid">
+                            <!-- LEFT HALF: CODING QUESTION DETAILS & EXAMPLES -->
+                            <div class="coding-problem-side" id="coding-problem-side">
+                                <div class="q-meta-top-row">
+                                    <div class="q-meta-left">
+                                        <span class="q-number-pill" id="lbl-code-qnum">Question 2</span>
+                                        <button class="btn-mark-review-action" id="btn-code-review">
+                                            <svg class="bookmark-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="2"><path d="m19 21-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
+                                            <span id="lbl-code-review-text">Mark for Review</span>
+                                        </button>
+                                    </div>
+                                    <div class="q-grading-right">
+                                        <span class="badge-positive-mark badge-coding-green" id="lbl-code-marks-badge">50 Marks</span>
+                                    </div>
+                                </div>
+
+                                <div class="coding-problem-content-scroll">
+                                    <h3 class="coding-problem-heading" id="lbl-code-title">Second Largest Element</h3>
+                                    <div class="coding-desc-text" id="lbl-code-desc">
+                                        Write a function that takes an array of integers and returns the <strong>second largest</strong> element in the array.<br>
+                                        If the second largest element does not exist, return -1.
+                                    </div>
+
+                                    <!-- DYNAMIC EXAMPLES & CONSTRAINTS CONTAINER -->
+                                    <div id="coding-examples-container" class="coding-examples-wrapper">
+                                        <div class="coding-example-card">
+                                            <div class="example-title">Example 1:</div>
+                                            <div class="example-code-box">
+                                                <div><strong>Input:</strong> <span class="tok-input">[12, 35, 1, 10, 34, 1]</span></div>
+                                                <div><strong>Output:</strong> <span class="tok-output">34</span></div>
+                                            </div>
+                                        </div>
+                                        <div class="coding-example-card">
+                                            <div class="example-title">Example 2:</div>
+                                            <div class="example-code-box">
+                                                <div><strong>Input:</strong> <span class="tok-input">[10, 10, 10]</span></div>
+                                                <div><strong>Output:</strong> <span class="tok-output">-1</span></div>
+                                            </div>
+                                        </div>
+                                        <div class="coding-constraints-card">
+                                            <div class="constraints-title">Constraints:</div>
+                                            <ul class="constraints-list">
+                                                <li>2 &lt;= arr.length &lt;= 10^5</li>
+                                                <li>-10^9 &lt;= arr[i] &lt;= 10^9</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ↔️ DRAGGABLE WORKSPACE SPLITTER (BARA / CHOTA RESIZER) -->
+                            <div class="coding-workspace-splitter" id="coding-workspace-splitter" title="Drag left/right to resize editor (Double-click to reset)">
+                                <div class="splitter-grip-handle"></div>
+                            </div>
+
+                            <!-- RIGHT HALF: REAL VS CODE / ONLINE COMPILER WORKSPACE -->
+                            <div class="coding-editor-side" id="coding-editor-container">
+                                <!-- EDITOR TOOLBAR -->
+                                <div class="editor-header-bar">
+                                    <div class="editor-lang-selector-group">
+                                        <span class="editor-lang-label">Language</span>
+                                        <!-- CUSTOM STYLED DROPDOWN (NO NATIVE BLUR GLITCH) -->
+                                        <div class="custom-select-container" id="dropdown-coding-lang">
+                                            <button type="button" class="custom-select-trigger" id="btn-lang-trigger" aria-haspopup="listbox" aria-expanded="false">
+                                                <span class="selected-lang-name" id="lbl-selected-lang">C++20 (G++ 15.2)</span>
+                                                <svg class="select-chevron-icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg>
+                                            </button>
+                                            <div class="custom-select-dropdown-menu" id="menu-coding-lang" role="listbox">
+                                                <div class="custom-select-option selected" data-value="cpp" role="option">
+                                                    <span class="lang-bullet">●</span>
+                                                    <span class="lang-opt-title">C++20 (G++ 15.2)</span>
+                                                    <svg class="opt-check-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                                </div>
+                                                <div class="custom-select-option" data-value="c" role="option">
+                                                    <span class="lang-bullet">●</span>
+                                                    <span class="lang-opt-title">C17 (GCC 15.2)</span>
+                                                    <svg class="opt-check-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                                </div>
+                                                <div class="custom-select-option" data-value="java" role="option">
+                                                    <span class="lang-bullet">●</span>
+                                                    <span class="lang-opt-title">Java 17 (OpenJDK)</span>
+                                                    <svg class="opt-check-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                                </div>
+                                                <div class="custom-select-option" data-value="python" role="option">
+                                                    <span class="lang-bullet">●</span>
+                                                    <span class="lang-opt-title">Python 3 (3.14)</span>
+                                                    <svg class="opt-check-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                                </div>
+                                                <div class="custom-select-option" data-value="javascript" role="option">
+                                                    <span class="lang-bullet">●</span>
+                                                    <span class="lang-opt-title">JavaScript (Node.js 24)</span>
+                                                    <svg class="opt-check-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="editor-header-actions">
+                                        <!-- REAL-TIME 5-SECOND AUTO-SAVE INDICATOR -->
+                                        <div class="editor-autosave-badge" id="lbl-autosave-status" style="font-size:11px; font-weight:700; color:#059669; background:#ecfdf5; border:1px solid #a7f3d0; border-radius:12px; padding:3px 10px; display:inline-flex; align-items:center; gap:5px; transition:opacity 0.3s ease;">
+                                            🟢 Auto-saved (5s)
+                                        </div>
+
+                                        <!-- FONT SIZE ZOOM CONTROLS (A- / A+) -->
+                                        <div class="editor-font-zoom-group" title="Adjust Editor Text Size">
+                                            <button type="button" class="btn-editor-tool btn-icon-only" id="btn-font-dec" title="Decrease Font Size (A-)">
+                                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                            </button>
+                                            <span class="editor-font-size-badge" id="lbl-editor-font-size">14px</span>
+                                            <button type="button" class="btn-editor-tool btn-icon-only" id="btn-font-inc" title="Increase Font Size (A+)">
+                                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                            </button>
+                                        </div>
+
+                                        <!-- TOGGLE PROBLEM / EXPAND FULL EDITOR -->
+                                        <button type="button" class="btn-editor-tool" id="btn-toggle-problem-panel" title="Toggle Problem Panel (Full Editor Width)">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line></svg>
+                                            <span id="lbl-toggle-problem">Full Editor</span>
+                                        </button>
+
+                                        <!-- TOGGLE EDITOR HEIGHT (COMPACT / EXPANDED) -->
+                                        <button type="button" class="btn-editor-tool btn-icon-only" id="btn-toggle-editor-height" title="Toggle Editor Height (Bada / Chota Height Preset)">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="8 3 12 7 16 3"></polyline><polyline points="8 21 12 17 16 21"></polyline><line x1="12" y1="7" x2="12" y2="17"></line></svg>
+                                        </button>
+
+                                        <button type="button" class="btn-editor-tool" id="btn-reset-code" title="Reset starter code">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+                                            <span>Reset Code</span>
+                                        </button>
+                                        <button type="button" class="btn-editor-tool btn-icon-only" id="btn-toggle-fullscreen" title="Toggle Fullscreen Editor">
+                                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- REAL CODE EDITOR CANVAS WITH SYNTAX HIGHLIGHTING & LINE GUTTER -->
+                                <div class="vs-code-editor-wrapper" id="vs-code-editor-box">
+                                    <div class="vs-code-gutter" id="code-gutter">
+                                        <!-- Dynamically generated line numbers 1..N -->
+                                    </div>
+                                    <div class="vs-code-surface-wrap">
+                                        <pre class="vs-code-highlight-layer" id="code-highlight-display" aria-hidden="true"><code id="code-highlight-content"></code></pre>
+                                        <textarea id="txt-code-solution" class="vs-code-textarea" spellcheck="false" autocomplete="off" autocapitalize="off"></textarea>
+                                    </div>
+                                </div>
+
+                                <!-- ↕️ DRAGGABLE EDITOR HEIGHT RESIZER (BARA / CHOTA RESIZE BAR) -->
+                                <div class="editor-height-resizer" id="editor-height-resizer" title="Drag up/down to adjust Editor Height (Double-click to reset)">
+                                    <div class="horizontal-grip-line"></div>
+                                    <span class="resizer-tooltip-hint">↕ Drag up/down to resize Code Editor height</span>
+                                </div>
+
+                                <!-- TOGGLES: CUSTOM INPUT & TEST CASES / CONSOLE -->
+                                <div class="custom-input-toggle-row" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-top:14px; padding-bottom:4px;">
+                                    <label class="custom-input-switch-label" for="chk-custom-input-toggle">
+                                        <span>Test against custom input</span>
+                                        <input type="checkbox" id="chk-custom-input-toggle" class="custom-switch-checkbox">
+                                        <span class="custom-switch-slider"></span>
+                                    </label>
+                                    
+                                    <label class="custom-input-switch-label" for="chk-test-cases-toggle" style="color:#4f46e5; cursor:pointer;">
+                                        <span style="font-weight:700;">Test Cases & Error Console (2 Public + 2 Hidden)</span>
+                                        <input type="checkbox" id="chk-test-cases-toggle" class="custom-switch-checkbox" checked>
+                                        <span class="custom-switch-slider"></span>
+                                    </label>
+                                </div>
+
+                                <!-- EXPANDABLE CUSTOM INPUT FIELD -->
+                                <div class="custom-input-box-wrap hidden" id="wrap-custom-input">
+                                    <div class="custom-input-header">Custom Stdin / Input:</div>
+                                    <textarea id="txt-custom-input" class="custom-stdin-textarea" placeholder="Enter custom test input here (e.g. 6&#10;12 35 1 10 34 1)"></textarea>
+                                </div>
+
+                                <!-- COMPILER TEST CASES & TERMINAL OUTPUT PANEL -->
+                                <div class="compiler-console-panel" id="console-test-results">
+                                    <!-- ↕️ DRAGGABLE CONSOLE HEIGHT RESIZER -->
+                                    <div class="console-height-resizer" id="console-height-resizer" title="Drag up/down to resize Test Cases & Terminal Height (Double-click to reset)">
+                                        <div class="console-grip-line"></div>
+                                    </div>
+                                    <div class="console-tab-header">
+                                        <div class="console-tab-left">
+                                            <button type="button" class="console-tab-btn active" id="tab-test-cases">Test Cases</button>
+                                            <button type="button" class="console-tab-btn" id="tab-console-terminal">Terminal / Stdout</button>
+                                        </div>
+                                        <div class="console-tab-right">
+                                            <div class="console-status-badge" id="lbl-test-summary">Ready</div>
+                                            <button type="button" class="btn-console-tool" id="btn-expand-console" title="Expand / Shrink Test Cases Panel Height">
+                                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>
+                                            </button>
+                                            <button type="button" class="btn-console-tool" id="btn-close-console" title="Close Panel">✕</button>
+                                        </div>
+                                    </div>
+                                    <div class="console-tab-body" id="console-test-cards">
+                                        <!-- Test case cards rendered here -->
+                                    </div>
+                                    <div class="console-tab-body hidden" id="console-terminal-output">
+                                        <pre class="terminal-raw-text" id="lbl-terminal-raw"></pre>
+                                    </div>
+                                </div>
+
+                                <!-- CODING BOTTOM ACTIONS -->
+                                <div class="coding-card-footer">
+                                    <button class="btn-nav-outline-prev" id="btn-code-prev">
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                                        <span>Save & Previous</span>
+                                    </button>
+                                    <div class="coding-action-btns">
+                                        <button type="button" class="btn-run-code-pill" id="btn-code-run">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                                            <span>Run Code</span>
+                                        </button>
+                                        <button type="button" class="btn-nav-solid-next btn-code-submit-action" id="btn-code-submit">
+                                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                                            <span id="lbl-btn-code-submit">Submit Code</span>
+                                        </button>
+                                        <button type="button" class="btn-nav-solid-next" id="btn-code-next" style="background:#10b981; border-color:#10b981; display:none;">
+                                            <span>Next Question →</span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- 3. ESSAY MODE VIEW -->
+                    <div class="question-card-inner hidden" id="mode-essay-view">
+                        <div class="q-meta-top-row">
+                            <div class="q-meta-left">
+                                <span class="q-number-pill" id="lbl-essay-qnum">Question 8</span>
+                                <button class="btn-mark-review-action" id="btn-essay-review">
+                                    <svg class="bookmark-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="2"><path d="m19 21-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
+                                    <span id="lbl-essay-review-text">Mark for Review</span>
+                                </button>
+                            </div>
+                            <div class="q-grading-right">
+                                <span class="badge-positive-mark" id="lbl-essay-marks-badge">20 Marks</span>
+                            </div>
+                        </div>
+                        <h3 class="coding-problem-heading" id="lbl-essay-title">Descriptive Assessment</h3>
+                        <div class="coding-desc-text" id="lbl-essay-prompt">Loading prompt...</div>
+                        <div class="essay-box-wrap">
+                            <div class="essay-word-count" id="lbl-essay-words">0 Words</div>
+                            <textarea id="txt-essay-solution" class="essay-textarea" placeholder="Type your comprehensive descriptive answer here..."></textarea>
+                        </div>
+                        <div class="question-card-footer">
+                            <button class="btn-nav-outline-prev" id="btn-essay-prev">Previous</button>
+                            <button class="btn-nav-solid-next" id="btn-final-submit-exam">Final Submit Exam 🚀</button>
+                        </div>
+                    </div>
+
+                </section>
+
+                <!-- RIGHT SIDEBAR (PROGRESS, SECTION SWITCHER, TIP) -->
+                <aside class="assessment-sidebar-panel" id="assessment-sidebar-panel">
+                    
+                    <!-- CARD 1: YOUR PROGRESS -->
+                    <div class="sidebar-card progress-card">
+                        <div class="sidebar-card-header">
+                            <h3 class="sidebar-card-title">Your Progress</h3>
+                            <button class="btn-toggle-details" id="btn-toggle-details">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                <span>Hide Details</span>
+                            </button>
+                        </div>
+
+                        <!-- PROGRESS RING -->
+                        <div class="progress-ring-container" id="progress-ring-container">
+                            <div class="circular-progress-wrap">
+                                <svg class="progress-ring-svg" width="130" height="130" viewBox="0 0 130 130">
+                                    <circle class="progress-ring-bg" cx="65" cy="65" r="54" stroke-width="8"></circle>
+                                    <circle class="progress-ring-fill" id="progress-ring-fill" cx="65" cy="65" r="54" stroke-width="8" stroke-dasharray="339.29" stroke-dashoffset="254.46"></circle>
+                                </svg>
+                                <div class="progress-center-text">
+                                    <span class="progress-percentage-val" id="lbl-progress-percent">0%</span>
+                                    <span class="progress-completed-label">Completed</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- STATS LEGEND ROW -->
+                        <div class="progress-legend-row" id="progress-legend-row">
+                            <div class="legend-col solved">
+                                <div class="legend-val-row">
+                                    <span class="legend-bullet bullet-green">●</span>
+                                    <strong class="legend-number" id="lbl-solved-count">0</strong>
+                                </div>
+                                <span class="legend-label">Solved</span>
+                            </div>
+
+                            <div class="legend-col not-solved">
+                                <div class="legend-val-row">
+                                    <span class="legend-bullet bullet-purple">●</span>
+                                    <strong class="legend-number" id="lbl-notsolved-count">0</strong>
+                                </div>
+                                <span class="legend-label">Not Solved</span>
+                            </div>
+
+                            <div class="legend-col total">
+                                <div class="legend-val-row">
+                                    <span class="legend-bullet bullet-gray">●</span>
+                                    <strong class="legend-number" id="lbl-total-count">13</strong>
+                                </div>
+                                <span class="legend-label">Total Questions</span>
+                            </div>
+                        </div>
+
+                        <!-- QUESTION TILES PALETTE (TOGGLEABLE) -->
+                        <div class="sidebar-palette-grid hidden" id="palette-tiles-grid"></div>
+                    </div>
+
+                    <!-- CARD 2: SECTION SWITCHER / CHANGE SECTION (REPLACED BUGGY QUICK JUMP SELECT) -->
+                    <div class="sidebar-card quick-jump-card" id="card-section-switcher">
+                        <h4 class="sidebar-sub-title">Change Section</h4>
+                        <div class="custom-select-container section-select-container" id="dropdown-section-switcher">
+                            <button type="button" class="custom-select-trigger" id="btn-section-trigger" aria-haspopup="listbox" aria-expanded="false">
+                                <div class="section-trigger-label">
+                                    <span class="section-tag-dot">●</span>
+                                    <span class="selected-section-name" id="lbl-selected-section">Section 1: Aptitude (MCQ)</span>
+                                </div>
+                                <svg class="select-chevron-icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg>
+                            </button>
+                            <div class="custom-select-dropdown-menu section-dropdown-menu" id="menu-section-switcher" role="listbox">
+                                <div class="custom-select-option section-opt-card selected" data-section="mcq" role="option">
+                                    <div class="section-opt-icon-circle mcq-icon-circle">📝</div>
+                                    <div class="section-opt-info">
+                                        <strong class="sec-title">Section 1: Aptitude & Reasoning</strong>
+                                        <span class="sec-desc">Multiple Choice • Questions 1 - 10</span>
+                                    </div>
+                                    <svg class="opt-check-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                </div>
+                                <div class="custom-select-option section-opt-card" data-section="coding" role="option">
+                                    <div class="section-opt-icon-circle coding-icon-circle">💻</div>
+                                    <div class="section-opt-info">
+                                        <strong class="sec-title">Section 2: Coding Assessment</strong>
+                                        <span class="sec-desc">Live Compiler • Questions 11 - 12</span>
+                                    </div>
+                                    <svg class="opt-check-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                </div>
+                                <div class="custom-select-option section-opt-card" data-section="essay" role="option">
+                                    <div class="section-opt-icon-circle essay-icon-circle">✍️</div>
+                                    <div class="section-opt-info">
+                                        <strong class="sec-title">Section 3: Descriptive & Paragraph</strong>
+                                        <span class="sec-desc">Essay Response • Question 13</span>
+                                    </div>
+                                    <svg class="opt-check-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CARD 3: TIP BOX -->
+                    <div class="sidebar-card tip-box-card">
+                        <div class="tip-header">
+                            <span class="tip-bulb-icon">💡</span>
+                            <strong class="tip-heading">Tip</strong>
+                        </div>
+                        <p class="tip-description">
+                            You can navigate between sections using Change Section or save and continue.
+                        </p>
+                    </div>
+
+                </aside>
+
+            </div>
+
+        </main>
+
+        <!-- FOOTER STATUS BAR (MATCHES USER SCREENSHOT EXACTLY) -->
+        <footer class="assessment-bottom-footer">
+            <div class="footer-left-status">
+                <div class="footer-chip">
+                    <div class="footer-chip-icon icon-wifi">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"></path><path d="M1.42 9a16 16 0 0 1 21.16 0"></path><path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path><line x1="12" y1="20" x2="12.01" y2="20"></line></svg>
+                    </div>
+                    <div class="footer-chip-meta">
+                        <span class="chip-main-title">Network</span>
+                        <span class="chip-sub-status text-green">Connected</span>
+                    </div>
+                </div>
+
+                <div class="footer-divider-pipe"></div>
+
+                <div class="footer-chip">
+                    <div class="footer-chip-icon icon-secure">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline></svg>
+                    </div>
+                    <div class="footer-chip-meta">
+                        <span class="chip-main-title">System Secure</span>
+                        <span class="chip-sub-status text-green">All good</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-right-action">
+                <button class="btn-footer-close-action" id="btn-footer-exit">
+                    <div class="power-circle-glyph">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg>
+                    </div>
+                    <div class="power-text-col">
+                        <strong class="power-main-title">Close Application</strong>
+                        <span class="power-sub-warning">App will close and exam will not start</span>
+                    </div>
+                </button>
+            </div>
+        </footer>
+
+    </div>
+
+    <!-- 🛡️ ARE YOU SURE YOU WANT TO CLOSE THIS EXAM MODAL -->
+    <div class="exam-modal-backdrop hidden" id="modal-exit-confirm">
+        <div class="exam-modal-card">
+            <div class="exam-modal-icon-wrap icon-warning">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+            </div>
+            <h3 class="exam-modal-title">Are you sure you want to close this exam?</h3>
+            <p class="exam-modal-desc">
+                Your examination is currently in progress. If you close the application now, your test session will terminate.
+            </p>
+            <div class="exam-modal-summary-box">
+                <div class="summary-row">
+                    <span class="summary-lbl">Assessment:</span>
+                    <strong class="summary-val" id="lbl-modal-exam-name">Coding Assessment</strong>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-lbl">Time Remaining:</span>
+                    <strong class="summary-val text-indigo" id="lbl-modal-time-left">01:59:35</strong>
+                </div>
+            </div>
+            <div class="exam-modal-actions">
+                <button type="button" class="btn-modal-cancel" id="btn-modal-cancel-exit">
+                    Continue Test
+                </button>
+                <button type="button" class="btn-modal-danger" id="btn-modal-confirm-exit">
+                    Yes, Close Exam
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🚀 END TEST & SUBMIT CONFIRMATION MODAL -->
+    <div class="exam-modal-backdrop hidden" id="modal-submit-confirm">
+        <div class="exam-modal-card">
+            <div class="exam-modal-icon-wrap icon-info">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+            </div>
+            <h3 class="exam-modal-title">Submit Assessment & End Test?</h3>
+            <p class="exam-modal-desc" id="lbl-submit-modal-desc">
+                Are you sure you want to submit your assessment? Once submitted, your code and answers will be saved and evaluated.
+            </p>
+            <div class="exam-modal-actions">
+                <button type="button" class="btn-modal-cancel" id="btn-modal-cancel-submit">
+                    Continue Working
+                </button>
+                <button type="button" class="btn-modal-primary" id="btn-modal-confirm-submit">
+                    Submit & End Test 🚀
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ⚠️ PROCTORING & EXAM SECURITY VIOLATION WARNING MODAL -->
+    <div class="exam-modal-backdrop hidden" id="modal-security-warning">
+        <div class="exam-modal-card warning-alert-card">
+            <div class="exam-modal-icon-wrap icon-warning-pulse">
+                <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                    <line x1="12" y1="9" x2="12" y2="13"></line>
+                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                </svg>
+            </div>
+            <div class="warning-badge-pill" id="lbl-warning-strike-badge">WARNING 1 OF 10</div>
+            <h3 class="exam-modal-title warning-title" id="lbl-warning-modal-title">Security & Proctoring Warning</h3>
+            <p class="exam-modal-desc" id="lbl-warning-modal-desc">
+                Window blur / app switching detected. Please stay on the active examination window at all times.
+            </p>
+            <div class="warning-guideline-box">
+                <div class="warning-guideline-item">⚠️ Do not switch tabs, apps, or use multi-finger touchpad swipes.</div>
+                <div class="warning-guideline-item">⚠️ Copy/paste, developer tools, and external windows are blocked & logged.</div>
+                <div class="warning-guideline-item text-red-bold">⚠️ Reaching 10 warnings will automatically terminate & submit your exam.</div>
+            </div>
+            <div class="exam-modal-actions">
+                <button type="button" class="btn-modal-warning-ack" id="btn-ack-warning">
+                    <span>I Understand, Resume Exam (<span id="lbl-warning-ack-cd">3</span>s)</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATIONS -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <script src="js/config.js"></script>
+    <script src="js/security-guard.js"></script>
+    <script src="js/assessment-engine.js"></script>
+</body>
+</html>

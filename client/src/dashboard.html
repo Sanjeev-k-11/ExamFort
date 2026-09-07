@@ -1,0 +1,1231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - ExamFort</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Plus Jakarta Sans', -apple-system, sans-serif; background: #f8fafc; color: #0f172a; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+        
+        .dash-viewport { display: flex; flex-direction: column; height: 100vh; width: 100vw; overflow: hidden; background: #f8fafc; }
+        .dash-scroll { flex: 1; overflow-y: auto; padding: 20px 32px 28px 32px; }
+        
+        /* TOP GREETING BAR */
+        .dash-top-bar { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-bottom: 20px; }
+        .greeting-group { display: flex; align-items: center; gap: 14px; }
+        .avatar-circle-top { width: 46px; height: 46px; border-radius: 50%; background: #ede9fe; color: #4f46e5; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 800; cursor: pointer; border: 2px solid #ffffff; box-shadow: 0 2px 6px rgba(79,70,229,0.15); }
+        .greeting-text h1 { font-size: 20px; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 6px; }
+        .greeting-text p { font-size: 12.5px; color: #64748b; margin-top: 1px; }
+        
+        .top-right-meta { display: flex; align-items: center; gap: 12px; }
+        .select-filter-top { background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 8px; padding: 7px 12px; font-size: 12.5px; font-weight: 700; color: #334155; cursor: pointer; outline: none; }
+        .date-chip-top { background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 8px; padding: 7px 12px; font-size: 12px; font-weight: 700; color: #475569; display: flex; align-items: center; gap: 6px; }
+        
+        /* 6 STAT CARDS ROW */
+        .metrics-6-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 14px; margin-bottom: 20px; }
+        .metric-card-pill { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 16px; display: flex; align-items: center; gap: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); transition: transform 0.15s; }
+        .metric-card-pill:hover { transform: translateY(-2px); border-color: #cbd5e1; }
+        .metric-icon-box { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+        .metric-meta strong { display: block; font-size: 17px; font-weight: 800; color: #0f172a; line-height: 1.1; margin-bottom: 3px; }
+        .metric-meta label { display: block; font-size: 10.5px; font-weight: 600; color: #64748b; line-height: 1.2; }
+        .metric-meta span { display: block; font-size: 9.5px; color: #94a3b8; margin-top: 2px; }
+        
+        /* 3-COLUMN SECTIONS (ROWS 2 & 3) */
+        .dash-3col-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+        
+        .dash-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); display: flex; flex-direction: column; }
+        .dash-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+        .dash-card-title { font-size: 14.5px; font-weight: 800; color: #0f172a; margin: 0; }
+        .dash-card-link { font-size: 12px; font-weight: 700; color: #4f46e5; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; }
+        
+        /* DONUT CHART */
+        .donut-progress-wrap { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 4px; margin-bottom: 14px; }
+        .donut-ring-outer { width: 110px; height: 110px; border-radius: 50%; background: conic-gradient(#4f46e5 0% 60%, #e2e8f0 60% 100%); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .donut-ring-inner { width: 84px; height: 84px; border-radius: 50%; background: #ffffff; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .donut-val-big { font-size: 20px; font-weight: 800; color: #0f172a; line-height: 1; }
+        .donut-lbl-sub { font-size: 8px; font-weight: 700; color: #64748b; margin-top: 2px; text-transform: uppercase; }
+        .donut-legend-col { display: flex; flex-direction: column; gap: 8px; flex: 1; }
+        .legend-row { display: flex; align-items: center; justify-content: space-between; font-size: 12px; }
+        .legend-row-left { display: flex; align-items: center; gap: 6px; }
+        .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+        .legend-count { font-weight: 700; color: #0f172a; }
+        .progress-banner-tip { background: #f5f3ff; border: 1px solid #ddd6fe; border-radius: 8px; padding: 8px 12px; font-size: 11.5px; font-weight: 700; color: #6d28d9; display: flex; align-items: center; gap: 6px; margin-top: auto; }
+        
+        /* UPCOMING EXAMS LIST */
+        .upcoming-exams-list { display: flex; flex-direction: column; gap: 10px; flex: 1; }
+        .upcoming-exam-item { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; gap: 12px; transition: all 0.15s; }
+        .upcoming-exam-item:hover { background: #ffffff; border-color: #cbd5e1; box-shadow: 0 2px 6px rgba(0,0,0,0.03); }
+        .ue-left { display: flex; align-items: center; gap: 10px; }
+        .ue-icon { width: 34px; height: 34px; border-radius: 8px; background: #ede9fe; color: #4f46e5; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+        .ue-info strong { display: block; font-size: 12.5px; font-weight: 800; color: #0f172a; margin-bottom: 2px; }
+        .ue-info span { display: block; font-size: 10.5px; color: #64748b; }
+        .btn-start-soon { background: #ffffff; border: 1.5px solid #cbd5e1; color: #4338ca; border-radius: 6px; padding: 5px 12px; font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.15s; white-space: nowrap; text-decoration: none; }
+        .btn-start-soon:hover { background: #4f46e5; color: #ffffff; border-color: #4f46e5; }
+        .btn-start-active { background: #4f46e5 !important; color: #ffffff !important; border-color: #4f46e5 !important; }
+        
+        .btn-exam-disabled-blur {
+            background: #94a3b8 !important;
+            border-color: #94a3b8 !important;
+            color: #ffffff !important;
+            filter: blur(0.7px);
+            opacity: 0.65;
+            pointer-events: none !important;
+            cursor: not-allowed !important;
+            user-select: none;
+            box-shadow: none !important;
+        }
+        .btn-exam-completed-blur {
+            background: #10b981 !important;
+            border-color: #10b981 !important;
+            color: #ffffff !important;
+            filter: blur(0.5px);
+            opacity: 0.85;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(16, 185, 129, 0.25);
+        }
+        .badge-exam-status {
+            display: inline-block;
+            font-size: 10px;
+            font-weight: 800;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 6px;
+        }
+        .badge-status-completed { background: #dcfce7; color: #15803d; }
+        .badge-status-expired { background: #fee2e2; color: #dc2626; }
+        .badge-status-active { background: #ede9fe; color: #4f46e5; }
+        .empty-upcoming-msg {
+            background: #f8fafc;
+            border: 1.5px dashed #cbd5e1;
+            border-radius: 12px;
+            padding: 20px 16px;
+            text-align: center;
+            color: #64748b;
+        }
+        .link-schedule-center { text-align: center; font-size: 11.5px; font-weight: 700; color: #4f46e5; text-decoration: none; margin-top: 10px; display: block; }
+        
+        /* PERFORMANCE CHART */
+        .chart-box { height: 130px; width: 100%; position: relative; margin-bottom: 12px; }
+        .latest-score-bar { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; margin-top: auto; }
+        .latest-score-bar label { font-size: 11.5px; color: #64748b; display: block; }
+        .latest-score-bar strong { font-size: 12.5px; color: #0f172a; display: block; }
+        .score-pill-green { background: #dcfce7; color: #15803d; font-size: 12px; font-weight: 800; padding: 4px 10px; border-radius: 6px; }
+        
+        /* CONTINUE LEARNING */
+        .learning-items-list { display: flex; flex-direction: column; gap: 12px; flex: 1; }
+        .learning-row-item { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+        .lr-left { display: flex; align-items: center; gap: 10px; flex: 1; }
+        .lr-icon { width: 32px; height: 32px; border-radius: 8px; background: #ede9fe; color: #4f46e5; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
+        .lr-meta { flex: 1; }
+        .lr-title-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; font-size: 12px; }
+        .lr-title-row strong { color: #0f172a; font-weight: 700; }
+        .lr-title-row span { color: #64748b; font-weight: 700; font-size: 11px; }
+        .lr-progress-bar { width: 100%; height: 6px; background: #e2e8f0; border-radius: 4px; overflow: hidden; }
+        .lr-progress-fill { height: 100%; border-radius: 4px; }
+        .btn-continue-pill { background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 4px 10px; font-size: 11px; font-weight: 700; color: #4338ca; cursor: pointer; text-decoration: none; transition: all 0.15s; }
+        .btn-continue-pill:hover { background: #4f46e5; color: #ffffff; border-color: #4f46e5; }
+        
+        /* RECENT ACTIVITY */
+        .activity-timeline { display: flex; flex-direction: column; gap: 10px; flex: 1; }
+        .activity-item { display: flex; align-items: flex-start; gap: 10px; font-size: 12px; }
+        .act-icon { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; flex-shrink: 0; margin-top: 1px; }
+        .act-info strong { display: block; color: #0f172a; font-weight: 700; font-size: 12px; }
+        .act-info span { display: block; color: #64748b; font-size: 10.5px; }
+        
+        /* QUICK ACTIONS */
+        .quick-actions-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+        .qa-btn { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; display: flex; align-items: center; gap: 8px; text-decoration: none; color: #0f172a; transition: all 0.15s; cursor: pointer; }
+        .qa-btn:hover { background: #ffffff; border-color: #cbd5e1; box-shadow: 0 2px 6px rgba(0,0,0,0.03); }
+        .qa-icon { font-size: 15px; }
+        .qa-text strong { display: block; font-size: 11.5px; font-weight: 800; color: #0f172a; }
+        .qa-text span { display: block; font-size: 9.5px; color: #64748b; }
+        .need-help-banner { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: auto; }
+        .nh-left { display: flex; align-items: center; gap: 8px; }
+        .btn-contact-support { background: #ffffff; border: 1.5px solid #4f46e5; color: #4f46e5; border-radius: 6px; padding: 5px 10px; font-size: 11px; font-weight: 700; text-decoration: none; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+        .btn-contact-support:hover { background: #4f46e5; color: #ffffff; }
+        
+        /* FOOTER STATUS BAR */
+        .footer-status-bar { height: 56px; min-height: 56px; background: #ffffff; border-top: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; padding: 0 32px; }
+        .footer-left { display: flex; align-items: center; gap: 32px; }
+        .footer-status-item { display: flex; align-items: center; gap: 10px; }
+        .status-dot-circle { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 15px; }
+        .dot-green { background: #dcfce7; color: #16a34a; }
+        .status-label-group strong { display: block; font-size: 12px; font-weight: 800; color: #0f172a; }
+        .status-label-group span { display: block; font-size: 10.5px; color: #16a34a; font-weight: 600; }
+        
+        .btn-footer-close-app { display: flex; align-items: center; gap: 10px; background: none; border: 1px solid #fecaca; border-radius: 10px; padding: 8px 16px; cursor: pointer; transition: all 0.15s; }
+        .btn-footer-close-app:hover { background: #fef2f2; border-color: #ef4444; }
+        .power-circle-icon { width: 28px; height: 28px; border-radius: 50%; background: #fee2e2; color: #dc2626; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold; }
+        .close-app-text-group { text-align: left; }
+        .close-app-text-group strong { display: block; font-size: 12px; font-weight: 800; color: #dc2626; }
+        .close-app-text-group span { display: block; font-size: 10px; color: #ef4444; }
+    </style>
+</head>
+<body>
+    <div class="dash-viewport" style="display: flex; flex-direction: column; height: 100vh; overflow: hidden;">
+        <!-- SECURITY WATERMARK -->
+        <div class="security-watermark-overlay" id="watermark-overlay"></div>
+
+        <div style="display: flex; flex: 1; overflow: hidden;">
+            <!-- SIDEBAR -->
+            <aside class="dashboard-sidebar" style="width: 240px; min-width: 240px; height: 100%; overflow-y: auto; background: #ffffff; border-right: 1.5px solid #e2e8f0; padding: 20px 14px; display: flex; flex-direction: column; justify-content: space-between; flex-shrink: 0;">
+                <div>
+                    <div class="sidebar-brand-box" style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+                        <div class="sidebar-logo" style="width: 32px; height: 32px; background: #ede9fe; color: #4f46e5; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px;">🛡️</div>
+                        <div class="sidebar-brand-title">
+                            <strong style="font-size: 14px; color: #0f172a; display: block; font-weight: 800;">ExamFort</strong>
+                            <span style="font-size: 10px; color: #64748b;">Secure Exam Environment</span>
+                        </div>
+                    </div>
+
+                    <nav class="sidebar-nav-menu" style="display: flex; flex-direction: column; gap: 4px;">
+                        <a href="dashboard.html" class="sidebar-nav-item active" style="background: #4f46e5; color: #ffffff; font-weight: 700; box-shadow: 0 2px 6px rgba(79, 70, 229, 0.25);">
+                            <span class="nav-icon">⊞</span>
+                            <span>Dashboard</span>
+                        </a>
+                        <a href="exams.html" class="sidebar-nav-item">
+                            <span class="nav-icon">📑</span>
+                            <span>My Exams</span>
+                        </a>
+                        <a href="exam_details.html" class="sidebar-nav-item">
+                            <span class="nav-icon">📄</span>
+                            <span>Exam Details</span>
+                        </a>
+                        <a href="courses.html" class="sidebar-nav-item">
+                            <span class="nav-icon">📚</span>
+                            <span>Course</span>
+                        </a>
+                        <a href="profile.html" class="sidebar-nav-item">
+                            <span class="nav-icon">👤</span>
+                            <span>My Profile</span>
+                        </a>
+                        <a href="instructions.html" class="sidebar-nav-item">
+                            <span class="nav-icon">📖</span>
+                            <span>Instructions</span>
+                        </a>
+                        <a href="support.html" class="sidebar-nav-item">
+                            <span class="nav-icon">❓</span>
+                            <span>Help & Support</span>
+                        </a>
+                        <a href="index.html?logout=1" onclick="logoutUser(event)" class="sidebar-nav-item">
+                            <span class="nav-icon">🚪</span>
+                            <span>Log Out</span>
+                        </a>
+                    </nav>
+                </div>
+
+                <div class="sidebar-secure-pill-card" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; text-align: center;">
+                    <div class="secure-icon-circle" style="width: 32px; height: 32px; border-radius: 50%; background: #ede9fe; color: #4f46e5; margin: 0 auto 6px; display: flex; align-items: center; justify-content: center; font-size: 15px;">🛡️</div>
+                    <strong style="font-size: 12px; color: #0f172a; display: block; font-weight: 800;">Secure Environment</strong>
+                    <p style="font-size: 10px; color: #64748b; margin: 2px 0 6px;">Your learning environment is monitored and protected.</p>
+                    <span class="status-protected-badge" style="display: inline-block; font-size: 10px; font-weight: 800; color: #16a34a; background: #ecfdf5; padding: 2px 8px; border-radius: 10px;">Protected 🔒</span>
+                </div>
+            </aside>
+
+            <!-- MAIN DASHBOARD CONTENT -->
+            <main class="dash-scroll" style="flex: 1; overflow-y: auto;">
+            
+            <!-- TOP GREETING & FILTERS ROW (MATCHES IMAGE 2) -->
+            <div class="dash-top-bar">
+                <div class="greeting-group">
+                    <a class="avatar-circle-top" href="profile.html" id="lbl-avatar" title="View Profile">A</a>
+                    <div class="greeting-text">
+                        <h1>Hi, <span id="lbl-name">Candidate</span> 👋</h1>
+                        <p>Stay focused and do your best!</p>
+                    </div>
+                </div>
+                <div class="top-right-meta">
+                    <select class="select-filter-top" id="sel-exam-filter">
+                        <option value="all">All Exams</option>
+                        <option value="active">Active Assessments</option>
+                        <option value="completed">Completed Tests</option>
+                    </select>
+                    <div class="date-chip-top" id="lbl-date-time">
+                        <span>📅</span>
+                        <span id="lbl-live-date">31 May 2025, 10:24 AM</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 6 STAT METRICS CARDS (EXACT MATCH IMAGE 2) -->
+            <div class="metrics-6-row">
+                <!-- 1. Exams Enrolled -->
+                <div class="metric-card-pill">
+                    <div class="metric-icon-box" style="background: #ede9fe; color: #6366f1;">📄</div>
+                    <div class="metric-meta">
+                        <strong id="lbl-cnt-enrolled">12</strong>
+                        <label>Exams Enrolled</label>
+                        <span>Active exams</span>
+                    </div>
+                </div>
+
+                <!-- 2. Exams Completed -->
+                <div class="metric-card-pill">
+                    <div class="metric-icon-box" style="background: #dcfce7; color: #16a34a;">✓</div>
+                    <div class="metric-meta">
+                        <strong id="lbl-cnt-completed">5</strong>
+                        <label>Exams Completed</label>
+                        <span>Keep it up!</span>
+                    </div>
+                </div>
+
+                <!-- 3. Upcoming Exams -->
+                <div class="metric-card-pill">
+                    <div class="metric-icon-box" style="background: #fef3c7; color: #d97706;">🕒</div>
+                    <div class="metric-meta">
+                        <strong id="lbl-cnt-upcoming">3</strong>
+                        <label>Upcoming Exams</label>
+                        <span>Next: Aptitude Test</span>
+                    </div>
+                </div>
+
+                <!-- 4. Average Score -->
+                <div class="metric-card-pill">
+                    <div class="metric-icon-box" style="background: #e0f2fe; color: #0284c7;">📊</div>
+                    <div class="metric-meta">
+                        <strong id="lbl-cnt-avg">72%</strong>
+                        <label>Average Score</label>
+                        <span>Across all tests</span>
+                    </div>
+                </div>
+
+                <!-- 5. Best Score -->
+                <div class="metric-card-pill">
+                    <div class="metric-icon-box" style="background: #fee2e2; color: #dc2626;">🏆</div>
+                    <div class="metric-meta">
+                        <strong id="lbl-cnt-best">95%</strong>
+                        <label>Best Score</label>
+                        <span>Programming Test</span>
+                    </div>
+                </div>
+
+                <!-- 6. Current Streak -->
+                <div class="metric-card-pill">
+                    <div class="metric-icon-box" style="background: #fae8ff; color: #a855f7;">🎯</div>
+                    <div class="metric-meta">
+                        <strong id="lbl-cnt-streak">7 Days</strong>
+                        <label>Current Streak</label>
+                        <span>Great going!</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ROW 2: MY PROGRESS, UPCOMING EXAMS, RECENT PERFORMANCE -->
+            <div class="dash-3col-grid">
+                <!-- COL 1: MY PROGRESS -->
+                <div class="dash-card">
+                    <div class="dash-card-header">
+                        <h3 class="dash-card-title">My Progress</h3>
+                        <a href="profile.html" class="dash-card-link">View Details →</a>
+                    </div>
+                    <div class="donut-progress-wrap">
+                        <div class="donut-ring-outer" id="donut-progress-outer">
+                            <div class="donut-ring-inner">
+                                <span class="donut-val-big" id="lbl-progress-pct">60%</span>
+                                <span class="donut-lbl-sub">Overall Progress</span>
+                            </div>
+                        </div>
+                        <div class="donut-legend-col">
+                            <div class="legend-row">
+                                <div class="legend-row-left">
+                                    <span class="legend-dot" style="background: #10b981;"></span>
+                                    <span>Completed</span>
+                                </div>
+                                <span class="legend-count" id="lbl-donut-completed">5 (42%)</span>
+                            </div>
+                            <div class="legend-row">
+                                <div class="legend-row-left">
+                                    <span class="legend-dot" style="background: #3b82f6;"></span>
+                                    <span>In Progress</span>
+                                </div>
+                                <span class="legend-count" id="lbl-donut-progress">4 (33%)</span>
+                            </div>
+                            <div class="legend-row">
+                                <div class="legend-row-left">
+                                    <span class="legend-dot" style="background: #94a3b8;"></span>
+                                    <span>Not Started</span>
+                                </div>
+                                <span class="legend-count" id="lbl-donut-notstarted">3 (25%)</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="progress-banner-tip">
+                        <span>📈</span>
+                        <span>You've improved by 12% this week!</span>
+                    </div>
+                </div>
+
+                <!-- COL 2: UPCOMING EXAMS -->
+                <div class="dash-card">
+                    <div class="dash-card-header">
+                        <h3 class="dash-card-title">Upcoming Exams</h3>
+                        <a href="exams.html" class="dash-card-link">View All →</a>
+                    </div>
+                    <div class="upcoming-exams-list">
+                        <!-- Primary Live Exam from MySQL -->
+                        <div class="upcoming-exam-item" id="card-primary-exam">
+                            <div class="ue-left">
+                                <div class="ue-icon">📅</div>
+                                <div class="ue-info">
+                                    <strong id="lbl-exam-title">Aptitude & Coding Assessment Test</strong>
+                                    <span id="lbl-exam-schedule">31 May 2025 • 10:00 AM - 12:00 PM</span>
+                                </div>
+                            </div>
+                            <a href="instructions.html" class="btn-start-soon btn-start-active" id="btn-start-primary">Start Exam</a>
+                        </div>
+                        <!-- Additional exams fetched from MySQL (dynamically added) -->
+                        <div id="extra-exams-list"></div>
+                    </div>
+                    <a href="exams.html" class="link-schedule-center">View Full Schedule & History →</a>
+                </div>
+
+                <!-- COL 3: RECENT PERFORMANCE CHART (100% MYSQL POWERED) -->
+                <div class="dash-card">
+                    <div class="dash-card-header">
+                        <h3 class="dash-card-title">Recent Performance</h3>
+                        <a href="profile.html" class="dash-card-link">View All →</a>
+                    </div>
+                    <div class="chart-box" id="perf-chart-box">
+                        <!-- DYNAMICALLY DRAWN SVG FROM MYSQL ACTIVITIES -->
+                        <svg id="perf-chart-svg" width="100%" height="100%" viewBox="0 0 320 120" preserveAspectRatio="none">
+                            <defs>
+                                <linearGradient id="chartGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                                    <stop offset="0%" stop-color="#4f46e5" stop-opacity="0.25"/>
+                                    <stop offset="100%" stop-color="#4f46e5" stop-opacity="0.0"/>
+                                </linearGradient>
+                            </defs>
+                            <line x1="30" y1="15" x2="310" y2="15" stroke="#f1f5f9" stroke-width="1"/>
+                            <line x1="30" y1="45" x2="310" y2="45" stroke="#f1f5f9" stroke-width="1"/>
+                            <line x1="30" y1="75" x2="310" y2="75" stroke="#f1f5f9" stroke-width="1"/>
+                            <line x1="30" y1="100" x2="310" y2="100" stroke="#f1f5f9" stroke-width="1"/>
+                            <text x="5" y="18" fill="#94a3b8" font-size="9" font-family="sans-serif">100%</text>
+                            <text x="8" y="48" fill="#94a3b8" font-size="9" font-family="sans-serif">75%</text>
+                            <text x="8" y="78" fill="#94a3b8" font-size="9" font-family="sans-serif">50%</text>
+                            <text x="12" y="103" fill="#94a3b8" font-size="9" font-family="sans-serif">0%</text>
+                            <polygon id="chart-area" points="40,65 300,65 300,105 40,105" fill="url(#chartGrad)"/>
+                            <polyline id="chart-line" points="40,65 300,65" fill="none" stroke="#4f46e5" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            <g id="chart-dots"></g>
+                        </svg>
+                        <div id="chart-x-labels" style="display:flex; justify-content:space-between; padding-left:35px; font-size:9.5px; color:#94a3b8; font-weight:600;"></div>
+                    </div>
+                    <div class="latest-score-bar">
+                        <div>
+                            <label>Latest Test</label>
+                            <strong id="lbl-latest-test-name">Loading...</strong>
+                        </div>
+                        <span class="score-pill-green" id="lbl-latest-test-score">—</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ROW 3: CONTINUE LEARNING, RECENT ACTIVITY, QUICK ACTIONS -->
+            <div class="dash-3col-grid">
+                <!-- COL 1: CONTINUE LEARNING -->
+                <div class="dash-card">
+                    <div class="dash-card-header">
+                        <h3 class="dash-card-title">Continue Learning</h3>
+                        <a href="courses.html" class="dash-card-link">View All →</a>
+                    </div>
+                    <div class="learning-items-list">
+                        <!-- 1 -->
+                        <div class="learning-row-item">
+                            <div class="lr-left">
+                                <div class="lr-icon" style="background:#ede9fe; color:#6366f1;">🧮</div>
+                                <div class="lr-meta">
+                                    <div class="lr-title-row">
+                                        <strong>Quantitative Aptitude</strong>
+                                        <span>75%</span>
+                                    </div>
+                                    <div class="lr-progress-bar">
+                                        <div class="lr-progress-fill" style="width: 75%; background: #10b981;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <a href="course_details.html?id=course-aptitude" class="btn-continue-pill">Continue</a>
+                        </div>
+
+                        <!-- 2 -->
+                        <div class="learning-row-item">
+                            <div class="lr-left">
+                                <div class="lr-icon" style="background:#ecfdf5; color:#059669;">🧠</div>
+                                <div class="lr-meta">
+                                    <div class="lr-title-row">
+                                        <strong>Logical Reasoning</strong>
+                                        <span>60%</span>
+                                    </div>
+                                    <div class="lr-progress-bar">
+                                        <div class="lr-progress-fill" style="width: 60%; background: #10b981;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <a href="course_details.html?id=course-reasoning" class="btn-continue-pill">Continue</a>
+                        </div>
+
+                        <!-- 3 -->
+                        <div class="learning-row-item">
+                            <div class="lr-left">
+                                <div class="lr-icon" style="background:#fffbeb; color:#d97706;">📊</div>
+                                <div class="lr-meta">
+                                    <div class="lr-title-row">
+                                        <strong>Data Interpretation</strong>
+                                        <span>40%</span>
+                                    </div>
+                                    <div class="lr-progress-bar">
+                                        <div class="lr-progress-fill" style="width: 40%; background: #f59e0b;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <a href="course_details.html?id=course-cpp" class="btn-continue-pill">Continue</a>
+                        </div>
+
+                        <!-- 4 -->
+                        <div class="learning-row-item">
+                            <div class="lr-left">
+                                <div class="lr-icon" style="background:#eff6ff; color:#2563eb;">📖</div>
+                                <div class="lr-meta">
+                                    <div class="lr-title-row">
+                                        <strong>English Language</strong>
+                                        <span>20%</span>
+                                    </div>
+                                    <div class="lr-progress-bar">
+                                        <div class="lr-progress-fill" style="width: 20%; background: #3b82f6;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <a href="course_details.html?id=course-dsa" class="btn-continue-pill">Continue</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- COL 2: RECENT ACTIVITY -->
+                <div class="dash-card">
+                    <div class="dash-card-header">
+                        <h3 class="dash-card-title">Recent Activity</h3>
+                        <a href="profile.html" class="dash-card-link">View All →</a>
+                    </div>
+                    <div class="activity-timeline">
+                        <div class="activity-item">
+                            <div class="act-icon" style="background:#dcfce7; color:#16a34a;">✓</div>
+                            <div class="act-info">
+                                <strong>Completed Programming MCQ</strong>
+                                <span>Score: 85% • Today, 09:15 AM</span>
+                            </div>
+                        </div>
+
+                        <div class="activity-item">
+                            <div class="act-icon" style="background:#dcfce7; color:#16a34a;">✓</div>
+                            <div class="act-info">
+                                <strong>Attempted Mock Test - 2</strong>
+                                <span>Score: 68% • Yesterday, 04:30 PM</span>
+                            </div>
+                        </div>
+
+                        <div class="activity-item">
+                            <div class="act-icon" style="background:#ede9fe; color:#6366f1;">📄</div>
+                            <div class="act-info">
+                                <strong>Started Data Structures MCQ</strong>
+                                <span>Yesterday, 11:20 AM</span>
+                            </div>
+                        </div>
+
+                        <div class="activity-item">
+                            <div class="act-icon" style="background:#dcfce7; color:#16a34a;">✓</div>
+                            <div class="act-info">
+                                <strong>Completed Aptitude Test</strong>
+                                <span>Score: 72% • 29 May 2025</span>
+                            </div>
+                        </div>
+
+                        <div class="activity-item">
+                            <div class="act-icon" style="background:#f1f5f9; color:#64748b;">🔒</div>
+                            <div class="act-info">
+                                <strong>Watched 'Time & Work' Concept</strong>
+                                <span>28 May 2025</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- COL 3: QUICK ACTIONS -->
+                <div class="dash-card">
+                    <div class="dash-card-header">
+                        <h3 class="dash-card-title">Quick Actions</h3>
+                    </div>
+                    <div class="quick-actions-grid">
+                        <a class="qa-btn" href="instructions.html">
+                            <span class="qa-icon" style="color: #4f46e5;">☑️</span>
+                            <div class="qa-text">
+                                <strong>Take a Test</strong>
+                                <span>Start a new test</span>
+                            </div>
+                        </a>
+
+                        <a class="qa-btn" href="courses.html">
+                            <span class="qa-icon" style="color: #10b981;">📖</span>
+                            <div class="qa-text">
+                                <strong>Study Material</strong>
+                                <span>Access notes & PDFs</span>
+                            </div>
+                        </a>
+
+                        <a class="qa-btn" href="instructions.html">
+                            <span class="qa-icon" style="color: #f59e0b;">📋</span>
+                            <div class="qa-text">
+                                <strong>Mock Tests</strong>
+                                <span>Practice now</span>
+                            </div>
+                        </a>
+
+                        <a class="qa-btn" href="profile.html">
+                            <span class="qa-icon" style="color: #8b5cf6;">📊</span>
+                            <div class="qa-text">
+                                <strong>Performance</strong>
+                                <span>View detailed stats</span>
+                            </div>
+                        </a>
+
+                        <a class="qa-btn" href="courses.html">
+                            <span class="qa-icon" style="color: #ef4444;">🔖</span>
+                            <div class="qa-text">
+                                <strong>Bookmarks</strong>
+                                <span>View saved items</span>
+                            </div>
+                        </a>
+
+                        <a class="qa-btn" href="support.html">
+                            <span class="qa-icon" style="color: #06b6d4;">🎧</span>
+                            <div class="qa-text">
+                                <strong>Help & Support</strong>
+                                <span>Get assistance</span>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="need-help-banner">
+                        <div class="nh-left">
+                            <span style="font-size: 18px;">💡</span>
+                            <div style="font-size: 11px; line-height: 1.3;">
+                                <strong style="display: block; color: #0f172a;">Need Help?</strong>
+                                <span style="color: #64748b;">Our support team is here to help you.</span>
+                            </div>
+                        </div>
+                        <a href="support.html" class="btn-contact-support">Contact Support →</a>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+        </div>
+
+        <!-- FOOTER STATUS BAR (MATCHES ALL PAGES) -->
+        <footer class="footer-status-bar">
+            <div class="footer-left">
+                <div class="footer-status-item">
+                    <div class="status-dot-circle dot-green">📶</div>
+                    <div class="status-label-group">
+                        <strong>Network</strong>
+                        <span id="lbl-net-status">Connected (Ping: 18 ms • Jitter: 2 ms)</span>
+                    </div>
+                </div>
+                <div class="footer-status-item">
+                    <div class="status-dot-circle dot-green">🛡️</div>
+                    <div class="status-label-group">
+                        <strong>System Secure</strong>
+                        <span id="lbl-sec-status">All good (No threats detected)</span>
+                    </div>
+                </div>
+            </div>
+            <button class="btn-footer-close-app" id="btn-footer-exit" onclick="exitApplication()">
+                <div class="power-circle-icon">⏻</div>
+                <div class="close-app-text-group">
+                    <strong>Close Application</strong>
+                    <span>App will close and exam will not start</span>
+                </div>
+            </button>
+        </footer>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script>
+        const baseUrl = window.EXAMFORT_ENV?.API_BASE_URL || 'http://localhost:5000';
+
+        function exitApplication() {
+            if (window.electronAPI?.exitApp) {
+                window.electronAPI.exitApp();
+            } else {
+                window.close();
+            }
+        }
+
+        function logoutUser(e) {
+            if (e) e.preventDefault();
+            try {
+                sessionStorage.clear();
+                localStorage.removeItem('examfort_session');
+                localStorage.removeItem('exam_candidate');
+                localStorage.removeItem('examfort_user');
+                localStorage.removeItem('exam_start_mode');
+                localStorage.removeItem('examfort_app_session_v2');
+            } catch (_) {}
+            window.location.href = 'index.html?logout=1';
+        }
+
+        let cand = null;
+        try {
+            cand = JSON.parse(sessionStorage.getItem('exam_candidate') || 'null')
+                || JSON.parse(sessionStorage.getItem('examfort_user') || 'null')
+                || JSON.parse(localStorage.getItem('examfort_session') || '{}').candidate
+                || JSON.parse(localStorage.getItem('examfort_app_session_v2') || '{}').candidate;
+        } catch(_) {}
+
+        if (!cand) {
+            window.location.href = './index.html';
+        }
+
+        const isAccessCodeMode = sessionStorage.getItem('exam_start_mode') === 'access_code' ||
+                                 localStorage.getItem('exam_start_mode') === 'access_code' ||
+                                 (cand && cand.startMode === 'access_code');
+
+        if (isAccessCodeMode) {
+            const targetCode = cand?.examCode || sessionStorage.getItem('target_exam_code') || '';
+            window.location.replace(`exam_details.html?code=${encodeURIComponent(targetCode)}`);
+        }
+
+        let candId = cand ? (cand.student_id || cand.id || cand.userId) : null;
+
+        // Dynamic Repeating Watermark
+        function setDynamicWatermark(studentId) {
+            const wm = document.getElementById('watermark-overlay');
+            if (!wm) return;
+            const cid = studentId || candId;
+            if (!cid) return;
+            const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="320" height="220"><text x="50%" y="50%" fill="rgba(148, 163, 184, 0.16)" font-size="14.5" font-weight="700" font-family="'Plus Jakarta Sans', sans-serif" text-anchor="middle" transform="rotate(-26 160 110)">${cid}</text></svg>`;
+            wm.style.backgroundImage = `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
+            wm.style.backgroundRepeat = 'repeat';
+            wm.style.backgroundSize = '320px 220px';
+        }
+        if (candId) setDynamicWatermark(candId);
+
+        // Fetch Live Candidate Profile from MySQL
+        if (candId) {
+            fetch(`${baseUrl}/api/user/profile/${candId}`)
+                .then(r => r.json())
+                .then(data => {
+                    const p = data.profile || data;
+                    if (p && (p.full_name || p.student_id)) {
+                        if (document.getElementById('lbl-avatar')) {
+                            if (p.avatar_url && p.avatar_url.trim().length > 0) {
+                                document.getElementById('lbl-avatar').innerHTML = `<img src="${p.avatar_url}" alt="Avatar" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block;" onerror="this.onerror=null; this.parentNode.textContent='${p.full_name ? p.full_name.charAt(0) : 'A'}';" />`;
+                            } else {
+                                document.getElementById('lbl-avatar').textContent = p.full_name ? p.full_name.charAt(0) : 'A';
+                            }
+                        }
+                        setDynamicWatermark(p.student_id || candId);
+
+                        // Real-Time 6-Metric Stat Card Population from MySQL
+                        if (document.getElementById('lbl-cnt-enrolled')) document.getElementById('lbl-cnt-enrolled').textContent = p.exams_enrolled != null ? p.exams_enrolled : 0;
+                        if (document.getElementById('lbl-cnt-completed')) document.getElementById('lbl-cnt-completed').textContent = p.exams_completed != null ? p.exams_completed : 0;
+                        if (document.getElementById('lbl-cnt-upcoming')) document.getElementById('lbl-cnt-upcoming').textContent = p.exams_upcoming != null ? p.exams_upcoming : 0;
+                        if (document.getElementById('lbl-cnt-avg')) document.getElementById('lbl-cnt-avg').textContent = `${p.average_score != null ? p.average_score : 0}%`;
+                        if (document.getElementById('lbl-cnt-best')) {
+                            document.getElementById('lbl-cnt-best').textContent = `${p.best_score != null ? p.best_score : 0}%`;
+                            const bestSub = document.querySelector('#lbl-cnt-best + label + span');
+                            if (bestSub && p.best_score_title) bestSub.textContent = p.best_score_title;
+                        }
+                        if (document.getElementById('lbl-cnt-streak')) {
+                            const s = p.current_streak_days || 0;
+                            document.getElementById('lbl-cnt-streak').textContent = `${s} ${s === 1 ? 'Day' : 'Days'}`;
+                        }
+                    }
+                }).catch(() => {});
+        }
+
+        // 1. Live Laptop Real-Time Clock (Ticks every second with laptop's exact date & time)
+        function updateLiveDateTime() {
+            const el = document.getElementById('lbl-live-date');
+            if (!el) return;
+            const now = new Date();
+            const datePart = now.toLocaleDateString('en-GB', {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric'
+            });
+            const timePart = now.toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: true
+            });
+            el.textContent = `${datePart}, ${timePart}`;
+        }
+        updateLiveDateTime();
+        setInterval(updateLiveDateTime, 1000);
+
+        // Helper: Parse exam start & end datetimes accurately
+        function parseExamDateTimeRange(dateStr, timeStr) {
+            if (!dateStr) return { start: null, end: null, startTime: '10:00 AM', endTime: '12:00 PM' };
+            try {
+                let startPart = '';
+                let endPart = '';
+                if (timeStr && timeStr.includes('-')) {
+                    const parts = timeStr.split('-');
+                    startPart = parts[0].trim();
+                    endPart = parts[1].trim();
+                } else if (timeStr) {
+                    startPart = timeStr.trim();
+                    endPart = timeStr.trim();
+                }
+
+                function toTime24(tStr, defaultHour, defaultMin) {
+                    if (!tStr) return { hour: defaultHour, minute: defaultMin };
+                    const match = tStr.match(/(\d{1,2})(?::(\d{2}))?(?::(\d{2}))?\s*(AM|PM)?/i);
+                    if (!match) return { hour: defaultHour, minute: defaultMin };
+                    let h = parseInt(match[1], 10);
+                    let m = match[2] ? parseInt(match[2], 10) : 0;
+                    const meridian = match[4] ? match[4].toUpperCase() : null;
+                    if (meridian === 'PM' && h < 12) h += 12;
+                    if (meridian === 'AM' && h === 12) h = 0;
+                    return { hour: h, minute: m };
+                }
+
+                let year, month, day;
+                const isoMatch = String(dateStr).trim().match(/^(\d{4})[/-](\d{1,2})[/-](\d{1,2})/);
+                if (isoMatch) {
+                    year = parseInt(isoMatch[1], 10);
+                    month = parseInt(isoMatch[2], 10) - 1;
+                    day = parseInt(isoMatch[3], 10);
+                } else {
+                    const months = { jan:0, feb:1, mar:2, apr:3, may:4, jun:5, jul:6, aug:7, sep:8, oct:9, nov:10, dec:11 };
+                    const tokens = String(dateStr).trim().split(/[\s,/-]+/);
+                    let foundMonth = -1;
+                    let numbers = [];
+                    for (const t of tokens) {
+                        const low = t.toLowerCase().substring(0, 3);
+                        if (months[low] !== undefined) {
+                            foundMonth = months[low];
+                        } else if (/^\d+$/.test(t)) {
+                            numbers.push(parseInt(t, 10));
+                        }
+                    }
+                    if (foundMonth !== -1) {
+                        month = foundMonth;
+                        year = numbers.find(n => n > 1900) || new Date().getFullYear();
+                        day = numbers.find(n => n <= 31 && n !== year) || 1;
+                    } else {
+                        const temp = new Date(dateStr);
+                        if (!isNaN(temp.getTime())) {
+                            year = temp.getFullYear();
+                            month = temp.getMonth();
+                            day = temp.getDate();
+                        }
+                    }
+                }
+
+                if (year === undefined || month === undefined || day === undefined) {
+                    return { start: null, end: null, startTime: startPart || '10:00 AM', endTime: endPart || '12:00 PM' };
+                }
+
+                const tStart = toTime24(startPart, 0, 0);
+                const tEnd = toTime24(endPart, 23, 59);
+
+                const start = new Date(year, month, day, tStart.hour, tStart.minute, 0);
+                const end = new Date(year, month, day, tEnd.hour, tEnd.minute, 59);
+
+                return {
+                    start: isNaN(start.getTime()) ? null : start,
+                    end: isNaN(end.getTime()) ? null : end,
+                    startTime: startPart || '10:00 AM',
+                    endTime: endPart || '12:00 PM'
+                };
+            } catch (_) {
+                return { start: null, end: null, startTime: '10:00 AM', endTime: '12:00 PM' };
+            }
+        }
+
+        // Fetch Live Exam Details from MySQL & Automatically Feature Latest/Next Pending Exam
+        let currentExamData = null;
+        let currentExamHasSubmitted = false;
+        let currentExamIsExpired = false;
+        let currentExamIsFuture = false;
+        
+        async function loadDashboardExam() {
+            try {
+                // 1. Fetch Complete Exams Catalog for candidate
+                const allRes = await fetch(`${baseUrl}/api/user/exams/${candId}`);
+                const allData = await allRes.json();
+                
+                if (allData.success && Array.isArray(allData.exams) && allData.exams.length > 0) {
+                    const now = new Date();
+                    
+                    // Categorize exams
+                    const formattedExams = allData.exams.map(e => {
+                        const subKey = `exam_submitted_${candId}_${e.exam_code}`;
+                        const isSub = e.is_submitted || localStorage.getItem(subKey) === 'true';
+                        const { start, end, startTime } = parseExamDateTimeRange(e.exam_date, e.exam_time);
+                        const isFuture = start ? (now < start) : false;
+                        const isExpired = end ? (now > end) : false;
+                        
+                        return {
+                            ...e,
+                            is_submitted: isSub,
+                            is_future: isFuture,
+                            is_expired: isExpired,
+                            start_dt: start,
+                            start_time_part: startTime
+                        };
+                    });
+
+                    // 2. Find the NEXT uncompleted active/future exam (sorted by nearest start date)
+                    const pendingExams = formattedExams
+                        .filter(e => !e.is_submitted && !e.is_expired)
+                        .sort((a, b) => {
+                            if (!a.start_dt) return 1;
+                            if (!b.start_dt) return -1;
+                            return a.start_dt - b.start_dt;
+                        });
+
+                    if (pendingExams.length > 0) {
+                        // Pick the latest/next upcoming active exam!
+                        currentExamData = pendingExams[0];
+                        currentExamHasSubmitted = false;
+                        currentExamIsFuture = currentExamData.is_future;
+                        currentExamIsExpired = false;
+                    } else {
+                        // All exams either submitted or expired; pick latest submitted
+                        currentExamData = formattedExams[0];
+                        currentExamHasSubmitted = currentExamData.is_submitted;
+                        currentExamIsExpired = currentExamData.is_expired;
+                        currentExamIsFuture = false;
+                    }
+
+                    // 3. Update Featured Exam Card in UI
+                    if (currentExamData) {
+                        document.getElementById('lbl-exam-title').textContent = currentExamData.title;
+                        document.getElementById('lbl-exam-schedule').textContent = `${currentExamData.exam_date} • ${currentExamData.exam_time || '10:00 AM - 12:00 PM'}`;
+                        sessionStorage.setItem('exam_details', JSON.stringify(currentExamData));
+                    }
+
+                    // 4. Update Stat Counts
+                    const submittedCount = formattedExams.filter(e => e.is_submitted).length;
+                    const upcomingCount = formattedExams.filter(e => !e.is_submitted && !e.is_expired).length;
+
+                    if (document.getElementById('lbl-cnt-upcoming')) document.getElementById('lbl-cnt-upcoming').textContent = upcomingCount;
+                    if (document.getElementById('lbl-cnt-completed')) document.getElementById('lbl-cnt-completed').textContent = submittedCount;
+
+                    // 5. Render Additional Upcoming Exams in side widget
+                    const extraContainer = document.getElementById('extra-exams-list');
+                    if (extraContainer && currentExamData) {
+                        const otherPending = pendingExams.filter(e => e.exam_code !== currentExamData.exam_code);
+                        if (otherPending.length > 0) {
+                            extraContainer.innerHTML = otherPending.slice(0, 2).map(e => `
+                                <div class="upcoming-exam-item" style="margin-top: 10px; border-top: 1px dashed #e2e8f0; padding-top: 10px;">
+                                    <div class="ue-left">
+                                        <div class="ue-icon">${e.icon || '📅'}</div>
+                                        <div class="ue-info">
+                                            <strong>${e.title}</strong>
+                                            <span>${e.exam_date} • ${e.exam_time || '10:00 AM'}</span>
+                                        </div>
+                                    </div>
+                                    ${e.is_future 
+                                        ? `<span class="btn-start-soon" style="background:#f8fafc; color:#64748b; border:1px solid #e2e8f0; font-size:11px; padding:5px 10px; cursor:not-allowed;">🔒 ${e.exam_date}</span>`
+                                        : `<a href="instructions.html?code=${e.exam_code}" class="btn-start-soon btn-start-active">Start Exam</a>`
+                                    }
+                                </div>
+                            `).join('');
+                        } else {
+                            extraContainer.innerHTML = '';
+                        }
+                    }
+                }
+
+                renderUpcomingExamsView();
+            } catch (err) {
+                console.error('Error loading dynamic exam on dashboard:', err);
+                renderUpcomingExamsView();
+            }
+        }
+
+        function renderUpcomingExamsView() {
+            const filter = document.getElementById('sel-exam-filter')?.value || 'all';
+            const cardPrimary = document.getElementById('card-primary-exam');
+            const btn = document.getElementById('btn-start-primary');
+            const scheduleEl = document.getElementById('lbl-exam-schedule');
+
+            if (!cardPrimary || !btn) return;
+
+            // Remove any existing empty message
+            const existingEmpty = document.getElementById('empty-upcoming-placeholder');
+            if (existingEmpty) existingEmpty.remove();
+
+            if (currentExamHasSubmitted) {
+                // Exam is Completed!
+                btn.textContent = 'Completed ✓';
+                btn.className = 'btn-start-soon btn-exam-completed-blur';
+                btn.style.filter = 'none';
+                btn.style.opacity = '0.9';
+                btn.style.background = '#10b981';
+                btn.style.borderColor = '#10b981';
+                btn.style.color = '#ffffff';
+                btn.removeAttribute('href');
+                btn.style.cursor = 'default';
+                btn.style.pointerEvents = 'none';
+
+                if (scheduleEl && currentExamData) {
+                    scheduleEl.innerHTML = `${currentExamData.exam_date} • <span class="badge-exam-status badge-status-completed">Completed ✓</span>`;
+                }
+
+                if (filter === 'active') {
+                    cardPrimary.style.display = 'none';
+                    const emptyMsg = document.createElement('div');
+                    emptyMsg.id = 'empty-upcoming-placeholder';
+                    emptyMsg.className = 'empty-upcoming-msg';
+                    emptyMsg.innerHTML = `
+                        <div style="font-size: 26px; margin-bottom: 6px;">🎉</div>
+                        <strong style="display:block; font-size: 13px; color:#0f172a; margin-bottom: 2px;">All Active Exams Completed!</strong>
+                        <span style="display:block; font-size: 11px; color:#64748b;">You have completed your active assessments.</span>
+                    `;
+                    cardPrimary.parentNode.insertBefore(emptyMsg, cardPrimary);
+                } else {
+                    cardPrimary.style.display = 'flex';
+                }
+            } else if (currentExamIsFuture) {
+                // Scheduled in Future: Locked
+                btn.textContent = `🔒 Starts on ${currentExamData.exam_date} (${currentExamData.start_time_part || '10:00 AM'})`;
+                btn.className = 'btn-start-soon btn-exam-disabled-blur';
+                btn.style.filter = 'none';
+                btn.style.opacity = '1';
+                btn.style.background = '#f8fafc';
+                btn.style.borderColor = '#cbd5e1';
+                btn.style.color = '#64748b';
+                btn.removeAttribute('href');
+                btn.style.pointerEvents = 'none';
+                btn.style.cursor = 'not-allowed';
+
+                if (scheduleEl && currentExamData) {
+                    scheduleEl.innerHTML = `${currentExamData.exam_date} • <span class="badge-exam-status" style="background:#fef3c7; color:#b45309; border:1px solid #fde68a;">⏳ Scheduled</span>`;
+                }
+                cardPrimary.style.display = 'flex';
+            } else if (currentExamIsExpired) {
+                // Time is Over / Expired!
+                btn.textContent = 'Time Over ⌛';
+                btn.className = 'btn-start-soon btn-exam-disabled-blur';
+                btn.style.filter = 'blur(0.8px)';
+                btn.style.opacity = '0.6';
+                btn.style.background = '#94a3b8';
+                btn.style.borderColor = '#94a3b8';
+                btn.style.color = '#ffffff';
+                btn.removeAttribute('href');
+                btn.style.pointerEvents = 'none';
+                btn.style.cursor = 'not-allowed';
+
+                if (scheduleEl && currentExamData) {
+                    scheduleEl.innerHTML = `${currentExamData.exam_date} • <span class="badge-exam-status badge-status-expired">Time Expired ⌛</span>`;
+                }
+
+                if (filter === 'active') {
+                    cardPrimary.style.display = 'none';
+                    const emptyMsg = document.createElement('div');
+                    emptyMsg.id = 'empty-upcoming-placeholder';
+                    emptyMsg.className = 'empty-upcoming-msg';
+                    emptyMsg.innerHTML = `
+                        <div style="font-size: 26px; margin-bottom: 6px;">⌛</div>
+                        <strong style="display:block; font-size: 13px; color:#0f172a; margin-bottom: 2px;">No Active Exams</strong>
+                        <span style="display:block; font-size: 11px; color:#64748b;">The exam window has ended.</span>
+                    `;
+                    cardPrimary.parentNode.insertBefore(emptyMsg, cardPrimary);
+                } else {
+                    cardPrimary.style.display = 'flex';
+                }
+            } else {
+                // Active and pending right now!
+                btn.textContent = 'Start Exam →';
+                btn.className = 'btn-start-soon btn-start-active';
+                btn.style.filter = 'none';
+                btn.style.opacity = '1';
+                btn.style.pointerEvents = 'auto';
+                btn.style.cursor = 'pointer';
+                btn.href = `instructions.html?code=${encodeURIComponent(currentExamData.exam_code)}`;
+                if (scheduleEl && currentExamData) {
+                    scheduleEl.innerHTML = `${currentExamData.exam_date} • <span class="badge-exam-status badge-status-active">● Active</span>`;
+                }
+
+                if (filter === 'completed') {
+                    cardPrimary.style.display = 'none';
+                    const emptyMsg = document.createElement('div');
+                    emptyMsg.id = 'empty-upcoming-placeholder';
+                    emptyMsg.className = 'empty-upcoming-msg';
+                    emptyMsg.innerHTML = `
+                        <div style="font-size: 26px; margin-bottom: 6px;">📋</div>
+                        <strong style="display:block; font-size: 13px; color:#0f172a; margin-bottom: 2px;">No Completed Tests</strong>
+                        <span style="display:block; font-size: 11px; color:#64748b;">You haven't completed this test yet.</span>
+                    `;
+                    cardPrimary.parentNode.insertBefore(emptyMsg, cardPrimary);
+                } else {
+                    cardPrimary.style.display = 'flex';
+                }
+            }
+        }
+
+        document.getElementById('sel-exam-filter')?.addEventListener('change', renderUpcomingExamsView);
+        loadDashboardExam();
+
+        // Background Threat Detection Monitor
+        if (window.electronAPI?.scanProcesses) {
+            let isScanning = false;
+            async function scanSec() {
+                if (isScanning) return;
+                try {
+                    const threats = await window.electronAPI.scanProcesses() || [];
+                    const statusEl = document.getElementById('lbl-sec-status');
+                    if (!statusEl) return;
+                    if (threats.length === 0) {
+                        statusEl.textContent = 'All good (No threats detected)';
+                        statusEl.style.color = '#16a34a';
+                    } else {
+                        statusEl.textContent = `${threats.length} prohibited app(s) detected!`;
+                        statusEl.style.color = '#dc2626';
+                    }
+                } catch(_) {}
+            }
+            scanSec();
+            setInterval(scanSec, 8000);
+        }
+
+        // === FETCH RECENT ACTIVITY FROM MYSQL ===
+        if (candId) {
+            fetch(`${baseUrl}/api/user/activities/${candId}`)
+                .then(r => r.json())
+                .then(data => {
+                    const acts = data.activities || data;
+                    if (Array.isArray(acts) && acts.length > 0) {
+                        const container = document.querySelector('.activity-timeline');
+                        if (!container) return;
+                        container.innerHTML = acts.slice(0, 5).map(a => {
+                            const icon = a.icon || (a.type === 'EXAM' ? '✓' : '📄');
+                            const bg = a.type === 'EXAM' ? '#dcfce7' : (a.type === 'COURSE' ? '#ede9fe' : '#f1f5f9');
+                            const col = a.type === 'EXAM' ? '#16a34a' : (a.type === 'COURSE' ? '#6366f1' : '#64748b');
+                            return `<div class="activity-item">
+                                <div class="act-icon" style="background:${bg}; color:${col};">${icon}</div>
+                                <div class="act-info">
+                                    <strong>${a.activity_title}</strong>
+                                    <span>${a.score_info ? a.score_info + ' • ' : ''}${a.time_text}</span>
+                                </div>
+                            </div>`;
+                        }).join('');
+                    }
+                }).catch(() => {});
+        }
+
+        // === FETCH COURSES (Continue Learning) FROM MYSQL ===
+        fetch(`${baseUrl}/api/courses`)
+            .then(r => r.json())
+            .then(data => {
+                const courses = Array.isArray(data) ? data : (data.courses || []);
+                if (courses.length > 0) {
+                    const container = document.querySelector('.learning-items-list');
+                    if (!container) return;
+                    const colors = ['#10b981','#10b981','#f59e0b','#3b82f6','#8b5cf6'];
+                    container.innerHTML = courses.slice(0, 4).map((c, i) => `
+                        <div class="learning-row-item">
+                            <div class="lr-left">
+                                <div class="lr-icon" style="background:${c.color || '#ede9fe'}20; color:${c.color || '#6366f1'};">${c.icon || '📚'}</div>
+                                <div class="lr-meta">
+                                    <div class="lr-title-row">
+                                        <strong>${c.title}</strong>
+                                        <span>${c.progress_percent || 0}%</span>
+                                    </div>
+                                    <div class="lr-progress-bar">
+                                        <div class="lr-progress-fill" style="width: ${c.progress_percent || 0}%; background: ${colors[i] || '#10b981'};"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <a href="course_details.html?id=${c.course_id}" class="btn-continue-pill">Continue</a>
+                        </div>
+                    `).join('');
+
+                    // Update My Progress donut with course data
+                    const total = courses.length;
+                    const completed = courses.filter(c => (c.progress_percent || 0) >= 100).length;
+                    const inProgress = courses.filter(c => (c.progress_percent || 0) > 0 && (c.progress_percent || 0) < 100).length;
+                    const notStarted = total - completed - inProgress;
+                    const overallPct = total > 0 ? Math.round(courses.reduce((s, c) => s + (c.progress_percent || 0), 0) / total) : 0;
+
+                    const pctEl = document.getElementById('lbl-progress-pct');
+                    const donutOuter = document.getElementById('donut-progress-outer');
+                    if (pctEl) pctEl.textContent = `${overallPct}%`;
+                    if (donutOuter) donutOuter.style.background = `conic-gradient(#4f46e5 0% ${overallPct}%, #e2e8f0 ${overallPct}% 100%)`;
+
+                    const compPct = total > 0 ? Math.round(completed / total * 100) : 0;
+                    const progPct = total > 0 ? Math.round(inProgress / total * 100) : 0;
+                    const notPct = 100 - compPct - progPct;
+                    const compEl = document.getElementById('lbl-donut-completed');
+                    const progEl = document.getElementById('lbl-donut-progress');
+                    const notEl = document.getElementById('lbl-donut-notstarted');
+                    if (compEl) compEl.textContent = `${completed} (${compPct}%)`;
+                    if (progEl) progEl.textContent = `${inProgress} (${progPct}%)`;
+                    if (notEl) notEl.textContent = `${notStarted} (${notPct}%)`;
+                }
+            }).catch(() => {});
+
+
+
+        // === DRAW PERFORMANCE CHART FROM MYSQL ACTIVITIES ===
+        if (candId) {
+            fetch(`${baseUrl}/api/user/activities/${candId}`)
+                .then(r => r.json())
+                .then(data => {
+                    const acts = (data.activities || data || []).filter(a => a.score_pct != null || a.score_info);
+                    if (acts.length < 1) return;
+
+                    // Extract score percentages (max 6 points)
+                    const pts = acts.slice(0, 6).reverse().map(a => {
+                        let pct = parseFloat(a.score_pct);
+                        if (isNaN(pct) && a.score_info) {
+                            const m = a.score_info.match(/(\d+)/); pct = m ? parseInt(m[1]) : 60;
+                        }
+                        return { pct: isNaN(pct) ? 60 : Math.min(100, Math.max(0, pct)), label: a.activity_title, time: a.time_text };
+                    });
+
+                    const n = pts.length;
+                    const xStart = 40, xEnd = 300, yMin = 15, yMax = 100;
+                    const xs = pts.map((_, i) => Math.round(xStart + (i / Math.max(n-1,1)) * (xEnd - xStart)));
+                    const ys = pts.map(p => Math.round(yMax - (p.pct / 100) * (yMax - yMin)));
+
+                    // Build SVG points string
+                    const ptsStr = xs.map((x, i) => `${x},${ys[i]}`).join(' ');
+                    const areaStr = ptsStr + ` ${xs[xs.length-1]},${yMax} ${xs[0]},${yMax}`;
+
+                    document.getElementById('chart-area').setAttribute('points', areaStr);
+                    document.getElementById('chart-line').setAttribute('points', ptsStr);
+
+                    // Draw dots
+                    const dotsG = document.getElementById('chart-dots');
+                    dotsG.innerHTML = xs.map((x, i) => {
+                        const isLast = i === xs.length - 1;
+                        return `<circle cx="${x}" cy="${ys[i]}" r="${isLast ? 4.5 : 3.5}" fill="${isLast ? '#4f46e5' : '#ffffff'}" stroke="#4f46e5" stroke-width="2"><title>${pts[i].label}: ${pts[i].pct}%</title></circle>`;
+                    }).join('');
+
+                    // X labels: real dates/times from MySQL
+                    const xLabels = document.getElementById('chart-x-labels');
+                    xLabels.innerHTML = pts.map(p => `<span>${p.time || ''}</span>`).join('');
+
+                    // Latest test info from MySQL
+                    const latest = acts[0];
+                    const latestName = document.getElementById('lbl-latest-test-name');
+                    const latestScore = document.getElementById('lbl-latest-test-score');
+                    if (latestName) latestName.textContent = latest.activity_title || 'N/A';
+                    if (latestScore && latest.score_info) latestScore.textContent = latest.score_info;
+                })
+                .catch(() => {
+                    // Fallback: keep static chart
+                });
+        }
+
+        document.getElementById('btn-footer-exit')?.addEventListener('click', exitApplication);
+    </script>
+</body>
+</html>

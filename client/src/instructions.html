@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Important Instructions - ExamFort</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Plus Jakarta Sans', -apple-system, sans-serif; background: #f8fafc; color: #0f172a; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+        
+        .instruct-window { display: flex; flex-direction: column; height: 100vh; width: 100vw; overflow: hidden; background: #f8fafc; }
+        .instruct-scroll { flex: 1; overflow-y: auto; padding: 22px 36px 28px 36px; }
+        
+        /* BACK NAV */
+        .btn-back-nav { display: inline-flex; align-items: center; gap: 8px; color: #4f46e5; font-size: 13px; font-weight: 700; text-decoration: none; margin-bottom: 16px; cursor: pointer; transition: transform 0.15s; }
+        .btn-back-nav:hover { transform: translateX(-3px); }
+        
+        /* TOP HEADER ROW (MATCHES IMAGE 1) */
+        .instruct-header-row { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-bottom: 22px; }
+        .header-left-col { display: flex; align-items: center; gap: 16px; }
+        .cal-icon-large-box { width: 54px; height: 54px; border-radius: 14px; background: #ede9fe; color: #4f46e5; display: flex; align-items: center; justify-content: center; font-size: 26px; flex-shrink: 0; }
+        .exam-cat-pill { display: inline-block; background: #ede9fe; color: #4f46e5; font-size: 11px; font-weight: 800; padding: 3px 10px; border-radius: 6px; margin-bottom: 4px; }
+        .instruct-title { font-size: 22px; font-weight: 800; color: #0f172a; line-height: 1.2; margin-bottom: 4px; }
+        .instruct-sub { font-size: 13px; color: #64748b; }
+        
+        /* CANDIDATE PILL TOP RIGHT */
+        .cand-info-pill-box { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 12px 20px; display: flex; align-items: center; gap: 28px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
+        .cand-info-item { display: flex; align-items: center; gap: 12px; }
+        .cand-info-icon-sq { width: 34px; height: 34px; border-radius: 50%; background: #ede9fe; color: #4f46e5; display: flex; align-items: center; justify-content: center; font-size: 15px; }
+        .cand-info-texts label { display: block; font-size: 10.5px; color: #64748b; margin-bottom: 2px; }
+        .cand-info-texts strong { display: block; font-size: 13px; font-weight: 800; color: #0f172a; }
+        
+        /* MAIN 2 COLUMNS */
+        .instruct-main-grid { display: grid; grid-template-columns: 1fr 380px; gap: 24px; margin-bottom: 20px; }
+        
+        /* LEFT CARD: GENERAL INSTRUCTIONS */
+        .general-instruct-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
+        .general-instruct-card h3 { font-size: 15px; font-weight: 800; color: #0f172a; margin-bottom: 16px; }
+        .instructions-list-container { display: flex; flex-direction: column; }
+        .instruction-line-row { display: flex; align-items: center; gap: 14px; padding: 12px 0; border-bottom: 1px solid #f1f5f9; }
+        .instruction-line-row:last-child { border-bottom: none; }
+        .inst-icon-round { width: 34px; height: 34px; border-radius: 50%; background: #ede9fe; color: #4f46e5; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
+        .inst-text { font-size: 13px; color: #334155; font-weight: 600; line-height: 1.4; }
+        
+        /* RIGHT CARD: BEFORE YOU START */
+        .before-start-card { background: #ffffff; border: 1.5px solid #ede9fe; border-radius: 16px; padding: 24px; box-shadow: 0 1px 3px rgba(79,70,229,0.04); display: flex; flex-direction: column; }
+        .before-start-header { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
+        .before-start-header .info-i { width: 22px; height: 22px; border-radius: 50%; background: #4f46e5; color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; }
+        .before-start-header h3 { font-size: 15px; font-weight: 800; color: #0f172a; margin: 0; }
+        
+        .checklist-container { display: flex; flex-direction: column; gap: 14px; margin-bottom: 24px; }
+        .checklist-item { display: flex; align-items: center; gap: 12px; font-size: 13px; color: #1e293b; font-weight: 600; }
+        .check-green-circle { width: 20px; height: 20px; border-radius: 50%; background: #10b981; color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; flex-shrink: 0; }
+        
+        /* AGREEMENT CHECKBOX */
+        .agreement-box-row { display: flex; align-items: center; gap: 10px; padding: 14px 0; border-top: 1px solid #f1f5f9; margin-bottom: 14px; }
+        .agreement-checkbox-input { width: 18px; height: 18px; accent-color: #4f46e5; cursor: pointer; }
+        .agreement-label { font-size: 12.5px; font-weight: 700; color: #0f172a; cursor: pointer; user-select: none; }
+        
+        /* START EXAM BUTTON */
+        .btn-start-exam-main { width: 100%; background: #4f46e5; color: #ffffff; border: none; border-radius: 10px; padding: 14px; font-size: 14.5px; font-weight: 800; cursor: pointer; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 12px rgba(79,70,229,0.3); transition: all 0.15s; margin-top: auto; }
+        .btn-start-exam-main:hover { background: #4338ca; }
+        .btn-start-exam-main:disabled { background: #cbd5e1; color: #94a3b8; cursor: not-allowed; box-shadow: none; }
+        .btn-already-completed { background: #10b981 !important; color: #ffffff !important; box-shadow: 0 4px 12px rgba(16,185,129,0.3) !important; cursor: pointer !important; }
+        
+        /* BOTTOM ROW: SYSTEM REQUIREMENTS */
+        .sys-req-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 20px 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
+        .sys-req-card h3 { font-size: 14.5px; font-weight: 800; color: #0f172a; margin-bottom: 14px; }
+        .sys-req-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+        .sys-req-item { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; }
+        .sys-req-left { display: flex; align-items: center; gap: 12px; }
+        .sys-req-icon-box { width: 34px; height: 34px; border-radius: 50%; background: #ede9fe; color: #4f46e5; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+        .sys-req-texts label { display: block; font-size: 11px; color: #64748b; margin-bottom: 2px; }
+        .sys-req-texts strong { display: block; font-size: 12.5px; font-weight: 800; color: #0f172a; }
+        .check-badge-green { width: 18px; height: 18px; border-radius: 50%; background: #dcfce7; color: #15803d; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; }
+        
+        /* FOOTER STATUS BAR */
+        .footer-status-bar { height: 56px; min-height: 56px; background: #ffffff; border-top: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; padding: 0 32px; }
+        .footer-left { display: flex; align-items: center; gap: 32px; }
+        .footer-status-item { display: flex; align-items: center; gap: 10px; }
+        .status-dot-circle { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 15px; }
+        .dot-green { background: #dcfce7; color: #16a34a; }
+        .status-label-group strong { display: block; font-size: 12px; font-weight: 800; color: #0f172a; }
+        .status-label-group span { display: block; font-size: 10.5px; color: #16a34a; font-weight: 600; }
+        
+        .btn-footer-close-app { display: flex; align-items: center; gap: 10px; background: none; border: 1px solid #fecaca; border-radius: 10px; padding: 8px 16px; cursor: pointer; transition: all 0.15s; }
+        .btn-footer-close-app:hover { background: #fef2f2; border-color: #ef4444; }
+        .power-circle-icon { width: 28px; height: 28px; border-radius: 50%; background: #fee2e2; color: #dc2626; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold; }
+        .close-app-text-group { text-align: left; }
+        .close-app-text-group strong { display: block; font-size: 12px; font-weight: 800; color: #dc2626; }
+        .close-app-text-group span { display: block; font-size: 10px; color: #ef4444; }
+
+        /* ═══════════════════════════════════════════════════
+           FACE VERIFICATION MODAL STYLES
+        ═══════════════════════════════════════════════════ */
+        .face-verify-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(8px); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .face-verify-card { background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 24px; padding: 28px 32px; width: 560px; max-width: 95vw; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); display: flex; flex-direction: column; }
+        .face-verify-header { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; border-bottom: 1px solid #f1f5f9; padding-bottom: 14px; }
+        .header-badge-icon { width: 44px; height: 44px; border-radius: 12px; background: #ede9fe; color: #4f46e5; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+        .face-verify-header h2 { font-size: 17.5px; font-weight: 800; color: #0f172a; margin-bottom: 3px; }
+        .face-verify-header p { font-size: 12px; color: #64748b; line-height: 1.4; }
+        
+        .face-scanner-box { position: relative; width: 100%; height: 320px; background: #0f172a; border-radius: 18px; overflow: hidden; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; border: 2px solid #334155; }
+        #face-video-feed { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+        .face-captured-img { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+        
+        /* Reticle & Scanner Line */
+        .face-reticle-oval { position: absolute; width: 190px; height: 240px; border: 2.5px dashed rgba(99, 102, 241, 0.85); border-radius: 50%; box-shadow: 0 0 0 9999px rgba(15, 23, 42, 0.45); pointer-events: none; transition: all 0.3s; }
+        .face-reticle-oval.verified { border: 3px solid #10b981; box-shadow: 0 0 25px rgba(16, 185, 129, 0.8), 0 0 0 9999px rgba(15, 23, 42, 0.5); }
+        .laser-scan-line { position: absolute; left: 5%; width: 90%; height: 3px; background: linear-gradient(90deg, transparent, #818cf8, #4f46e5, #818cf8, transparent); box-shadow: 0 0 12px #6366f1; border-radius: 50%; animation: scanLaser 2.2s ease-in-out infinite alternate; }
+        @keyframes scanLaser {
+            0% { top: 10%; opacity: 0.3; }
+            50% { opacity: 1; }
+            100% { top: 90%; opacity: 0.3; }
+        }
+        
+        .face-status-chip { position: absolute; bottom: 14px; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(6px); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 20px; padding: 6px 14px; display: flex; align-items: center; gap: 8px; font-size: 11.5px; font-weight: 700; color: #ffffff; }
+        .pulse-dot { width: 8px; height: 8px; border-radius: 50%; background: #10b981; animation: pulseGlow 1.5s infinite; }
+        @keyframes pulseGlow { 0% { transform: scale(0.9); opacity: 0.7; } 50% { transform: scale(1.3); opacity: 1; } 100% { transform: scale(0.9); opacity: 0.7; } }
+        
+        .face-feedback-box { padding: 12px 16px; border-radius: 12px; font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 10px; margin-bottom: 18px; line-height: 1.4; }
+        .face-feedback-box.info { background: #eef2ff; color: #4338ca; border: 1px solid #c7d2fe; }
+        .face-feedback-box.success { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
+        .face-feedback-box.error { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+        
+        .face-actions-row { display: flex; align-items: center; justify-content: flex-end; gap: 12px; }
+        .btn-cancel-verify { background: #f1f5f9; color: #475569; border: none; border-radius: 10px; padding: 11px 20px; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.15s; }
+        .btn-cancel-verify:hover { background: #e2e8f0; color: #0f172a; }
+        .btn-capture-verify { background: #4f46e5; color: #ffffff; border: none; border-radius: 10px; padding: 11px 24px; font-size: 13.5px; font-weight: 800; cursor: pointer; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3); transition: all 0.15s; display: flex; align-items: center; gap: 8px; }
+        .btn-capture-verify:hover { background: #4338ca; }
+        .btn-capture-verify:disabled { background: #94a3b8; cursor: not-allowed; box-shadow: none; }
+        .btn-proceed-exam { background: #10b981; color: #ffffff; border: none; border-radius: 10px; padding: 11px 24px; font-size: 13.5px; font-weight: 800; cursor: pointer; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); transition: all 0.15s; }
+        .btn-proceed-exam:hover { background: #059669; }
+    </style>
+</head>
+<body>
+    <div class="instruct-window">
+        <!-- SCROLLABLE PAGE BODY -->
+        <main class="instruct-scroll">
+            
+            <a class="btn-back-nav" href="exam_details.html">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                <span>Back to Exam Details</span>
+            </a>
+
+            <!-- TOP HEADER WITH CANDIDATE CARD (MATCHES IMAGE 1) -->
+            <div class="instruct-header-row">
+                <div class="header-left-col">
+                    <div class="cal-icon-large-box">📅</div>
+                    <div>
+                        <span class="exam-cat-pill" id="lbl-exam-pill">Aptitude Assessment Test</span>
+                        <h1 class="instruct-title">Important Instructions</h1>
+                        <p class="instruct-sub">Please read all the instructions carefully before starting the exam.</p>
+                    </div>
+                </div>
+
+                <div class="cand-info-pill-box">
+                    <div class="cand-info-item">
+                        <div class="cand-info-icon-sq">👤</div>
+                        <div class="cand-info-texts">
+                            <label>Candidate ID</label>
+                            <strong id="lbl-cand-id">CAND123456</strong>
+                        </div>
+                    </div>
+                    <div class="cand-info-item">
+                        <div class="cand-info-icon-sq">🎓</div>
+                        <div class="cand-info-texts">
+                            <label>Exam</label>
+                            <strong id="lbl-exam-name">Aptitude Assessment Test</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MAIN 2 COLUMNS (GENERAL INSTRUCTIONS + BEFORE YOU START) -->
+            <div class="instruct-main-grid">
+                
+                <!-- LEFT COLUMN: GENERAL INSTRUCTIONS (FROM MYSQL) -->
+                <div class="general-instruct-card">
+                    <h3>General Instructions</h3>
+                    <div class="instructions-list-container" id="container-general-instructions">
+                        <!-- Loaded dynamically from MySQL exam_instructions table -->
+                        <div class="instruction-line-row">
+                            <div class="inst-icon-round">📶</div>
+                            <div class="inst-text">Ensure a stable internet connection throughout the exam.</div>
+                        </div>
+                        <div class="instruction-line-row">
+                            <div class="inst-icon-round">💻</div>
+                            <div class="inst-text">Do not switch tabs or open any other application.</div>
+                        </div>
+                        <div class="instruction-line-row">
+                            <div class="inst-icon-round">🛡️</div>
+                            <div class="inst-text">ExamFort Secure Lockdown mode must remain active throughout.</div>
+                        </div>
+                        <div class="instruction-line-row">
+                            <div class="inst-icon-round">👤</div>
+                            <div class="inst-text">You will be monitored throughout the exam session.</div>
+                        </div>
+                        <div class="instruction-line-row">
+                            <div class="inst-icon-round">⚠️</div>
+                            <div class="inst-text">Any malpractice or unfair means will lead to disqualification.</div>
+                        </div>
+                        <div class="instruction-line-row">
+                            <div class="inst-icon-round">⏱️</div>
+                            <div class="inst-text">The exam timer will start automatically when you start the exam.</div>
+                        </div>
+                        <div class="instruction-line-row">
+                            <div class="inst-icon-round">💾</div>
+                            <div class="inst-text">Your answers will be auto-saved. You can not edit an answer once submitted.</div>
+                        </div>
+                        <div class="instruction-line-row">
+                            <div class="inst-icon-round">ℹ️</div>
+                            <div class="inst-text">Follow all the instructions carefully to avoid technical issues.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RIGHT COLUMN: BEFORE YOU START CHECKLIST (MATCHES IMAGE 1) -->
+                <div class="before-start-card">
+                    <div class="before-start-header">
+                        <div class="info-i">i</div>
+                        <h3>Before You Start</h3>
+                    </div>
+
+                    <div class="checklist-container" id="container-checklist">
+                        <div class="checklist-item">
+                            <div class="check-green-circle">✓</div>
+                            <span>I have a stable internet connection</span>
+                        </div>
+                        <div class="checklist-item">
+                            <div class="check-green-circle">✓</div>
+                            <span>I am in a quiet, distraction-free environment</span>
+                        </div>
+                        <div class="checklist-item">
+                            <div class="check-green-circle">✓</div>
+                            <span>I have closed all background applications and tabs</span>
+                        </div>
+                        <div class="checklist-item">
+                            <div class="check-green-circle">✓</div>
+                            <span>I will not switch tabs or open other apps</span>
+                        </div>
+                        <div class="checklist-item">
+                            <div class="check-green-circle">✓</div>
+                            <span>I have read and agree to all the instructions</span>
+                        </div>
+                    </div>
+
+                    <!-- SINGLE-ATTEMPT ENFORCEMENT & AGREEMENT -->
+                    <div id="section-agreement">
+                        <div class="agreement-box-row">
+                            <input type="checkbox" id="chk-agree" class="agreement-checkbox-input">
+                            <label for="chk-agree" class="agreement-label">I agree to all the instructions above</label>
+                        </div>
+                        <button class="btn-start-exam-main" id="btn-start-exam" disabled onclick="startAssessmentDirectly()">
+                            <span>Start Exam</span>
+                            <span>→</span>
+                        </button>
+                    </div>
+
+                    <!-- ALREADY COMPLETED STATE (Strict Single-Attempt) -->
+                    <div id="section-already-submitted" style="display: none; margin-top: auto;">
+                        <div style="background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 12px; font-size: 12px; color: #065f46; font-weight: 700; margin-bottom: 12px; line-height: 1.4;">
+                            ✓ You have already submitted this exam. Each candidate can attempt this examination only once.
+                        </div>
+                        <a href="completed.html" class="btn-start-exam-main btn-already-completed" style="text-align: center; filter: blur(0.5px); opacity: 0.85;">
+                            <span>Already Submitted (View Results)</span>
+                            <span>✓</span>
+                        </a>
+                    </div>
+
+                    <!-- NOT STARTED YET STATE (Scheduled in Future) -->
+                    <div id="section-not-started-yet" style="display: none; margin-top: auto;">
+                        <div id="lbl-not-started-msg" style="background: #fffbeb; border: 1.5px solid #fde68a; border-radius: 8px; padding: 12px; font-size: 12px; color: #92400e; font-weight: 700; margin-bottom: 12px; line-height: 1.4;">
+                            ⏳ This examination is scheduled for a future date/time. You cannot start the exam before the scheduled time.
+                        </div>
+                        <button class="btn-start-exam-main" style="background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; cursor: not-allowed;" disabled>
+                            <span id="lbl-future-btn-text">🔒 Exam Scheduled (Locked)</span>
+                        </button>
+                    </div>
+
+                    <!-- TIME EXPIRED STATE -->
+                    <div id="section-time-expired" style="display: none; margin-top: auto;">
+                        <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 12px; font-size: 12px; color: #991b1b; font-weight: 700; margin-bottom: 12px; line-height: 1.4;">
+                            ⌛ The scheduled time window for this examination has ended. You can no longer start this exam.
+                        </div>
+                        <button class="btn-start-exam-main" style="background: #94a3b8; filter: blur(0.8px); opacity: 0.6; cursor: not-allowed;" disabled>
+                            <span>Exam Window Ended ⌛</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BOTTOM ROW: SYSTEM REQUIREMENTS (MATCHES IMAGE 1) -->
+            <div class="sys-req-card">
+                <h3>System Requirements</h3>
+                <div class="sys-req-grid" id="container-sys-req">
+                    <div class="sys-req-item">
+                        <div class="sys-req-left">
+                            <div class="sys-req-icon-box">💻</div>
+                            <div class="sys-req-texts">
+                                <label>Application Platform</label>
+                                <strong>ExamFort Secure Client</strong>
+                            </div>
+                        </div>
+                        <div class="check-badge-green">✓</div>
+                    </div>
+
+                    <div class="sys-req-item" id="card-req-security">
+                        <div class="sys-req-left">
+                            <div class="sys-req-icon-box" id="icon-req-security">🛡️</div>
+                            <div class="sys-req-texts">
+                                <label id="lbl-req-sec-title">Security & Verification</label>
+                                <strong id="lbl-req-sec-value">Lockdown Active</strong>
+                            </div>
+                        </div>
+                        <div class="check-badge-green">✓</div>
+                    </div>
+
+                    <div class="sys-req-item">
+                        <div class="sys-req-left">
+                            <div class="sys-req-icon-box">📶</div>
+                            <div class="sys-req-texts">
+                                <label>Internet Connection</label>
+                                <strong>Min. 2 Mbps (Stable)</strong>
+                            </div>
+                        </div>
+                        <div class="check-badge-green">✓</div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- FOOTER STATUS BAR -->
+        <footer class="footer-status-bar">
+            <div class="footer-left">
+                <div class="footer-status-item">
+                    <div class="status-dot-circle dot-green">📶</div>
+                    <div class="status-label-group">
+                        <strong>Network</strong>
+                        <span>Connected</span>
+                    </div>
+                </div>
+                <div class="footer-status-item">
+                    <div class="status-dot-circle dot-green">🛡️</div>
+                    <div class="status-label-group">
+                        <strong>System Secure</strong>
+                        <span>All good</span>
+                    </div>
+                </div>
+            </div>
+            <button class="btn-footer-close-app" id="btn-footer-exit" onclick="exitApplication()">
+                <div class="power-circle-icon">⏻</div>
+                <div class="close-app-text-group">
+                    <strong>Close Application</strong>
+                    <span>App will close and exam will not start</span>
+                </div>
+            </button>
+        </footer>
+    </div>
+
+    <!-- HIGH-TECH FACE VERIFICATION MODAL OVERLAY -->
+    <div id="modal-face-verify" class="face-verify-overlay" style="display: none;">
+        <div class="face-verify-card">
+            <div class="face-verify-header">
+                <div class="header-badge-icon">🛡️</div>
+                <div>
+                    <h2>Candidate Biometric Face Verification</h2>
+                    <p>Live AI authentication required before entering the secure examination workspace</p>
+                </div>
+            </div>
+
+            <div class="face-scanner-box">
+                <!-- Live Video Preview -->
+                <video id="face-video-feed" autoplay playsinline muted></video>
+                <canvas id="face-capture-canvas" style="display: none;"></canvas>
+                
+                <!-- Oval Alignment Reticle & Scanning Animation -->
+                <div class="face-reticle-oval" id="face-reticle">
+                    <div class="laser-scan-line" id="laser-scan"></div>
+                </div>
+
+                <!-- Captured Snapshot Overlay -->
+                <img id="face-captured-img" class="face-captured-img" style="display: none;" alt="Captured Face" />
+
+                <!-- Scanning / Processing Badge -->
+                <div class="face-status-chip" id="face-status-chip">
+                    <span class="pulse-dot"></span>
+                    <span id="face-status-text">Align your face inside the frame</span>
+                </div>
+            </div>
+
+            <!-- Verification Progress & Feedback Alert -->
+            <div id="face-feedback-box" class="face-feedback-box info">
+                <span id="face-feedback-icon">📷</span>
+                <span id="face-feedback-msg">Please look straight at the camera and ensure good lighting.</span>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="face-actions-row">
+                <button type="button" class="btn-cancel-verify" onclick="closeFaceVerifyModal()">Cancel</button>
+                <button type="button" id="btn-capture-verify" class="btn-capture-verify" onclick="captureAndVerifyFace()">
+                    <span>📸 Capture &amp; Verify Face</span>
+                </button>
+                <button type="button" id="btn-proceed-exam" class="btn-proceed-exam" style="display: none;" onclick="proceedToAssessment()">
+                    <span>Proceed to Assessment ➔</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script>
+        const baseUrl = window.EXAMFORT_ENV?.API_BASE_URL || 'http://localhost:5000';
+
+        function exitApplication() {
+            if (window.electronAPI?.exitApp) {
+                window.electronAPI.exitApp();
+            } else {
+                window.close();
+            }
+        }
+
+        let cand = null;
+        try {
+            cand = JSON.parse(sessionStorage.getItem('exam_candidate') || 'null')
+                || JSON.parse(sessionStorage.getItem('examfort_user') || 'null')
+                || JSON.parse(localStorage.getItem('examfort_session') || '{}').candidate
+                || JSON.parse(localStorage.getItem('examfort_app_session_v2') || '{}').candidate;
+        } catch (_) {}
+
+        if (!cand) {
+            cand = {
+                id: '123',
+                student_id: 'STU123456',
+                name: 'Ankit Kumar',
+                full_name: 'Ankit Kumar',
+                email: 'ankit.kumar@gmail.com',
+                examCode: 'NAT-2026-EXAM'
+            };
+            sessionStorage.setItem('exam_candidate', JSON.stringify(cand));
+        }
+
+        const cid = cand ? (cand.student_id || cand.id || cand.userId) : 'STU123456';
+        if (document.getElementById('lbl-cand-id')) document.getElementById('lbl-cand-id').textContent = cid;
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const targetExamCode = urlParams.get('code') || cand?.examCode || 'NAT-2026-EXAM';
+
+        // Helper: Parse exam start & end datetimes accurately
+        function parseExamDateTimeRange(dateStr, timeStr) {
+            if (!dateStr) return { start: null, end: null, startTime: '10:00 AM', endTime: '12:00 PM' };
+            try {
+                let startPart = '';
+                let endPart = '';
+                if (timeStr && timeStr.includes('-')) {
+                    const parts = timeStr.split('-');
+                    startPart = parts[0].trim();
+                    endPart = parts[1].trim();
+                } else if (timeStr) {
+                    startPart = timeStr.trim();
+                    endPart = timeStr.trim();
+                }
+
+                function toTime24(tStr, defaultHour, defaultMin) {
+                    if (!tStr) return { hour: defaultHour, minute: defaultMin };
+                    const match = tStr.match(/(\d{1,2})(?::(\d{2}))?(?::(\d{2}))?\s*(AM|PM)?/i);
+                    if (!match) return { hour: defaultHour, minute: defaultMin };
+                    let h = parseInt(match[1], 10);
+                    let m = match[2] ? parseInt(match[2], 10) : 0;
+                    const meridian = match[4] ? match[4].toUpperCase() : null;
+                    if (meridian === 'PM' && h < 12) h += 12;
+                    if (meridian === 'AM' && h === 12) h = 0;
+                    return { hour: h, minute: m };
+                }
+
+                let year, month, day;
+                const isoMatch = String(dateStr).trim().match(/^(\d{4})[/-](\d{1,2})[/-](\d{1,2})/);
+                if (isoMatch) {
+                    year = parseInt(isoMatch[1], 10);
+                    month = parseInt(isoMatch[2], 10) - 1;
+                    day = parseInt(isoMatch[3], 10);
+                } else {
+                    const months = { jan:0, feb:1, mar:2, apr:3, may:4, jun:5, jul:6, aug:7, sep:8, oct:9, nov:10, dec:11 };
+                    const tokens = String(dateStr).trim().split(/[\s,/-]+/);
+                    let foundMonth = -1;
+                    let numbers = [];
+                    for (const t of tokens) {
+                        const low = t.toLowerCase().substring(0, 3);
+                        if (months[low] !== undefined) {
+                            foundMonth = months[low];
+                        } else if (/^\d+$/.test(t)) {
+                            numbers.push(parseInt(t, 10));
+                        }
+                    }
+                    if (foundMonth !== -1) {
+                        month = foundMonth;
+                        year = numbers.find(n => n > 1900) || new Date().getFullYear();
+                        day = numbers.find(n => n <= 31 && n !== year) || 1;
+                    } else {
+                        const temp = new Date(dateStr);
+                        if (!isNaN(temp.getTime())) {
+                            year = temp.getFullYear();
+                            month = temp.getMonth();
+                            day = temp.getDate();
+                        }
+                    }
+                }
+
+                if (year === undefined || month === undefined || day === undefined) {
+                    return { start: null, end: null, startTime: startPart || '10:00 AM', endTime: endPart || '12:00 PM' };
+                }
+
+                const tStart = toTime24(startPart, 0, 0);
+                const tEnd = toTime24(endPart, 23, 59);
+
+                const start = new Date(year, month, day, tStart.hour, tStart.minute, 0);
+                const end = new Date(year, month, day, tEnd.hour, tEnd.minute, 59);
+
+                return {
+                    start: isNaN(start.getTime()) ? null : start,
+                    end: isNaN(end.getTime()) ? null : end,
+                    startTime: startPart || '10:00 AM',
+                    endTime: endPart || '12:00 PM'
+                };
+            } catch (_) {
+                return { start: null, end: null, startTime: '10:00 AM', endTime: '12:00 PM' };
+            }
+        }
+
+        let currentExamDetails = null;
+        let isFaceVerificationRequired = true; // Controlled by Admin per Exam
+
+        // 1. Fetch Exam Details from MySQL
+        fetch(`${baseUrl}/api/exam/details/${targetExamCode}`)
+            .then(r => r.json())
+            .then(data => {
+                if (data.success && data.exam) {
+                    currentExamDetails = data.exam;
+                    document.getElementById('lbl-exam-pill').textContent = data.exam.title;
+                    document.getElementById('lbl-exam-name').textContent = data.exam.title;
+                    sessionStorage.setItem('exam_details', JSON.stringify(data.exam));
+                    
+                    // Check if Admin configured Face Verification for this exam
+                    isFaceVerificationRequired = data.exam.face_verification_required !== false;
+                    
+                    if (isFaceVerificationRequired) {
+                        if (document.getElementById('lbl-req-sec-title')) document.getElementById('lbl-req-sec-title').textContent = 'Biometric Security';
+                        if (document.getElementById('lbl-req-sec-value')) document.getElementById('lbl-req-sec-value').textContent = 'AI Face Match Required';
+                        if (document.getElementById('icon-req-security')) document.getElementById('icon-req-security').textContent = '📷';
+                    } else {
+                        if (document.getElementById('lbl-req-sec-title')) document.getElementById('lbl-req-sec-title').textContent = 'Security Environment';
+                        if (document.getElementById('lbl-req-sec-value')) document.getElementById('lbl-req-sec-value').textContent = 'Lockdown Active';
+                        if (document.getElementById('icon-req-security')) document.getElementById('icon-req-security').textContent = '🛡️';
+                    }
+
+                    checkAttemptStatus();
+                }
+            }).catch(() => {});
+
+        // 2. Fetch Instructions from MySQL
+        fetch(`${baseUrl}/api/exam/instructions/${targetExamCode}`)
+            .then(r => r.json())
+            .then(data => {
+                if (data.success && data.instructions && data.instructions.length > 0) {
+                    const generals = data.instructions.filter(i => i.category === 'GENERAL');
+                    if (generals.length > 0) {
+                        const container = document.getElementById('container-general-instructions');
+                        container.innerHTML = generals.map(item => `
+                            <div class="instruction-line-row">
+                                <div class="inst-icon-round">${item.icon || 'ℹ️'}</div>
+                                <div class="inst-text">${item.instruction_text}</div>
+                            </div>
+                        `).join('');
+                    }
+                }
+            }).catch(() => {});
+
+        // 3. STRICT SINGLE-ATTEMPT & EXPIRATION / FUTURE DATE CHECK
+        async function checkAttemptStatus() {
+            const subKey = `exam_submitted_${cid}_${targetExamCode}`;
+            const isSubmittedLocally = localStorage.getItem(subKey) === 'true' || sessionStorage.getItem(subKey) === 'true';
+
+            let hasSubmitted = isSubmittedLocally;
+            try {
+                const res = await fetch(`${baseUrl}/api/exam/check-attempt/${cid}/${targetExamCode}`);
+                const data = await res.json();
+                if (data && data.hasSubmitted) {
+                    hasSubmitted = true;
+                    localStorage.setItem(subKey, 'true');
+                    sessionStorage.setItem(subKey, 'true');
+                }
+            } catch (_) {}
+
+            let isFuture = false;
+            let isExpired = false;
+
+            if (currentExamDetails) {
+                const now = new Date();
+                const { start, end, startTime } = parseExamDateTimeRange(currentExamDetails.exam_date, currentExamDetails.exam_time);
+                if (start && now < start) {
+                    isFuture = true;
+                    const msgEl = document.getElementById('lbl-not-started-msg');
+                    if (msgEl) {
+                        msgEl.innerHTML = `⏳ <strong>Examination Not Started Yet:</strong> This exam is scheduled for <strong>${currentExamDetails.exam_date} at ${startTime}</strong>. You cannot start the exam before the designated schedule.`;
+                    }
+                    const btnEl = document.getElementById('lbl-future-btn-text');
+                    if (btnEl) {
+                        btnEl.textContent = `🔒 Scheduled for ${currentExamDetails.exam_date} (${startTime})`;
+                    }
+                } else if (end && now > end) {
+                    isExpired = true;
+                }
+            }
+
+            if (hasSubmitted) {
+                document.getElementById('section-agreement').style.display = 'none';
+                document.getElementById('section-time-expired').style.display = 'none';
+                document.getElementById('section-not-started-yet').style.display = 'none';
+                document.getElementById('section-already-submitted').style.display = 'block';
+                return true;
+            } else if (isFuture) {
+                document.getElementById('section-agreement').style.display = 'none';
+                document.getElementById('section-already-submitted').style.display = 'none';
+                document.getElementById('section-time-expired').style.display = 'none';
+                document.getElementById('section-not-started-yet').style.display = 'block';
+                return true;
+            } else if (isExpired) {
+                document.getElementById('section-agreement').style.display = 'none';
+                document.getElementById('section-already-submitted').style.display = 'none';
+                document.getElementById('section-not-started-yet').style.display = 'none';
+                document.getElementById('section-time-expired').style.display = 'block';
+                return true;
+            }
+            return false;
+        }
+        checkAttemptStatus();
+
+        // 4. Checkbox unlocks Start Exam button
+        const chk = document.getElementById('chk-agree');
+        const btnStart = document.getElementById('btn-start-exam');
+        chk.addEventListener('change', () => {
+            btnStart.disabled = !chk.checked;
+        });
+
+        // 5. Start Assessment Flow (Checks Admin Face Verification setting)
+        let mediaStream = null;
+
+        async function startAssessmentDirectly() {
+            const hasSubmittedOrExpired = await checkAttemptStatus();
+            if (hasSubmittedOrExpired) {
+                const isSub = localStorage.getItem(`exam_submitted_${cid}_${targetExamCode}`) === 'true';
+                if (isSub) {
+                    alert('You have already completed this exam. Re-attempts are strictly prohibited.');
+                    window.location.href = 'completed.html';
+                } else {
+                    alert('The examination window has closed. You can no longer start this exam.');
+                }
+                return;
+            }
+
+            if (!chk.checked) {
+                alert('Please read and agree to all instructions before proceeding.');
+                return;
+            }
+
+            // If Admin turned OFF face verification for this exam -> Proceed directly
+            if (!isFaceVerificationRequired) {
+                proceedToAssessment();
+                return;
+            }
+
+            // If Admin requires Face Verification -> Open Camera Modal
+            openFaceVerifyModal();
+        }
+
+        async function openFaceVerifyModal() {
+            const modal = document.getElementById('modal-face-verify');
+            modal.style.display = 'flex';
+            
+            // Reset modal state
+            document.getElementById('face-video-feed').style.display = 'block';
+            document.getElementById('face-captured-img').style.display = 'none';
+            document.getElementById('face-reticle').classList.remove('verified');
+            document.getElementById('laser-scan').style.display = 'block';
+            document.getElementById('btn-capture-verify').style.display = 'flex';
+            document.getElementById('btn-capture-verify').disabled = false;
+            document.getElementById('btn-proceed-exam').style.display = 'none';
+            
+            setFeedback('info', '📷 Please look straight at the camera and ensure good lighting.');
+            document.getElementById('face-status-text').textContent = 'Align your face inside the frame';
+
+            try {
+                mediaStream = await navigator.mediaDevices.getUserMedia({
+                    video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'user' },
+                    audio: false
+                });
+                const videoEl = document.getElementById('face-video-feed');
+                videoEl.srcObject = mediaStream;
+                await videoEl.play();
+            } catch (err) {
+                console.error('Camera access error:', err);
+                setFeedback('error', '⚠️ Camera access denied or not found. Please allow camera permissions to complete face verification.');
+                document.getElementById('btn-capture-verify').disabled = true;
+            }
+        }
+
+        function closeFaceVerifyModal() {
+            stopCamera();
+            document.getElementById('modal-face-verify').style.display = 'none';
+        }
+
+        function stopCamera() {
+            if (mediaStream) {
+                mediaStream.getTracks().forEach(t => t.stop());
+                mediaStream = null;
+            }
+        }
+
+        function setFeedback(type, text) {
+            const box = document.getElementById('face-feedback-box');
+            box.className = `face-feedback-box ${type}`;
+            document.getElementById('face-feedback-msg').textContent = text;
+        }
+
+        async function captureAndVerifyFace() {
+            const videoEl = document.getElementById('face-video-feed');
+            const canvas = document.getElementById('face-capture-canvas');
+            const captureBtn = document.getElementById('btn-capture-verify');
+
+            if (!videoEl || !canvas) return;
+
+            captureBtn.disabled = true;
+            captureBtn.textContent = '⏳ Processing Face...';
+            document.getElementById('face-status-text').textContent = 'Capturing & Analyzing Biometrics...';
+
+            // 1. Capture snapshot to canvas
+            canvas.width = videoEl.videoWidth || 640;
+            canvas.height = videoEl.videoHeight || 480;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
+            const imageBase64 = canvas.toDataURL('image/jpeg', 0.90);
+
+            // Display captured image
+            const imgEl = document.getElementById('face-captured-img');
+            imgEl.src = imageBase64;
+            imgEl.style.display = 'block';
+            videoEl.style.display = 'none';
+            document.getElementById('laser-scan').style.display = 'none';
+
+            setFeedback('info', '⚡ AI Model matching face & syncing to Cloudinary/Profile...');
+
+            try {
+                // 2. Send snapshot to backend Cloudinary & MySQL face-verify endpoint
+                const res = await fetch(`${baseUrl}/api/user/face-verify`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        candidateId: cid,
+                        imageBase64: imageBase64,
+                        examCode: targetExamCode
+                    })
+                });
+                const data = await res.json();
+
+                if (data.success && data.verified) {
+                    stopCamera();
+                    document.getElementById('face-reticle').classList.add('verified');
+                    const statusLabel = data.isNewRegistration 
+                        ? '✅ Biometric Face Registered' 
+                        : `✓ Face Verified (${data.matchScore}% Match)`;
+                    document.getElementById('face-status-text').textContent = statusLabel;
+                    
+                    const feedbackMsg = data.isNewRegistration
+                        ? `🎉 First-Time Biometric Face Registered & Saved to Profile (${data.storage === 'CLOUDINARY' ? 'Cloudinary ☁️' : 'MySQL Database 🐬'}). Starting exam...`
+                        : `🎉 Face Match Verified against Registered Profile (${data.matchScore}% Match)! Starting exam...`;
+                    setFeedback('success', feedbackMsg);
+                    
+                    // Mark this exam as strictly face-verified for this session
+                    sessionStorage.setItem(`face_verified_${targetExamCode}`, 'true');
+                    sessionStorage.setItem(`face_verified_timestamp_${targetExamCode}`, new Date().toISOString());
+
+                    // Update session candidate avatar
+                    if (cand) {
+                        cand.avatar_url = data.avatarUrl;
+                        sessionStorage.setItem('exam_candidate', JSON.stringify(cand));
+                        localStorage.setItem('exam_candidate', JSON.stringify(cand));
+                    }
+
+                    captureBtn.style.display = 'none';
+                    document.getElementById('btn-proceed-exam').style.display = 'inline-block';
+
+                    // Auto proceed after 1.5 seconds
+                    setTimeout(() => {
+                        proceedToAssessment();
+                    }, 1500);
+                } else {
+                    setFeedback('error', '❌ Face verification failed: ' + (data.message || 'Face match was below required confidence. Please face the camera and retry.'));
+                    captureBtn.disabled = false;
+                    captureBtn.textContent = '🔄 Retake & Verify Face';
+                    videoEl.style.display = 'block';
+                    imgEl.style.display = 'none';
+                    document.getElementById('laser-scan').style.display = 'block';
+                }
+            } catch (err) {
+                console.error('Face verification request error:', err);
+                setFeedback('error', '❌ Verification Server Error: Could not verify face match. Please ensure camera is clear and retry.');
+                captureBtn.disabled = false;
+                captureBtn.textContent = '🔄 Retake & Verify Face';
+                videoEl.style.display = 'block';
+                imgEl.style.display = 'none';
+                document.getElementById('laser-scan').style.display = 'block';
+            }
+        }
+
+        function proceedToAssessment() {
+            stopCamera();
+            window.location.href = `assessment.html?code=${encodeURIComponent(targetExamCode)}`;
+        }
+
+        document.getElementById('btn-footer-exit')?.addEventListener('click', exitApplication);
+    </script>
+</body>
+</html>

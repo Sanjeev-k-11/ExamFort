@@ -1,0 +1,2014 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Topic Learning & Practice - ExamFort</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="js/html2pdf.bundle.min.js"></script>
+    <script src="js/pptxgen.bundle.js"></script>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Plus Jakarta Sans', -apple-system, sans-serif; background: #f8fafc; color: #0f172a; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+
+        .study-viewport { display: flex; flex-direction: column; height: 100vh; width: 100vw; overflow: hidden; }
+
+        /* TOP NAVIGATION BAR */
+        .study-top-nav { height: 60px; min-height: 60px; background: #ffffff; border-bottom: 1.5px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; gap: 16px; z-index: 20; }
+        .nav-left-group { display: flex; align-items: center; gap: 14px; }
+        .btn-nav-back { display: flex; align-items: center; gap: 6px; color: #4f46e5; text-decoration: none; font-size: 12.5px; font-weight: 700; background: #f5f3ff; padding: 6px 12px; border-radius: 8px; border: 1px solid #e0e7ff; transition: all 0.15s; }
+        .btn-nav-back:hover { background: #ede9fe; }
+        
+        .nav-topic-title-group h2 { font-size: 14.5px; font-weight: 800; color: #0f172a; line-height: 1.2; }
+        .nav-topic-title-group span { font-size: 11px; color: #64748b; font-weight: 600; }
+
+        /* 3 MODE TABS IN HEADER */
+        .mode-tabs-center { display: flex; align-items: center; background: #f1f5f9; padding: 4px; border-radius: 10px; gap: 4px; }
+        .mode-tab-btn { border: none; background: transparent; padding: 6px 14px; border-radius: 7px; font-size: 12px; font-weight: 700; color: #64748b; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.15s; }
+        .mode-tab-btn:hover { color: #0f172a; }
+        .mode-tab-btn.active { background: #ffffff; color: #4f46e5; box-shadow: 0 2px 5px rgba(0,0,0,0.06); }
+
+        .nav-right-actions { display: flex; align-items: center; gap: 10px; }
+        .btn-topic-drawer-toggle { background: #ffffff; border: 1.5px solid #cbd5e1; border-radius: 8px; padding: 6px 12px; font-size: 12px; font-weight: 700; color: #334155; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+
+        /* BODY LAYOUT (DRAWER + CONTENT) */
+        .study-body-wrap { display: flex; flex: 1; overflow: hidden; position: relative; width: 100%; }
+
+        /* TOPIC DRAWER (SIDEBAR) */
+        .topic-drawer { 
+            width: 300px; 
+            min-width: 300px; 
+            max-width: 300px;
+            background: #ffffff; 
+            border-right: 1.5px solid #e2e8f0; 
+            height: 100%; 
+            overflow-y: auto; 
+            display: flex; 
+            flex-direction: column; 
+            transition: width 0.25s cubic-bezier(0.16, 1, 0.3, 1), min-width 0.25s cubic-bezier(0.16, 1, 0.3, 1), max-width 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease; 
+            z-index: 10; 
+            flex-shrink: 0;
+        }
+        .topic-drawer.collapsed { 
+            width: 0 !important; 
+            min-width: 0 !important; 
+            max-width: 0 !important; 
+            padding: 0 !important;
+            border-right: none !important; 
+            overflow: hidden !important; 
+            opacity: 0 !important; 
+            pointer-events: none !important;
+            visibility: hidden !important;
+        }
+        .btn-drawer-collapse { 
+            background: #f1f5f9; 
+            border: 1px solid #cbd5e1; 
+            color: #64748b; 
+            border-radius: 6px; 
+            width: 24px; 
+            height: 24px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            cursor: pointer; 
+            font-size: 11px; 
+            font-weight: 800; 
+            transition: all 0.15s; 
+        }
+        .btn-drawer-collapse:hover { 
+            background: #e2e8f0; 
+            color: #0f172a; 
+        }
+        .btn-toggle-curriculum { 
+            background: #ffffff; 
+            border: 1.5px solid #cbd5e1; 
+            color: #334155; 
+            border-radius: 8px; 
+            padding: 6px 12px; 
+            font-size: 12px; 
+            font-weight: 700; 
+            cursor: pointer; 
+            display: inline-flex; 
+            align-items: center; 
+            gap: 6px; 
+            transition: all 0.15s; 
+        }
+        .btn-toggle-curriculum:hover { 
+            background: #f8fafc; 
+            border-color: #94a3b8; 
+            color: #0f172a; 
+        }
+        .btn-toggle-curriculum.active-drawer { 
+            background: #ede9fe; 
+            border-color: #c7d2fe; 
+            color: #4f46e5; 
+        }
+        .drawer-header { padding: 14px 18px; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; justify-content: space-between; }
+        .drawer-header strong { font-size: 13px; font-weight: 800; color: #0f172a; }
+        .drawer-module-group { padding: 8px 12px; }
+        .drawer-mod-title { font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; padding: 6px 8px; margin-top: 6px; }
+        .drawer-lesson-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; border-radius: 8px; font-size: 12px; font-weight: 600; color: #334155; text-decoration: none; margin-bottom: 2px; transition: all 0.15s; }
+        .drawer-lesson-item:hover { background: #f8fafc; color: #4f46e5; }
+        .drawer-lesson-item.active { background: #ede9fe; color: #4f46e5; font-weight: 800; }
+        .drawer-check-icon { font-size: 12px; }
+        .drawer-check-done { color: #10b981; }
+
+        .drawer-resizer { width: 4px; cursor: col-resize; background-color: transparent; z-index: 15; transition: background-color 0.2s; }
+        .drawer-resizer:hover, .drawer-resizer.active { background-color: #4f46e5; }
+        .topic-drawer.no-transition { transition: none !important; }
+
+        /* MAIN CONTENT AREA */
+        .study-main-pane { flex: 1; overflow-y: auto; padding: 24px 36px; background: #f8fafc; }
+
+        /* TAB 1: LESSON STUDY UI */
+        .lesson-notes-card { background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 16px; padding: 28px 32px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); margin-bottom: 20px; }
+        .lesson-hero-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 18px; border-bottom: 1px solid #f1f5f9; padding-bottom: 16px; }
+        .lesson-hero-header h1 { font-size: 20px; font-weight: 800; color: #0f172a; margin-bottom: 4px; }
+        .lesson-hero-header p { font-size: 13px; color: #64748b; line-height: 1.5; }
+        
+        .status-badge-chip { font-size: 11.5px; font-weight: 800; padding: 4px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 5px; }
+        .badge-done-green { background: #dcfce7; color: #15803d; }
+        .badge-inprog-blue { background: #ede9fe; color: #4f46e5; }
+
+        .lesson-notes-body { font-size: 13.5px; color: #334155; line-height: 1.7; margin-bottom: 24px; }
+        .lesson-notes-body h3 { font-size: 15px; font-weight: 800; color: #0f172a; margin: 18px 0 8px; }
+        .lesson-notes-body ul { padding-left: 20px; margin-bottom: 12px; }
+        .lesson-notes-body li { margin-bottom: 6px; }
+
+        .code-example-box { background: #0f172a; border-radius: 12px; overflow: hidden; margin: 18px 0 24px; border: 1px solid #1e293b; }
+        .code-box-header { display: flex; align-items: center; justify-content: space-between; padding: 8px 16px; background: #1e293b; color: #94a3b8; font-size: 11.5px; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+        .btn-copy-code { background: transparent; border: 1px solid #475569; color: #cbd5e1; border-radius: 6px; padding: 3px 8px; font-size: 11px; cursor: pointer; font-family: inherit; }
+        .btn-copy-code:hover { background: #334155; color: #ffffff; }
+        .code-snippet-pre { padding: 16px; color: #f8fafc; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; line-height: 1.6; overflow-x: auto; white-space: pre; }
+
+        .takeaways-alert { background: #eff6ff; border: 1.5px solid #bfdbfe; border-radius: 12px; padding: 14px 18px; margin-bottom: 24px; font-size: 12.5px; color: #1e40af; line-height: 1.5; }
+        .takeaways-alert strong { display: block; font-weight: 800; margin-bottom: 4px; }
+
+        .study-bottom-action-bar { display: flex; align-items: center; justify-content: space-between; padding-top: 18px; border-top: 1px solid #f1f5f9; gap: 12px; flex-wrap: wrap; }
+        .btn-mark-completed { background: #10b981; color: #ffffff; border: none; border-radius: 10px; padding: 10px 20px; font-size: 13px; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: background 0.15s; }
+        .btn-mark-completed:hover { background: #059669; }
+        .btn-next-mcq-tab { background: #4f46e5; color: #ffffff; border: none; border-radius: 10px; padding: 10px 20px; font-size: 13px; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+        .btn-next-mcq-tab:hover { background: #4338ca; }
+
+        /* TAB 2: MCQ PRACTICE UI */
+        .mcq-practice-card { background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 16px; padding: 28px 32px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
+        .mcq-header-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; border-bottom: 1px solid #f1f5f9; padding-bottom: 14px; }
+        .mcq-header-row h2 { font-size: 17px; font-weight: 800; color: #0f172a; }
+        
+        .mcq-question-block { background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 18px 20px; margin-bottom: 16px; }
+        .mcq-q-title { font-size: 13.5px; font-weight: 800; color: #0f172a; margin-bottom: 12px; line-height: 1.4; }
+        .mcq-options-list { display: flex; flex-direction: column; gap: 8px; }
+        .mcq-opt-label { display: flex; align-items: center; gap: 10px; background: #ffffff; border: 1.5px solid #cbd5e1; border-radius: 8px; padding: 9px 14px; font-size: 12.5px; font-weight: 600; color: #334155; cursor: pointer; transition: all 0.15s; }
+        .mcq-opt-label:hover { border-color: #6366f1; background: #faf5ff; }
+        .mcq-opt-label.selected { border-color: #4f46e5; background: #f5f3ff; color: #4f46e5; }
+        .mcq-opt-label.correct { border-color: #10b981; background: #ecfdf5; color: #065f46; }
+        .mcq-opt-label.incorrect { border-color: #ef4444; background: #fef2f2; color: #991b1b; }
+        .mcq-expl-box { margin-top: 10px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px 12px; font-size: 12px; color: #475569; line-height: 1.5; }
+
+        .mcq-scorecard-banner { background: #f0fdf4; border: 1.5px solid #86efac; border-radius: 12px; padding: 16px 20px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; }
+        .scorecard-left strong { font-size: 16px; font-weight: 800; color: #166534; display: block; }
+        .scorecard-left span { font-size: 12px; color: #15803d; }
+
+        .btn-retry-mcq { background: #ffffff; border: 1.5px solid #4f46e5; color: #4f46e5; border-radius: 8px; padding: 8px 16px; font-size: 12.5px; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+        .btn-retry-mcq:hover { background: #4f46e5; color: #ffffff; }
+
+        /* TAB 3: CODING PRACTICE UI (SPLIT VIEW) */
+        .coding-split-container { display: grid; grid-template-columns: 420px 10px 1fr; gap: 10px; height: calc(100vh - 130px); }
+        .coding-resizer { cursor: col-resize; display: flex; align-items: center; justify-content: center; z-index: 10; border-radius: 4px; transition: background 0.2s; margin: 0 -10px; /* offset the gap slightly */ }
+        .coding-resizer::after { content: ''; width: 4px; height: 32px; background: #cbd5e1; border-radius: 4px; transition: background 0.2s; }
+        .coding-resizer:hover::after, .coding-resizer.active::after { background: #4f46e5; }
+        .code-problem-panel { background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 16px; padding: 22px; overflow-y: auto; display: flex; flex-direction: column; }
+        .prob-title-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+        .prob-title-row h2 { font-size: 16px; font-weight: 800; color: #0f172a; }
+        .diff-badge { font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 6px; background: #ecfdf5; color: #059669; }
+        
+        .prob-desc-text { font-size: 13px; color: #334155; line-height: 1.6; margin-bottom: 16px; }
+        .prob-specs-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px; margin-bottom: 14px; font-size: 12px; }
+        .prob-specs-box strong { color: #0f172a; display: block; margin-bottom: 4px; }
+        .prob-specs-box pre { font-family: 'JetBrains Mono', monospace; font-size: 11.5px; background: #ffffff; padding: 8px; border-radius: 6px; border: 1px solid #e2e8f0; margin-top: 4px; }
+
+        /* EDITOR PANEL */
+        .code-editor-panel { background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; }
+        .editor-top-toolbar { height: 46px; min-height: 46px; background: #1e293b; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; }
+        .editor-lang-select { background: #0f172a; color: #f8fafc; border: 1px solid #334155; border-radius: 6px; padding: 4px 10px; font-size: 12px; font-weight: 700; font-family: inherit; outline: none; }
+        
+        .editor-textarea-wrap { flex: 1; display: flex; background: #0f172a; overflow: hidden; position: relative; }
+        .code-input-area { width: 100%; height: 100%; border: none; outline: none; resize: none; background: #0f172a; color: #f8fafc; font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.6; padding: 16px; }
+
+        .editor-bottom-bar { padding: 10px 16px; background: #ffffff; border-top: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+        .btn-run-code { background: #f1f5f9; border: 1.5px solid #cbd5e1; color: #0f172a; border-radius: 8px; padding: 7px 16px; font-size: 12px; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+        .btn-run-code:hover { background: #e2e8f0; }
+        .btn-submit-code { background: #10b981; border: none; color: #ffffff; border-radius: 8px; padding: 7px 18px; font-size: 12px; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+        .btn-submit-code:hover { background: #059669; }
+
+        /* TEST CASE CARDS */
+        .test-cases-output-panel { padding: 14px 16px; background: #ffffff; border-top: 1.5px solid #e2e8f0; max-height: 180px; overflow-y: auto; }
+        .tc-mini-grid { display: flex; flex-direction: column; gap: 8px; }
+        .tc-row-card { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; border-radius: 8px; font-size: 11.5px; }
+        .tc-row-pass { background: #ecfdf5; border: 1px solid #a7f3d0; color: #065f46; }
+        .tc-row-fail { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
+
+        /* MODERN TOAST NOTIFICATION STYLES */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999999;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            pointer-events: none;
+        }
+        .toast-notification {
+            pointer-events: auto;
+            min-width: 340px;
+            max-width: 460px;
+            background: #ffffff;
+            border-radius: 14px;
+            padding: 16px 20px;
+            box-shadow: 0 20px 45px rgba(15, 23, 42, 0.22), 0 4px 12px rgba(0, 0, 0, 0.08);
+            border: 1.5px solid #e2e8f0;
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            color: #0f172a;
+            font-size: 13.5px;
+            line-height: 1.5;
+            animation: toastSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            transition: all 0.3s ease;
+            overflow: hidden;
+            position: relative;
+        }
+        .toast-notification.toast-hide {
+            opacity: 0;
+            transform: translateX(40px) scale(0.95);
+        }
+        .toast-notification.success {
+            border-left: 6px solid #10b981;
+            background: #f0fdf4;
+        }
+        .toast-notification.error {
+            border-left: 6px solid #ef4444;
+            background: #fef2f2;
+        }
+        .toast-notification.warning {
+            border-left: 6px solid #f59e0b;
+            background: #fffbeb;
+        }
+        .toast-notification.info {
+            border-left: 6px solid #6366f1;
+            background: #f5f3ff;
+        }
+        .toast-icon {
+            font-size: 22px;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+        .toast-content {
+            flex: 1;
+        }
+        .toast-title {
+            font-weight: 800;
+            font-size: 14px;
+            margin-bottom: 3px;
+            color: #0f172a;
+        }
+        .toast-body {
+            font-size: 12.5px;
+            color: #334155;
+            line-height: 1.4;
+        }
+        .toast-close {
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 0;
+            line-height: 1;
+            margin-left: 4px;
+        }
+        .toast-close:hover {
+            color: #0f172a;
+        }
+        @keyframes toastSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-25px) scale(0.92);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        /* CHALLENGE SWITCHER PILLS */
+        .coding-challenge-tabs {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 14px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+        }
+        .challenge-tab-pill {
+            background: #ffffff;
+            border: 1.5px solid #e2e8f0;
+            color: #475569;
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-size: 11.5px;
+            font-weight: 700;
+            cursor: pointer;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.15s;
+        }
+        .challenge-tab-pill:hover {
+            border-color: #cbd5e1;
+            color: #0f172a;
+        }
+        .challenge-tab-pill.active {
+            background: #ede9fe !important;
+            border-color: #818cf8 !important;
+            color: #4f46e5 !important;
+            font-weight: 800;
+        }
+        .challenge-tab-pill.solved {
+            border-color: #86efac;
+            color: #15803d;
+        }
+
+        /* ═══════════════════════════════════════════════════
+           ANTI-COPY / CONTENT PROTECTION (UIA + CLIPBOARD)
+        ═══════════════════════════════════════════════════ */
+        /* Block all text selection globally */
+        body, .study-main-pane, .lesson-notes-card, .lesson-notes-body,
+        .mcq-practice-card, .code-problem-panel, .mcq-question-block,
+        .prob-desc-text, .prob-specs-box, .takeaways-alert,
+        h1, h2, h3, h4, p, span, li, label, strong, pre {
+            -webkit-user-select: none !important;
+            -moz-user-select: none !important;
+            -ms-user-select: none !important;
+            user-select: none !important;
+        }
+        /* Allow selection only in input fields and code editor */
+        textarea, input, select, .code-input-area, #txt-custom-input {
+            -webkit-user-select: text !important;
+            -moz-user-select: text !important;
+            user-select: text !important;
+        }
+        /* Block CSS highlight */
+        ::selection { background: transparent !important; color: inherit !important; }
+        ::-moz-selection { background: transparent !important; color: inherit !important; }
+
+        /* ═══════════════════════════════════════════════════
+           ANTI-SCREENSHOT / SCREEN CAPTURE PROTECTION
+        ═══════════════════════════════════════════════════ */
+        @media print {
+            * { display: none !important; visibility: hidden !important; }
+            body::after {
+                content: 'This content is protected by ExamFort™. Unauthorized copying is prohibited.';
+                display: block !important;
+                visibility: visible !important;
+                font-size: 18px;
+                color: #0f172a;
+                text-align: center;
+                padding: 40px;
+            }
+        }
+
+        #ef-capture-shield {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: #000000;
+            z-index: 9999999;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 16px;
+            color: #ffffff;
+            font-size: 18px;
+            font-weight: 700;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            user-select: none;
+        }
+        #ef-capture-shield.active { display: flex !important; }
+        #ef-capture-shield .shield-icon { font-size: 52px; }
+        #ef-capture-shield .shield-sub { font-size: 12px; color: #64748b; font-weight: 500; }
+    </style>
+</head>
+<body>
+    <!-- ANTI-CAPTURE BLACK SHIELD OVERLAY -->
+    <div id="ef-capture-shield">
+        <div class="shield-icon">🛡️</div>
+        <div>Screen Capture Blocked</div>
+        <div class="shield-sub">ExamFort™ — Content is protected. Recording is not allowed.</div>
+    </div>
+
+    <div class="study-viewport">
+        <!-- TOP NAV -->
+        <header class="study-top-nav">
+            <div class="nav-left-group">
+                <a href="course_details.html?id=course-cpp" id="btn-back-course" class="btn-nav-back">
+                    <span>←</span> <span>Back to Course</span>
+                </a>
+                <button class="btn-toggle-curriculum active-drawer" id="btn-curriculum-toggle" onclick="toggleTopicDrawer()" title="Show/Hide Course Curriculum Sidebar">
+                    <span id="icon-curriculum-toggle">☰</span> <span id="text-curriculum-toggle">Curriculum</span>
+                </button>
+                <div class="nav-topic-title-group">
+                    <h2 id="lbl-topic-title">1.1: Overview of C++</h2>
+                    <span id="lbl-module-name">Module 1: Introduction to C++</span>
+                </div>
+            </div>
+
+            <!-- 3 MODE SWITCHER TABS (DYNAMIC BADGES) -->
+            <div class="mode-tabs-center">
+                <button class="mode-tab-btn active" id="tab-btn-study" onclick="switchStudyMode('study')">
+                    <span>📖</span> <span>1. Study Lesson</span>
+                </button>
+                <button class="mode-tab-btn" id="tab-btn-mcq" onclick="switchStudyMode('mcq')">
+                    <span>📝</span> <span id="lbl-tab-mcq-title">2. MCQ Practice</span>
+                </button>
+                <button class="mode-tab-btn" id="tab-btn-code" onclick="switchStudyMode('code')">
+                    <span>💻</span> <span id="lbl-tab-code-title">3. Coding Practice</span>
+                </button>
+            </div>
+
+            <div class="nav-right-actions">
+                <span class="status-badge-chip badge-done-green" id="lbl-lesson-status">Completed ✓</span>
+            </div>
+        </header>
+
+        <!-- BODY (DRAWER + ACTIVE TAB CONTENT) -->
+        <div class="study-body-wrap">
+            
+            <!-- TOPIC DRAWER (SIDEBAR) -->
+            <aside class="topic-drawer" id="topic-drawer">
+                <div class="drawer-header">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 14px;">📚</span>
+                        <strong>Course Curriculum</strong>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 11px; color: #64748b;" id="lbl-drawer-progress">8/21 Completed</span>
+                        <button class="btn-drawer-collapse" onclick="toggleTopicDrawer()" title="Hide Curriculum Sidebar (Collapse)">
+                            ❮
+                        </button>
+                    </div>
+                </div>
+                <div class="drawer-module-group" id="container-drawer-lessons">
+                    <!-- Populated dynamically via MySQL -->
+                </div>
+            </aside>
+            <div class="drawer-resizer" id="drawer-resizer"></div>
+
+            <!-- MAIN CONTENT AREA -->
+            <main class="study-main-pane">
+
+                <!-- 1. LESSON STUDY TAB -->
+                <div id="pane-study-lesson" style="display: block;">
+                    <div class="lesson-notes-card">
+                        <div class="lesson-hero-header">
+                            <div>
+                                <h1 id="lbl-notes-heading">Overview of C++</h1>
+                                <p id="lbl-notes-summary">Introduction to modern C++, its origin from C with Classes, and its core design philosophy.</p>
+                            </div>
+                            <button class="status-badge-chip badge-inprog-blue" onclick="switchStudyMode('study'); showToast('Study &amp; Re-watch Mode', 'You can re-read and study these notes anytime.', 'info');" style="border:none; cursor:pointer;" title="Re-watch or re-study this lesson">
+                                <span>Study &amp; Re-watch Anytime 🔄</span>
+                            </button>
+                        </div>
+
+                        <!-- Theory & Content from MySQL -->
+                        <div class="lesson-notes-body" id="lbl-detailed-notes">
+                            <!-- Populated via MySQL -->
+                        </div>
+
+                        <!-- Code Example Block -->
+                        <div class="code-example-box" id="box-code-example">
+                            <div class="code-box-header">
+                                <span>Code Walkthrough (C++)</span>
+                                <button class="btn-copy-code" onclick="copyCodeSnippet()">Copy Code</button>
+                            </div>
+                            <pre class="code-snippet-pre" id="lbl-code-snippet"></pre>
+                        </div>
+
+                        <!-- Key Takeaways -->
+                        <div class="takeaways-alert">
+                            <strong>💡 Key Takeaways:</strong>
+                            <span id="lbl-key-takeaways">Always write modular code and manage resources cleanly.</span>
+                        </div>
+
+                        <!-- Action Bar -->
+                        <div class="study-bottom-action-bar">
+                            <button class="btn-mark-completed" id="btn-toggle-complete" onclick="markLessonComplete()">
+                                <span>✓</span> <span>Mark Completed & Update Progress</span>
+                            </button>
+                            <button class="btn-next-mcq-tab" onclick="switchStudyMode('mcq')">
+                                <span>Proceed to 2. MCQ Practice</span> <span>→</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. MCQ PRACTICE TAB -->
+                <div id="pane-mcq-practice" style="display: none;">
+                    <div class="mcq-practice-card">
+                        <div class="mcq-header-row">
+                            <div>
+                                <h2>📝 Topic MCQ Practice</h2>
+                                <p style="font-size: 12px; color: #64748b; margin-top: 2px;">Test your conceptual understanding. Unlimited practice and retries allowed!</p>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <span id="lbl-draft-status-mcq" style="font-size: 11px; color: #10b981; font-weight: 700; background: #ecfdf5; padding: 4px 10px; border-radius: 6px; border: 1px solid #a7f3d0;">☁️ Auto-save ON (5s)</span>
+                                <button class="btn-retry-mcq" onclick="resetMcqQuiz()">
+                                    <span>🔄</span> <span>Retry Practice</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Scorecard (Hidden until submitted) -->
+                        <div class="mcq-scorecard-banner" id="banner-mcq-score" style="display: none;">
+                            <div class="scorecard-left">
+                                <strong id="lbl-mcq-score-title">Practice Score: 3 / 3 (100%)</strong>
+                                <span>Excellent work! You have mastered the core concepts of this topic.</span>
+                            </div>
+                            <button class="btn-next-mcq-tab" onclick="switchStudyMode('code')">
+                                <span>Proceed to 3. Coding Practice →</span>
+                            </button>
+                        </div>
+
+                        <!-- Questions Container -->
+                        <div id="container-mcq-questions">
+                            <!-- Populated dynamically via MySQL -->
+                        </div>
+
+                        <!-- Submit Practice Quiz Button -->
+                        <div style="margin-top: 24px; padding-top: 18px; border-top: 1px solid #f1f5f9; display: flex; justify-content: flex-end; gap: 12px;">
+                            <button class="btn-next-mcq-tab" id="btn-submit-mcq" onclick="submitTopicMcqs()">
+                                <span>Submit Practice Answers</span> <span>✓</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. CODING PRACTICE TAB (SPLIT VIEW) -->
+                <div id="pane-coding-practice" style="display: none;">
+                    <div class="coding-split-container">
+                        
+                        <!-- LEFT PANEL: PROBLEM SPEC & CHALLENGE SELECTOR -->
+                        <div class="code-problem-panel">
+                            <!-- MULTI-CHALLENGE SELECTOR PILLS -->
+                            <div class="coding-challenge-tabs" id="container-challenge-pills" style="display: none;">
+                                <!-- Dynamically generated pills -->
+                            </div>
+
+                            <div class="prob-title-row">
+                                <h2 id="lbl-prob-title">Rectangle Area Calculator</h2>
+                                <span class="diff-badge" id="lbl-prob-diff">Easy</span>
+                            </div>
+                            <p class="prob-desc-text" id="lbl-prob-statement">
+                                Given length and breadth, output area and perimeter.
+                            </p>
+
+                            <div class="prob-specs-box">
+                                <strong>Constraints:</strong>
+                                <span id="lbl-prob-constraints">1 &lt;= L, B &lt;= 10^4</span>
+                            </div>
+
+                            <div class="prob-specs-box">
+                                <strong>Sample Input:</strong>
+                                <pre id="lbl-prob-sample-in">5 10</pre>
+                            </div>
+
+                            <div class="prob-specs-box">
+                                <strong>Sample Output:</strong>
+                                <pre id="lbl-prob-sample-out">50 30</pre>
+                            </div>
+
+                            <div style="margin-top: auto; padding-top: 14px; border-top: 1px solid #f1f5f9; display: flex; gap: 8px;">
+                                <button class="btn-retry-mcq" id="btn-prev-challenge-nav" style="display: none; flex: 1; justify-content: center; background: #f8fafc; color: #475569; border-color: #cbd5e1;" onclick="goToPrevChallenge()">
+                                    <span>← Prev</span>
+                                </button>
+                                <button class="btn-retry-mcq" style="flex: 1; justify-content: center;" onclick="resetCodingStarterCode()">
+                                    <span>🔄</span> <span>Reset</span>
+                                </button>
+                                <button class="btn-retry-mcq" id="btn-next-challenge-nav" style="display: none; flex: 1; justify-content: center; background: #ede9fe; color: #4f46e5; border-color: #c7d2fe;" onclick="goToNextChallenge()">
+                                    <span>Next →</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="coding-resizer" id="coding-resizer"></div>
+
+                        <!-- RIGHT PANEL: CODE EDITOR + TEST RUNNER -->
+                        <div class="code-editor-panel">
+                            <div class="editor-top-toolbar">
+                                <select class="editor-lang-select" id="sel-code-lang" onchange="handleLangChange()">
+                                    <option value="cpp">C++ (GCC 15+ / C++20)</option>
+                                    <option value="py">Python 3</option>
+                                    <option value="java">Java 17 (OpenJDK)</option>
+                                    <option value="js">JavaScript (Node.js 24)</option>
+                                    <option value="c">C (GCC 15+ / C17)</option>
+                                </select>
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    <span id="lbl-draft-status-code" style="font-size: 11px; color: #a5b4fc; font-weight: 700; background: rgba(79, 70, 229, 0.2); padding: 3px 8px; border-radius: 5px; border: 1px solid rgba(165, 180, 252, 0.3);">☁️ Auto-save ON (5s)</span>
+                                    <label style="font-size: 11.5px; color: #cbd5e1; display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                                        <input type="checkbox" id="chk-custom-input" onchange="toggleCustomInputBox()" style="accent-color: #4f46e5;">
+                                        <span>Custom Input</span>
+                                    </label>
+                                    <span style="font-size: 11px; color: #94a3b8; font-weight: 700;">Live Sandbox Judge</span>
+                                </div>
+                            </div>
+
+                            <!-- Custom Input Box (Collapsible) -->
+                            <div id="box-custom-input" style="display: none; background: #1e293b; padding: 10px 16px; border-bottom: 1px solid #334155;">
+                                <label style="font-size: 11px; color: #94a3b8; font-weight: 700; display: block; margin-bottom: 4px;">Standard Input (stdin):</label>
+                                <textarea id="txt-custom-input" rows="2" style="width: 100%; background: #0f172a; color: #f8fafc; border: 1px solid #475569; border-radius: 6px; padding: 6px 10px; font-family: 'JetBrains Mono', monospace; font-size: 12px; outline: none; resize: vertical;" placeholder="Type custom stdin test arguments..."></textarea>
+                            </div>
+
+                            <div class="editor-textarea-wrap">
+                                <textarea class="code-input-area" id="txt-practice-code" spellcheck="false"></textarea>
+                            </div>
+
+                            <!-- TEST CASES RUNNER RESULTS & TERMINAL OUTPUT -->
+                            <div class="test-cases-output-panel" id="panel-tc-results" style="display: none;">
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px; border-bottom: 1px solid #f1f5f9; padding-bottom: 6px;">
+                                    <strong style="font-size: 12.5px; color: #0f172a;" id="lbl-tc-verdict">Compiler Output</strong>
+                                    <span style="font-size: 11.5px; font-weight: 800;" id="lbl-tc-passed-badge">3/3 Passed</span>
+                                </div>
+                                
+                                <!-- Error Alert Banner if Compile / Syntax Error -->
+                                <div id="alert-compile-error" style="display: none; background: #fef2f2; border: 1.5px solid #fca5a5; border-radius: 8px; padding: 12px; margin-bottom: 10px; font-size: 12px; color: #991b1b; font-family: 'JetBrains Mono', monospace; white-space: pre-wrap;"></div>
+
+                                <!-- Test Cases Cards List -->
+                                <div class="tc-mini-grid" id="container-tc-rows">
+                                    <!-- Populated dynamically -->
+                                </div>
+
+                                <!-- Raw Standard Output Terminal -->
+                                <div id="box-raw-terminal" style="display: none; margin-top: 10px;">
+                                    <label style="font-size: 10.5px; font-weight: 800; color: #64748b; text-transform: uppercase;">Standard Terminal Output (stdout / stderr):</label>
+                                    <pre id="lbl-raw-stdout" style="background: #0f172a; color: #f8fafc; border-radius: 6px; padding: 10px; font-size: 11.5px; font-family: 'JetBrains Mono', monospace; max-height: 120px; overflow-y: auto; white-space: pre-wrap; margin-top: 4px;"></pre>
+                                </div>
+                            </div>
+
+                            <div class="editor-bottom-bar">
+                                <button class="btn-run-code" id="btn-run-code-action" onclick="runPracticeCodeSandbox(false)">
+                                    <span id="icon-run">▶</span> <span id="lbl-run-btn-text">Run Test Cases</span>
+                                </button>
+                                <button class="btn-submit-code" id="btn-submit-code-action" onclick="runPracticeCodeSandbox(true)">
+                                    <span>✓</span> <span>Submit Solution</span>
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script>
+        const baseUrl = window.EXAMFORT_ENV?.API_BASE_URL || 'http://localhost:5000';
+        const urlParams = new URLSearchParams(window.location.search);
+        const courseId = urlParams.get('id') || 'course-cpp';
+        let lessonNum = urlParams.get('lesson') || '1.1';
+        let activeTab = urlParams.get('tab') || 'study';
+
+        let currentTopicData = null;
+        let selectedMcqAnswers = {};
+        let activeStarterCodes = {};
+        let currentCodingProblems = [];
+        let activeProblemIndex = 0;
+        let studentCodePerProblem = {};
+        let solvedProblemIndices = new Set();
+
+        function getActiveCandidate() {
+            try {
+                return JSON.parse(sessionStorage.getItem('exam_candidate') || 'null')
+                    || JSON.parse(sessionStorage.getItem('examfort_user') || 'null')
+                    || JSON.parse(localStorage.getItem('exam_candidate') || 'null')
+                    || JSON.parse(localStorage.getItem('examfort_user') || 'null')
+                    || JSON.parse(localStorage.getItem('examfort_session') || '{}').candidate
+                    || JSON.parse(localStorage.getItem('examfort_app_session_v2') || '{}').candidate || null;
+            } catch (_) { return null; }
+        }
+
+        function getActiveCandidateId() {
+            const cand = getActiveCandidate();
+            return cand ? (cand.student_id || cand.id || cand.userId || 'STU123456') : 'STU123456';
+        }
+
+        function escapeHtml(str) {
+            if (str === undefined || str === null) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        // 1. Switch Mode Tabs
+        function switchStudyMode(mode) {
+            activeTab = mode;
+            document.querySelectorAll('.mode-tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(`tab-btn-${mode}`)?.classList.add('active');
+
+            const pStudy = document.getElementById('pane-study-lesson');
+            const pMcq = document.getElementById('pane-mcq-practice');
+            const pCode = document.getElementById('pane-coding-practice');
+
+            if (pStudy) pStudy.style.display = mode === 'study' ? 'block' : 'none';
+            if (pMcq) pMcq.style.display = mode === 'mcq' ? 'block' : 'none';
+            if (pCode) pCode.style.display = mode === 'code' ? 'block' : 'none';
+        }
+
+        // 2. Fetch Topic Learning Data from MySQL
+        async function fetchTopicData() {
+            try {
+                const candId = getActiveCandidateId();
+                const res = await fetch(`${baseUrl}/api/courses/topic/${courseId}/${lessonNum}?candidateId=${encodeURIComponent(candId)}`);
+                const data = await res.json();
+                if (data.success) {
+                    currentTopicData = data;
+                    renderTopicUI();
+                }
+            } catch (err) {
+                console.error('Error fetching topic learning data:', err);
+            }
+        }
+
+        function renderTopicUI() {
+            if (!currentTopicData) return;
+            const { lesson, content, mcqs, codingProblems, codingProblem, lastCodingSubmission, lastMcqSubmission, allLessons } = currentTopicData;
+
+            // 1. Dynamic Mode Switcher Badges
+            const mcqCount = mcqs ? mcqs.length : 0;
+            const codeList = (codingProblems && codingProblems.length > 0) ? codingProblems : (codingProblem ? [codingProblem] : []);
+            currentCodingProblems = codeList;
+
+            const mcqTabLabel = document.getElementById('lbl-tab-mcq-title');
+            if (mcqTabLabel) {
+                mcqTabLabel.textContent = `2. MCQ Practice ${mcqCount > 0 ? `(${mcqCount} MCQs)` : '(0)'}`;
+            }
+
+            const codeTabLabel = document.getElementById('lbl-tab-code-title');
+            if (codeTabLabel) {
+                codeTabLabel.textContent = `3. Coding Practice ${codeList.length > 0 ? `(${codeList.length} Challenges)` : '(0)'}`;
+            }
+
+            // Header & Info
+            document.getElementById('lbl-topic-title').textContent = `${lesson.lesson_num}: ${lesson.lesson_title}`;
+            document.getElementById('lbl-module-name').textContent = `Module ${lesson.module_num}: ${lesson.module_title}`;
+            document.getElementById('btn-back-course').href = `course_details.html?id=${courseId}`;
+
+            const statusEl = document.getElementById('lbl-lesson-status');
+            if (lesson.is_completed) {
+                statusEl.textContent = 'Completed ✓';
+                statusEl.className = 'status-badge-chip badge-done-green';
+            } else {
+                statusEl.textContent = 'In Progress ⌛';
+                statusEl.className = 'status-badge-chip badge-inprog-blue';
+            }
+
+            // 1. Lesson Notes
+            document.getElementById('lbl-notes-heading').textContent = lesson.lesson_title;
+            document.getElementById('lbl-notes-summary').textContent = content.concept_summary;
+            document.getElementById('lbl-detailed-notes').innerHTML = content.detailed_notes;
+            document.getElementById('lbl-code-snippet').textContent = content.code_example || '// Modern C++ Demonstration';
+            document.getElementById('lbl-key-takeaways').textContent = content.key_takeaways;
+
+            // 2. MCQs Rendering (Supports 0, 1, 2, 5, etc.)
+            renderMcqQuestions(mcqs || []);
+
+            // Restore Previous MCQ Submission / Draft if exists
+            const mcqSource = (currentTopicData.draftMcqAnswers && Object.keys(currentTopicData.draftMcqAnswers).length > 0)
+                ? currentTopicData.draftMcqAnswers
+                : (lastMcqSubmission?.answers || null);
+
+            if (mcqSource && mcqs && mcqs.length > 0) {
+                selectedMcqAnswers = Object.assign({}, mcqSource);
+                Object.keys(mcqSource).forEach(qNum => {
+                    const key = mcqSource[qNum];
+                    document.getElementById(`opt-label-${qNum}-${key}`)?.classList.add('selected');
+                    const radio = document.querySelector(`input[name="mcq_q_${qNum}"][value="${key}"]`);
+                    if (radio) radio.checked = true;
+                });
+
+                if (lastMcqSubmission && lastMcqSubmission.review) {
+                    const banner = document.getElementById('banner-mcq-score');
+                    if (banner) {
+                        banner.style.display = 'flex';
+                        document.getElementById('lbl-mcq-score-title').textContent = `Previous Practice Score: ${lastMcqSubmission.score} / ${lastMcqSubmission.totalScore} (${lastMcqSubmission.percentage}%)`;
+                    }
+                    lastMcqSubmission.review.forEach(r => {
+                        const explEl = document.getElementById(`mcq-expl-${r.question_number}`);
+                        if (explEl) {
+                            explEl.style.display = 'block';
+                            explEl.innerHTML = `<strong>${r.is_correct ? '✓ Correct!' : '✗ Incorrect'}</strong> — Correct Answer is <strong>(${r.correct_answer})</strong>.<br>${r.explanation}`;
+                            explEl.style.borderColor = r.is_correct ? '#86efac' : '#fca5a5';
+                            explEl.style.background = r.is_correct ? '#f0fdf4' : '#fef2f2';
+                        }
+                    });
+                }
+            }
+
+            // 3. Coding Problems Rendering (Supports 0, 1, 3, 5, etc.)
+            renderCodingChallengesUI(codeList, lastCodingSubmission);
+
+            // 4. Topic Drawer
+            renderDrawerLessons(allLessons);
+
+            // Activate Tab
+            switchStudyMode(activeTab);
+
+            // 5. Start Real-Time 5-Second Cloud Auto-Save
+            startAutoSaveInterval();
+        }
+
+        let autoSaveIntervalStarted = false;
+        let lastSavedDraftCode = '';
+        let lastSavedMcqAnswers = '';
+
+        function startAutoSaveInterval() {
+            if (autoSaveIntervalStarted) return;
+            autoSaveIntervalStarted = true;
+
+            setInterval(async () => {
+                try {
+                    const candId = getActiveCandidateId();
+                    const activeProb = currentCodingProblems[activeProblemIndex] || {};
+                    const pnum = activeProb.problem_number || (activeProblemIndex + 1);
+                    const lang = document.getElementById('sel-code-lang')?.value || 'cpp';
+                    const currentCode = document.getElementById('txt-practice-code')?.value || '';
+                    const currentAnswers = JSON.stringify(selectedMcqAnswers || {});
+
+                    const hasCodeChanged = currentCode !== lastSavedDraftCode && currentCode.trim().length > 0;
+                    const hasMcqChanged = currentAnswers !== lastSavedMcqAnswers && Object.keys(selectedMcqAnswers).length > 0;
+
+                    if (hasCodeChanged || hasMcqChanged) {
+                        const draftIndicatorCode = document.getElementById('lbl-draft-status-code');
+                        const draftIndicatorMcq = document.getElementById('lbl-draft-status-mcq');
+
+                        if (draftIndicatorCode) draftIndicatorCode.textContent = '☁️ Auto-saving...';
+                        if (draftIndicatorMcq) draftIndicatorMcq.textContent = '☁️ Auto-saving...';
+
+                        const res = await fetch(`${baseUrl}/api/courses/practice/auto-save-draft`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                candidateId: candId,
+                                courseId,
+                                lessonNum,
+                                problemNumber: pnum,
+                                language: lang,
+                                code: currentCode,
+                                mcqAnswers: selectedMcqAnswers
+                            })
+                        });
+                        const data = await res.json();
+                        if (data.success) {
+                            lastSavedDraftCode = currentCode;
+                            lastSavedMcqAnswers = currentAnswers;
+                            const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                            if (draftIndicatorCode) draftIndicatorCode.textContent = `☁️ Auto-saved (${timeStr})`;
+                            if (draftIndicatorMcq) draftIndicatorMcq.textContent = `☁️ Auto-saved (${timeStr})`;
+                        }
+                    }
+                } catch (_) {}
+            }, 5000);
+        }
+
+        function renderCodingChallengesUI(problems, lastSubmission) {
+            const pillsContainer = document.getElementById('container-challenge-pills');
+            if (!problems || problems.length === 0) {
+                if (pillsContainer) pillsContainer.style.display = 'none';
+                document.getElementById('lbl-prob-title').textContent = 'No Coding Challenges';
+                document.getElementById('lbl-prob-statement').textContent = 'No coding challenges assigned for this lesson.';
+                return;
+            }
+
+            if (pillsContainer) {
+                if (problems.length > 1) {
+                    pillsContainer.style.display = 'flex';
+                    pillsContainer.innerHTML = problems.map((p, idx) => `
+                        <button class="challenge-tab-pill ${idx === 0 ? 'active' : ''} ${solvedProblemIndices.has(idx) ? 'solved' : ''}" 
+                                id="pill-challenge-${idx}" onclick="selectCodingProblem(${idx})">
+                            <span>${solvedProblemIndices.has(idx) ? '✓' : `P${idx+1}`}</span>
+                            <span>${escapeHtml(p.title || `Challenge ${idx+1}`)}</span>
+                        </button>
+                    `).join('');
+                } else {
+                    pillsContainer.style.display = 'none';
+                }
+            }
+
+            activeProblemIndex = 0;
+            loadCodingProblem(0, lastSubmission);
+        }
+
+        function selectCodingProblem(idx) {
+            if (idx < 0 || idx >= currentCodingProblems.length) return;
+            // Save current code
+            const currentCode = document.getElementById('txt-practice-code')?.value;
+            if (currentCode) {
+                studentCodePerProblem[activeProblemIndex] = currentCode;
+            }
+
+            activeProblemIndex = idx;
+            document.querySelectorAll('.challenge-tab-pill').forEach((pill, i) => {
+                if (i === idx) pill.classList.add('active');
+                else pill.classList.remove('active');
+            });
+
+            loadCodingProblem(idx, null);
+        }
+
+        function loadCodingProblem(idx, lastSubmission) {
+            const p = currentCodingProblems[idx];
+            if (!p) return;
+
+            document.getElementById('lbl-prob-title').textContent = `${p.problem_number ? `P${p.problem_number}. ` : ''}${p.title}`;
+            document.getElementById('lbl-prob-statement').textContent = p.problem_statement;
+            document.getElementById('lbl-prob-diff').textContent = p.difficulty || 'Easy';
+            document.getElementById('lbl-prob-constraints').textContent = p.constraints || 'Standard input constraints';
+            document.getElementById('lbl-prob-sample-in').textContent = p.sample_input || '';
+            document.getElementById('lbl-prob-sample-out').textContent = p.sample_output || '';
+
+            activeStarterCodes = p.starter_codes || {};
+
+            // Next/Prev challenge button visibility
+            const nextBtn = document.getElementById('btn-next-challenge-nav');
+            if (nextBtn) {
+                if (idx < currentCodingProblems.length - 1) {
+                    nextBtn.style.display = 'inline-flex';
+                    nextBtn.innerHTML = `<span>Next (${idx + 2}/${currentCodingProblems.length}) →</span>`;
+                } else {
+                    nextBtn.style.display = 'none';
+                }
+            }
+            const prevBtn = document.getElementById('btn-prev-challenge-nav');
+            if (prevBtn) {
+                if (idx > 0) {
+                    prevBtn.style.display = 'inline-flex';
+                } else {
+                    prevBtn.style.display = 'none';
+                }
+            }
+
+            // Set code editor (Restores Auto-Saved Draft from MySQL or student edits)
+            const lang = document.getElementById('sel-code-lang')?.value || 'cpp';
+            const pnum = p.problem_number || (idx + 1);
+            const savedDraft = currentTopicData?.drafts?.[pnum];
+
+            if (studentCodePerProblem[idx]) {
+                document.getElementById('txt-practice-code').value = studentCodePerProblem[idx];
+            } else if (savedDraft && savedDraft.code && savedDraft.code.trim().length > 0) {
+                document.getElementById('txt-practice-code').value = savedDraft.code;
+                if (savedDraft.language) {
+                    document.getElementById('sel-code-lang').value = savedDraft.language;
+                }
+            } else if (lastSubmission && lastSubmission.code && idx === 0) {
+                document.getElementById('txt-practice-code').value = lastSubmission.code;
+            } else {
+                document.getElementById('txt-practice-code').value = activeStarterCodes[lang] || getDefaultStarterCode(lang);
+            }
+
+            document.getElementById('panel-tc-results').style.display = 'none';
+        }
+
+        function goToNextChallenge() {
+            if (activeProblemIndex < currentCodingProblems.length - 1) {
+                selectCodingProblem(activeProblemIndex + 1);
+            }
+        }
+
+        function goToPrevChallenge() {
+            if (activeProblemIndex > 0) {
+                selectCodingProblem(activeProblemIndex - 1);
+            }
+        }
+
+        function renderDrawerLessons(allLessons) {
+            const container = document.getElementById('container-drawer-lessons');
+            if (!container || !Array.isArray(allLessons)) return;
+
+            const completedCnt = allLessons.filter(l => l.is_completed).length;
+            document.getElementById('lbl-drawer-progress').textContent = `${completedCnt}/${allLessons.length} Completed`;
+
+            const modules = {};
+            allLessons.forEach(l => {
+                if (!modules[l.module_num]) {
+                    modules[l.module_num] = { title: l.module_title, list: [] };
+                }
+                modules[l.module_num].list.push(l);
+            });
+
+            container.innerHTML = Object.keys(modules).map(mNum => {
+                const mod = modules[mNum];
+                return `
+                    <div class="drawer-mod-title">Module ${mNum}: ${mod.title}</div>
+                    ${mod.list.map(l => `
+                        <a href="lesson_study.html?id=${courseId}&lesson=${l.lesson_num}&tab=${activeTab}" 
+                           class="drawer-lesson-item ${l.lesson_num === lessonNum ? 'active' : ''}">
+                            <span>${l.lesson_num} ${l.lesson_title}</span>
+                            <span class="drawer-check-icon ${l.is_completed ? 'drawer-check-done' : ''}">
+                                ${l.is_completed ? '✓' : '○'}
+                            </span>
+                        </a>
+                    `).join('')}
+                `;
+            }).join('');
+        }
+
+        function toggleTopicDrawer() {
+            const drawer = document.getElementById('topic-drawer');
+            if (!drawer) return;
+            drawer.classList.toggle('collapsed');
+            const isCollapsed = drawer.classList.contains('collapsed');
+            const toggleBtn = document.getElementById('btn-curriculum-toggle');
+            if (toggleBtn) {
+                toggleBtn.classList.toggle('active-drawer', !isCollapsed);
+            }
+        }
+
+        // Resizer Logic
+        const resizer = document.getElementById('drawer-resizer');
+        const topicDrawer = document.getElementById('topic-drawer');
+        let isResizing = false;
+
+        if (resizer && topicDrawer) {
+            resizer.addEventListener('mousedown', (e) => {
+                isResizing = true;
+                document.body.style.cursor = 'col-resize';
+                resizer.classList.add('active');
+                topicDrawer.classList.add('no-transition');
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!isResizing) return;
+                let newWidth = e.clientX;
+                if (newWidth < 200) newWidth = 200;
+                if (newWidth > 600) newWidth = 600;
+                topicDrawer.style.width = newWidth + 'px';
+                topicDrawer.style.minWidth = newWidth + 'px';
+                topicDrawer.style.maxWidth = newWidth + 'px';
+            });
+
+            document.addEventListener('mouseup', () => {
+                if (isResizing) {
+                    isResizing = false;
+                    document.body.style.cursor = '';
+                    resizer.classList.remove('active');
+                    topicDrawer.classList.remove('no-transition');
+                }
+            });
+        }
+
+        // Coding Split Resizer Logic
+        const codingResizer = document.getElementById('coding-resizer');
+        const codingSplitContainer = document.querySelector('.coding-split-container');
+        let isCodingResizing = false;
+
+        if (codingResizer && codingSplitContainer) {
+            codingResizer.addEventListener('mousedown', (e) => {
+                isCodingResizing = true;
+                document.body.style.cursor = 'col-resize';
+                codingResizer.classList.add('active');
+                document.body.style.userSelect = 'none';
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!isCodingResizing) return;
+                const containerRect = codingSplitContainer.getBoundingClientRect();
+                let newLeftWidth = e.clientX - containerRect.left;
+                if (newLeftWidth < 250) newLeftWidth = 250;
+                if (newLeftWidth > containerRect.width - 400) newLeftWidth = containerRect.width - 400;
+                codingSplitContainer.style.gridTemplateColumns = `${newLeftWidth}px 10px 1fr`;
+            });
+
+            document.addEventListener('mouseup', () => {
+                if (isCodingResizing) {
+                    isCodingResizing = false;
+                    document.body.style.cursor = '';
+                    codingResizer.classList.remove('active');
+                    document.body.style.userSelect = '';
+                }
+            });
+        }
+
+        // ==========================================
+        // DOWNLOAD LESSON AS POWERPOINT PRESENTATION (.PPTX)
+        // ==========================================
+        function stripHtmlTags(html) {
+            if (!html) return '';
+            const tmp = document.createElement('div');
+            tmp.innerHTML = html;
+            return tmp.textContent || tmp.innerText || '';
+        }
+
+        function parseHtmlToBulletPoints(html) {
+            if (!html) return [];
+            const tmp = document.createElement('div');
+            tmp.innerHTML = html;
+            const items = [];
+            const lis = tmp.querySelectorAll('li');
+            if (lis && lis.length > 0) {
+                lis.forEach(li => {
+                    const txt = li.textContent.trim();
+                    if (txt) items.push(txt);
+                });
+            } else {
+                const ps = tmp.querySelectorAll('p, h3, h4');
+                ps.forEach(p => {
+                    const txt = p.textContent.trim();
+                    if (txt && txt.length > 3) items.push(txt);
+                });
+            }
+            return items.length > 0 ? items : [stripHtmlTags(html)];
+        }
+
+        async function downloadLessonPPT() {
+            if (!currentTopicData || !currentTopicData.lesson) {
+                showToast('Loading Topic...', 'Please wait for topic notes to load.', 'info');
+                return;
+            }
+
+            if (typeof PptxGenJS === 'undefined') {
+                showToast('PPT Engine Error', 'PowerPoint library is loading. Please click again in a second.', 'warning');
+                return;
+            }
+
+            try {
+                const { lesson, content, mcqs, codingProblems, codingProblem } = currentTopicData;
+                const pptx = new PptxGenJS();
+                
+                // 16:9 Modern Presentation Settings
+                pptx.layout = 'LAYOUT_16x9';
+                pptx.author = 'ExamFort Learning';
+                pptx.company = 'ExamFort Ecosystem';
+                pptx.title = `${lesson.lesson_num} - ${lesson.lesson_title}`;
+
+                // -------------------------------------------------------------
+                // SLIDE 1: TITLE SLIDE (Modern Dark Indigo Theme)
+                // -------------------------------------------------------------
+                const slide1 = pptx.addSlide();
+                slide1.background = { color: '0F172A' }; // Dark Slate 900
+
+                // Module Badge
+                slide1.addText(`MODULE ${lesson.module_num || '1'}: ${lesson.module_title ? lesson.module_title.toUpperCase() : 'COURSE CURRICULUM'}`, {
+                    x: 0.8, y: 1.1, w: 11.5, h: 0.4,
+                    fontSize: 13, bold: true, color: '818CF8', fontFace: 'Arial'
+                });
+
+                // Main Topic Heading
+                slide1.addText(`${lesson.lesson_num}  ${lesson.lesson_title}`, {
+                    x: 0.8, y: 1.7, w: 11.5, h: 1.5,
+                    fontSize: 32, bold: true, color: 'FFFFFF', fontFace: 'Arial'
+                });
+
+                // Summary Card
+                slide1.addShape(pptx.ShapeType.rect, {
+                    x: 0.8, y: 3.4, w: 11.5, h: 2.3,
+                    fill: { color: '1E293B' },
+                    line: { color: '4F46E5', width: 2 }
+                });
+
+                slide1.addText('Topic Overview & Objectives:', {
+                    x: 1.1, y: 3.65, w: 10.8, h: 0.35,
+                    fontSize: 14, bold: true, color: 'A5B4FC', fontFace: 'Arial'
+                });
+
+                const summaryText = content.concept_summary || 'Comprehensive masterclass on key programming paradigms and best architectural patterns.';
+                slide1.addText(summaryText, {
+                    x: 1.1, y: 4.1, w: 10.8, h: 1.4,
+                    fontSize: 15, color: 'E2E8F0', fontFace: 'Arial', lineSpacing: 24
+                });
+
+                // Footer
+                slide1.addText('ExamFort™ Certified Learning Series', {
+                    x: 0.8, y: 6.6, w: 6.0, h: 0.3,
+                    fontSize: 10, color: '64748B', fontFace: 'Arial'
+                });
+
+                // -------------------------------------------------------------
+                // SLIDE 2: CORE CONCEPTS & THEORETICAL NOTES
+                // -------------------------------------------------------------
+                const slide2 = pptx.addSlide();
+                slide2.background = { color: 'F8FAFC' };
+
+                // Header Bar
+                slide2.addShape(pptx.ShapeType.rect, {
+                    x: 0, y: 0, w: '100%', h: 1.0,
+                    fill: { color: '4F46E5' }
+                });
+                slide2.addText(`📖 Core Concepts & Theoretical Notes`, {
+                    x: 0.8, y: 0.25, w: 11.5, h: 0.5,
+                    fontSize: 20, bold: true, color: 'FFFFFF', fontFace: 'Arial'
+                });
+
+                // Theoretical Points
+                const notesBullets = parseHtmlToBulletPoints(content.detailed_notes).slice(0, 7);
+                const bulletObjects = notesBullets.map(txt => ({
+                    text: txt,
+                    options: { fontSize: 13, color: '1E293B', bullet: true, lineSpacing: 22, spaceAfter: 10 }
+                }));
+
+                slide2.addText(bulletObjects.length > 0 ? bulletObjects : [{ text: 'Detailed concepts and architectural principles.', options: { fontSize: 14, bullet: true } }], {
+                    x: 0.8, y: 1.4, w: 11.5, h: 5.2,
+                    fontFace: 'Arial'
+                });
+
+                // -------------------------------------------------------------
+                // SLIDE 3: CODE DEMONSTRATION & PRACTICAL IMPLEMENTATION
+                // -------------------------------------------------------------
+                if (content.code_example) {
+                    const slide3 = pptx.addSlide();
+                    slide3.background = { color: '0F172A' };
+
+                    // Header
+                    slide3.addText(`💻 Code Walkthrough & Implementation`, {
+                        x: 0.8, y: 0.45, w: 11.5, h: 0.5,
+                        fontSize: 20, bold: true, color: '818CF8', fontFace: 'Arial'
+                    });
+
+                    // Code Box
+                    slide3.addShape(pptx.ShapeType.rect, {
+                        x: 0.8, y: 1.15, w: 11.5, h: 5.5,
+                        fill: { color: '020617' },
+                        line: { color: '334155', width: 1 }
+                    });
+
+                    slide3.addText(content.code_example, {
+                        x: 1.0, y: 1.35, w: 11.1, h: 5.1,
+                        fontSize: 11, color: '38BDF8', fontFace: 'Courier New', lineSpacing: 18
+                    });
+                }
+
+                // -------------------------------------------------------------
+                // SLIDE 4: KEY TAKEAWAYS & BEST PRACTICES
+                // -------------------------------------------------------------
+                if (content.key_takeaways) {
+                    const slide4 = pptx.addSlide();
+                    slide4.background = { color: 'F8FAFC' };
+
+                    slide4.addShape(pptx.ShapeType.rect, {
+                        x: 0, y: 0, w: '100%', h: 1.0,
+                        fill: { color: '2563EB' }
+                    });
+                    slide4.addText(`💡 Key Takeaways & Best Practices`, {
+                        x: 0.8, y: 0.25, w: 11.5, h: 0.5,
+                        fontSize: 20, bold: true, color: 'FFFFFF', fontFace: 'Arial'
+                    });
+
+                    slide4.addShape(pptx.ShapeType.rect, {
+                        x: 0.8, y: 1.6, w: 11.5, h: 4.8,
+                        fill: { color: 'EFF6FF' },
+                        line: { color: '93C5FD', width: 2 }
+                    });
+
+                    slide4.addText(content.key_takeaways, {
+                        x: 1.2, y: 2.0, w: 10.7, h: 4.0,
+                        fontSize: 16, color: '1E3A8A', fontFace: 'Arial', lineSpacing: 28, bold: true
+                    });
+                }
+
+                // -------------------------------------------------------------
+                // SLIDE 5: PRACTICE MCQS (IF PRESENT)
+                // -------------------------------------------------------------
+                if (mcqs && mcqs.length > 0) {
+                    const slide5 = pptx.addSlide();
+                    slide5.background = { color: 'F8FAFC' };
+
+                    slide5.addShape(pptx.ShapeType.rect, {
+                        x: 0, y: 0, w: '100%', h: 1.0,
+                        fill: { color: '059669' }
+                    });
+                    slide5.addText(`📝 Topic Assessment & Review Questions`, {
+                        x: 0.8, y: 0.25, w: 11.5, h: 0.5,
+                        fontSize: 20, bold: true, color: 'FFFFFF', fontFace: 'Arial'
+                    });
+
+                    const q1 = mcqs[0];
+                    const q2 = mcqs[1] || null;
+
+                    let yPos = 1.3;
+                    [q1, q2].filter(Boolean).forEach((q, idx) => {
+                        slide5.addShape(pptx.ShapeType.rect, {
+                            x: 0.8, y: yPos, w: 11.5, h: 2.4,
+                            fill: { color: 'FFFFFF' },
+                            line: { color: 'CBD5E1', width: 1 }
+                        });
+
+                        slide5.addText(`Q${idx + 1}. ${q.question_text}`, {
+                            x: 1.0, y: yPos + 0.15, w: 11.0, h: 0.4,
+                            fontSize: 12, bold: true, color: '0F172A', fontFace: 'Arial'
+                        });
+
+                        const optTexts = (q.options || []).map(opt => `${opt.key}. ${opt.text} ${opt.key === q.correct_key ? '✓ (Answer)' : ''}`).join('   |   ');
+                        slide5.addText(optTexts, {
+                            x: 1.0, y: yPos + 0.65, w: 11.0, h: 0.6,
+                            fontSize: 11, color: '475569', fontFace: 'Arial'
+                        });
+
+                        if (q.explanation) {
+                            slide5.addText(`Explanation: ${q.explanation}`, {
+                                x: 1.0, y: yPos + 1.4, w: 11.0, h: 0.8,
+                                fontSize: 10.5, italic: true, color: '059669', fontFace: 'Arial'
+                            });
+                        }
+                        yPos += 2.6;
+                    });
+                }
+
+                const safeTitle = (lesson.lesson_title || 'Topic_Notes').replace(/[^a-zA-Z0-9_-]/g, '_');
+                const filename = `Lesson_${lesson.lesson_num || '1.1'}_${safeTitle}.pptx`;
+
+                await pptx.writeFile({ fileName: filename });
+                showToast('🎉 Presentation Downloaded!', `${filename} saved to your Downloads folder.`, 'success', 4500);
+            } catch (err) {
+                console.error('PPT generation error:', err);
+                showToast('Download Error', 'Could not generate PPT: ' + err.message, 'error');
+            }
+        }
+
+        // ==========================================
+        // DOWNLOAD LESSON AS PDF (EXACT ON-SCREEN DESIGN)
+        // ==========================================
+        async function downloadLessonPDF() {
+            if (!currentTopicData || !currentTopicData.lesson) {
+                showToast('Loading Topic...', 'Please wait for topic notes to load.', 'info');
+                return;
+            }
+            const { lesson, content } = currentTopicData;
+
+            try {
+                showToast('Generating PDF 📄', 'Building lesson PDF...', 'info', 3000);
+
+                // Use jsPDF directly (no html2canvas = works for everyone)
+                const jsPDFClass = window.jspdf?.jsPDF || window.jsPDF;
+                if (!jsPDFClass) {
+                    showToast('PDF Engine Missing', 'jsPDF library not found.', 'error');
+                    return;
+                }
+
+                const doc = new jsPDFClass({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+                const pageW = 210;
+                const pageH = 297;
+                const margin = 14;
+                const contentW = pageW - margin * 2;
+                let y = margin;
+
+                // Helper: draw colored rectangle
+                const fillRect = (x, _y, w, h, r, g, b) => {
+                    doc.setFillColor(r, g, b);
+                    doc.roundedRect(x, _y, w, h, 3, 3, 'F');
+                };
+
+                // Helper: wrapped text with auto page-break
+                const writeText = (text, x, _y, size, r, g, b, style = 'normal', maxW = contentW) => {
+                    doc.setFontSize(size);
+                    doc.setFont('helvetica', style);
+                    doc.setTextColor(r, g, b);
+                    const lines = doc.splitTextToSize(String(text || ''), maxW);
+                    lines.forEach(line => {
+                        if (_y > pageH - margin) {
+                            doc.addPage();
+                            _y = margin + 6;
+                        }
+                        doc.text(line, x, _y);
+                        _y += size * 0.45;
+                    });
+                    return _y;
+                };
+
+                const stripHtml = (html) => {
+                    if (!html) return '';
+                    return html.replace(/<[^>]*>/g, ' ')
+                               .replace(/&amp;/g, '&').replace(/&lt;/g, '<')
+                               .replace(/&gt;/g, '>').replace(/&nbsp;/g, ' ')
+                               .replace(/\s+/g, ' ').trim();
+                };
+
+                // ── HEADER BANNER ──────────────────────────────────────────
+                fillRect(margin, y, contentW, 28, 79, 70, 229); // indigo
+                doc.setFontSize(9);
+                doc.setFont('helvetica', 'bold');
+                doc.setTextColor(165, 180, 252);
+                doc.text(`Lesson ${lesson.lesson_num}  •  ${lesson.module_title || 'Course Module'}`, margin + 5, y + 7);
+
+                doc.setFontSize(16);
+                doc.setFont('helvetica', 'bold');
+                doc.setTextColor(255, 255, 255);
+                const titleLines = doc.splitTextToSize(lesson.lesson_title || '', contentW - 10);
+                titleLines.forEach((line, i) => doc.text(line, margin + 5, y + 14 + i * 7));
+                y += 32;
+
+                // ── SUMMARY ────────────────────────────────────────────────
+                if (content.concept_summary) {
+                    doc.setFontSize(9.5);
+                    doc.setFont('helvetica', 'normal');
+                    doc.setTextColor(100, 116, 139);
+                    const sumLines = doc.splitTextToSize(content.concept_summary, contentW);
+                    sumLines.forEach(line => { doc.text(line, margin, y); y += 4.5; });
+                    y += 4;
+                }
+
+                // ── LESSON NOTES SECTION ───────────────────────────────────
+                fillRect(margin, y, contentW, 7, 238, 242, 255);
+                doc.setFontSize(10);
+                doc.setFont('helvetica', 'bold');
+                doc.setTextColor(79, 70, 229);
+                doc.text('📖  Lesson Notes', margin + 4, y + 5);
+                y += 11;
+
+                const notesText = stripHtml(content.detailed_notes);
+                if (notesText) {
+                    doc.setFontSize(10);
+                    doc.setFont('helvetica', 'normal');
+                    doc.setTextColor(51, 65, 85);
+                    const noteLines = doc.splitTextToSize(notesText, contentW);
+                    noteLines.forEach(line => {
+                        if (y > pageH - margin) { doc.addPage(); y = margin + 6; }
+                        doc.text(line, margin, y);
+                        y += 5;
+                    });
+                    y += 4;
+                }
+
+                // ── CODE EXAMPLE ───────────────────────────────────────────
+                if (content.code_example) {
+                    if (y > pageH - 40) { doc.addPage(); y = margin + 6; }
+                    fillRect(margin, y, contentW, 7, 30, 41, 59);
+                    doc.setFontSize(9);
+                    doc.setFont('helvetica', 'bold');
+                    doc.setTextColor(148, 163, 184);
+                    doc.text('💻  Code Walkthrough', margin + 4, y + 5);
+                    y += 9;
+
+                    fillRect(margin, y, contentW, 2, 15, 23, 42);
+                    const codeLines = content.code_example.split('\n').slice(0, 40);
+                    doc.setFont('courier', 'normal');
+                    doc.setFontSize(8.5);
+                    doc.setTextColor(226, 232, 240);
+                    doc.setFillColor(15, 23, 42);
+                    doc.rect(margin, y, contentW, codeLines.length * 4.2 + 6, 'F');
+                    y += 4;
+                    codeLines.forEach(line => {
+                        if (y > pageH - margin) { doc.addPage(); y = margin + 6; doc.setFillColor(15, 23, 42); doc.rect(margin, y-4, contentW, 4, 'F'); }
+                        doc.text(line.substring(0, 90), margin + 3, y);
+                        y += 4.2;
+                    });
+                    y += 6;
+                }
+
+                // ── KEY TAKEAWAYS ──────────────────────────────────────────
+                if (content.key_takeaways) {
+                    if (y > pageH - 30) { doc.addPage(); y = margin + 6; }
+                    fillRect(margin, y, contentW, 7, 239, 246, 255);
+                    doc.setFontSize(10);
+                    doc.setFont('helvetica', 'bold');
+                    doc.setTextColor(29, 78, 216);
+                    doc.text('💡  Key Takeaways', margin + 4, y + 5);
+                    y += 11;
+
+                    doc.setFont('helvetica', 'normal');
+                    doc.setFontSize(10);
+                    doc.setTextColor(30, 64, 175);
+                    const taLines = doc.splitTextToSize(content.key_takeaways, contentW - 4);
+                    taLines.forEach(line => {
+                        if (y > pageH - margin) { doc.addPage(); y = margin + 6; }
+                        doc.text(line, margin + 2, y);
+                        y += 5;
+                    });
+                    y += 4;
+                }
+
+                // ── FOOTER ─────────────────────────────────────────────────
+                const totalPages = doc.internal.getNumberOfPages();
+                for (let i = 1; i <= totalPages; i++) {
+                    doc.setPage(i);
+                    doc.setFontSize(8);
+                    doc.setFont('helvetica', 'normal');
+                    doc.setTextColor(148, 163, 184);
+                    doc.text(`ExamFort™ Learning Platform  •  Lesson ${lesson.lesson_num}  •  Page ${i}/${totalPages}`, margin, pageH - 6);
+                }
+
+                const safeTitle = (lesson.lesson_title || 'Notes').replace(/[^a-zA-Z0-9_-]/g, '_');
+                const filename = `Lesson_${lesson.lesson_num || '1.1'}_${safeTitle}.pdf`;
+                doc.save(filename);
+
+                showToast('🎉 PDF Downloaded!', `${filename} saved to your Downloads folder.`, 'success', 4500);
+            } catch (err) {
+                console.error('PDF generation error:', err);
+                showToast('Download Error', 'Could not generate PDF: ' + err.message, 'error');
+            }
+        }
+
+
+        // ==========================================
+        // TOAST NOTIFICATION SYSTEM
+        // ==========================================
+        function showToast(title, message = '', type = 'success', durationMs = 4000) {
+            let container = document.getElementById('toast-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'toast-container';
+                container.className = 'toast-container';
+                document.body.appendChild(container);
+            }
+
+            const toast = document.createElement('div');
+            toast.className = `toast-notification ${type}`;
+
+            let icon = '✓';
+            if (type === 'success') icon = '🎉';
+            else if (type === 'error') icon = '✕';
+            else if (type === 'warning') icon = '⚠️';
+            else if (type === 'info') icon = '💡';
+
+            toast.innerHTML = `
+                <span class="toast-icon">${icon}</span>
+                <div class="toast-content">
+                    <div class="toast-title">${title}</div>
+                    ${message ? `<div class="toast-body">${message}</div>` : ''}
+                </div>
+                <button class="toast-close" onclick="this.parentElement.remove()">×</button>
+            `;
+
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.add('toast-hide');
+                setTimeout(() => toast.remove(), 300);
+            }, durationMs);
+        }
+
+        function copyCodeSnippet() {
+            const text = document.getElementById('lbl-code-snippet')?.textContent || '';
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('Copied to Clipboard!', 'Code snippet copied successfully.', 'success');
+            });
+        }
+
+        async function markLessonComplete() {
+            try {
+                const res = await fetch(`${baseUrl}/api/courses/lesson/complete`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ courseId, lessonNum, isCompleted: true })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    const statusEl = document.getElementById('lbl-lesson-status');
+                    statusEl.textContent = 'Completed ✓';
+                    statusEl.className = 'status-badge-chip badge-done-green';
+                    showToast('Lesson Completed ✓', `Course progress updated to ${data.progressPercent}%. You can re-watch or practice anytime.`, 'success');
+                    fetchTopicData();
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        // MCQ Rendering & Submission (Variable Count: 0 to N)
+        function renderMcqQuestions(mcqs) {
+            const container = document.getElementById('container-mcq-questions');
+            const submitBox = document.getElementById('box-mcq-submit');
+            if (!container) return;
+            selectedMcqAnswers = {};
+
+            if (!mcqs || mcqs.length === 0) {
+                if (submitBox) submitBox.style.display = 'none';
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 48px 24px; background: #ffffff; border: 1.5px dashed #cbd5e1; border-radius: 14px; margin-top: 10px;">
+                        <div style="font-size: 38px; margin-bottom: 10px;">🎯</div>
+                        <h3 style="font-size: 16px; font-weight: 800; color: #0f172a; margin-bottom: 6px;">No MCQ Practice Required for This Lesson</h3>
+                        <p style="font-size: 13px; color: #64748b; max-width: 480px; margin: 0 auto 20px; line-height: 1.5;">
+                            This lesson is designed for direct hands-on coding. Head straight to the Coding Practice sandbox to test your skills!
+                        </p>
+                        <button class="btn-next-mcq-tab" onclick="switchStudyMode('code')" style="margin: 0 auto; display: inline-flex;">
+                            <span>Proceed to Coding Practice (${currentCodingProblems.length} Challenges) →</span>
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            if (submitBox) submitBox.style.display = 'flex';
+            container.innerHTML = mcqs.map(q => `
+                <div class="mcq-question-block" id="mcq-q-box-${q.question_number}">
+                    <div class="mcq-q-title">Q${q.question_number}. ${q.question_text}</div>
+                    <div class="mcq-options-list">
+                        ${(q.options || []).map(opt => `
+                            <label class="mcq-opt-label" id="opt-label-${q.question_number}-${opt.key}">
+                                <input type="radio" name="mcq_q_${q.question_number}" value="${opt.key}" 
+                                       onchange="selectMcqOption(${q.question_number}, '${opt.key}')" style="accent-color: #4f46e5;">
+                                <span><strong>${opt.key}.</strong> ${opt.text}</span>
+                            </label>
+                        `).join('')}
+                    </div>
+                    <div class="mcq-expl-box" id="mcq-expl-${q.question_number}" style="display: none;"></div>
+                </div>
+            `).join('');
+        }
+
+        function selectMcqOption(qNum, key) {
+            selectedMcqAnswers[qNum] = key;
+            document.querySelectorAll(`[id^="opt-label-${qNum}-"]`).forEach(l => l.classList.remove('selected'));
+            document.getElementById(`opt-label-${qNum}-${key}`)?.classList.add('selected');
+        }
+
+        async function submitTopicMcqs() {
+            try {
+                const res = await fetch(`${baseUrl}/api/courses/practice/submit-mcq`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        candidateId: getActiveCandidateId(),
+                        courseId,
+                        lessonNum,
+                        answers: selectedMcqAnswers
+                    })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    const banner = document.getElementById('banner-mcq-score');
+                    banner.style.display = 'flex';
+                    document.getElementById('lbl-mcq-score-title').textContent = `Practice Score: ${data.score} / ${data.totalScore} (${data.percentage}%)`;
+
+                    showToast('MCQs Evaluated ✓', `Score: ${data.score}/${data.totalScore} (${data.percentage}%). Review explanations below.`, data.percentage >= 60 ? 'success' : 'warning');
+
+                    data.review.forEach(r => {
+                        const explEl = document.getElementById(`mcq-expl-${r.question_number}`);
+                        if (explEl) {
+                            explEl.style.display = 'block';
+                            explEl.innerHTML = `<strong>${r.is_correct ? '✓ Correct!' : '✗ Incorrect'}</strong> — Correct Answer is <strong>(${r.correct_answer})</strong>.<br>${r.explanation}`;
+                            explEl.style.borderColor = r.is_correct ? '#86efac' : '#fca5a5';
+                            explEl.style.background = r.is_correct ? '#f0fdf4' : '#fef2f2';
+                        }
+                    });
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function resetMcqQuiz() {
+            const banner = document.getElementById('banner-mcq-score');
+            if (banner) banner.style.display = 'none';
+            document.querySelectorAll('.mcq-expl-box').forEach(b => b.style.display = 'none');
+            document.querySelectorAll('.mcq-opt-label').forEach(l => l.classList.remove('selected', 'correct', 'incorrect'));
+            document.querySelectorAll('input[type="radio"]').forEach(r => r.checked = false);
+            selectedMcqAnswers = {};
+            showToast('MCQ Practice Reset', 'Answers cleared. You can attempt the quiz again.', 'info');
+        }
+
+        // Coding Practice Handlers
+        function toggleCustomInputBox() {
+            const isChecked = document.getElementById('chk-custom-input')?.checked;
+            const box = document.getElementById('box-custom-input');
+            if (box) box.style.display = isChecked ? 'block' : 'none';
+        }
+
+        function handleLangChange() {
+            const lang = document.getElementById('sel-code-lang')?.value || 'cpp';
+            const code = activeStarterCodes[lang] || getDefaultStarterCode(lang);
+            document.getElementById('txt-practice-code').value = code;
+            document.getElementById('panel-tc-results').style.display = 'none';
+        }
+
+        function getDefaultStarterCode(lang) {
+            switch(lang) {
+                case 'cpp': return '#include <iostream>\n\nint main() {\n    // Write your modern C++ solution\n    return 0;\n}\n';
+                case 'c': return '#include <stdio.h>\n\nint main() {\n    // Write your C solution\n    return 0;\n}\n';
+                case 'py': return 'import sys\n\ndef solve():\n    # Write your Python solution\n    pass\n\nif __name__ == "__main__":\n    solve()\n';
+                case 'java': return 'import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        // Write your Java solution\n    }\n}\n';
+                case 'js': return 'const fs = require("fs");\nconst input = fs.readFileSync(0, "utf-8").trim();\n\n// Write your JavaScript solution\n';
+                default: return '// Write your solution here\n';
+            }
+        }
+
+        function resetCodingStarterCode() {
+            handleLangChange();
+            showToast('Editor Reset', 'Starter template restored for this language.', 'info');
+        }
+
+        async function runPracticeCodeSandbox(isSubmitMode = false) {
+            const code = document.getElementById('txt-practice-code')?.value;
+            const lang = document.getElementById('sel-code-lang')?.value || 'cpp';
+            const hasCustomInput = document.getElementById('chk-custom-input')?.checked;
+            const customInput = hasCustomInput ? document.getElementById('txt-custom-input')?.value : undefined;
+
+            const activeProb = currentCodingProblems[activeProblemIndex] || {};
+
+            const panel = document.getElementById('panel-tc-results');
+            const container = document.getElementById('container-tc-rows');
+            const alertErr = document.getElementById('alert-compile-error');
+            const boxRaw = document.getElementById('box-raw-terminal');
+            const lblRaw = document.getElementById('lbl-raw-stdout');
+            const verdictEl = document.getElementById('lbl-tc-verdict');
+            const badgeEl = document.getElementById('lbl-tc-passed-badge');
+            const runBtn = document.getElementById('btn-run-code-action');
+            const runText = document.getElementById('lbl-run-btn-text');
+
+            if (!code || code.trim().length === 0) {
+                showToast('Code Required', 'Please write your code solution before running tests.', 'warning');
+                return;
+            }
+
+            panel.style.display = 'block';
+            alertErr.style.display = 'none';
+            boxRaw.style.display = 'none';
+            verdictEl.textContent = `Compiling & Running (${lang.toUpperCase()})...`;
+            verdictEl.style.color = '#4f46e5';
+            badgeEl.textContent = 'Executing...';
+            badgeEl.style.color = '#64748b';
+
+            if (runBtn) runBtn.disabled = true;
+            if (runText) runText.textContent = 'Compiling...';
+
+            container.innerHTML = `
+                <div style="padding: 16px; text-align: center; color: #64748b; font-size: 12px; font-weight: 600;">
+                    <span style="display:inline-block; animation: spin 1s linear infinite;">⚙️</span> Compiling code in high-performance runtime sandbox...
+                </div>
+            `;
+
+            try {
+                const res = await fetch(`${baseUrl}/api/courses/practice/run-code`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        courseId,
+                        lessonNum,
+                        problemNumber: activeProb.problem_number || (activeProblemIndex + 1),
+                        problemId: activeProb.id,
+                        language: lang,
+                        code,
+                        customInput,
+                        candidateId: getActiveCandidateId()
+                    })
+                });
+
+                const data = await res.json();
+
+                // 1. Compilation or Syntax Error
+                if (data.isCompileError || (data.stderr && !data.success)) {
+                    alertErr.style.display = 'block';
+                    alertErr.textContent = `[${data.errorType || 'Compilation Error'}]\n${data.errorMessage || data.stderr || data.stdout || 'Unknown error during build.'}`;
+                    verdictEl.textContent = 'Compilation / Runtime Error ✕';
+                    verdictEl.style.color = '#ef4444';
+                    badgeEl.textContent = 'Build Failed';
+                    badgeEl.style.color = '#ef4444';
+                    container.innerHTML = '';
+                    showToast('Compilation Error ✕', 'Please check syntax and compiler errors in the terminal.', 'error');
+                    return;
+                }
+
+                // 2. Test Cases Evaluation Suite
+                const results = data.results || [];
+                const passedCount = results.filter(r => r.passed).length;
+                const totalCount = results.length;
+                const allPassed = data.allPassed || (passedCount === totalCount && totalCount > 0);
+
+                verdictEl.textContent = allPassed ? 'All Test Cases Passed Successfully 🚀' : `${passedCount}/${totalCount} Test Cases Passed`;
+                verdictEl.style.color = allPassed ? '#16a34a' : '#ea580c';
+                badgeEl.textContent = `${passedCount}/${totalCount} Passed`;
+                badgeEl.style.color = allPassed ? '#16a34a' : '#ea580c';
+
+                container.innerHTML = results.map((r, idx) => `
+                    <div class="tc-row-card ${r.passed ? 'tc-row-pass' : 'tc-row-fail'}" style="flex-direction: column; align-items: flex-start; gap: 6px; padding: 10px 14px;">
+                        <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
+                            <strong>Test Case #${r.testIndex || idx + 1}: ${r.passed ? 'Passed ✓' : 'Failed ✕'}</strong>
+                            <span style="font-weight: 800; font-size: 11px;">${r.runtime || '0ms'}</span>
+                        </div>
+                        <div style="font-size: 11.5px; width: 100%; display: flex; flex-direction: column; gap: 4px;">
+                            <div style="display: flex; align-items: flex-start; gap: 6px;">
+                                <span style="color: #64748b; font-weight: 700; min-width: 75px;">Input:</span>
+                                <code style="background: rgba(0,0,0,0.06); padding: 2px 6px; border-radius: 4px; font-family: 'JetBrains Mono', monospace; white-space: pre-wrap; word-break: break-word;">${escapeHtml(r.input || '')}</code>
+                            </div>
+                            <div style="display: flex; align-items: flex-start; gap: 6px;">
+                                <span style="color: #64748b; font-weight: 700; min-width: 75px;">Expected:</span>
+                                <code style="background: rgba(0,0,0,0.06); padding: 2px 6px; border-radius: 4px; font-family: 'JetBrains Mono', monospace; white-space: pre-wrap; word-break: break-word;">${escapeHtml(r.expected || '')}</code>
+                            </div>
+                            ${!r.passed ? `
+                            <div style="display: flex; align-items: flex-start; gap: 6px; color: #b91c1c;">
+                                <span style="font-weight: 800; min-width: 75px;">Your Output:</span>
+                                <code style="background: #fee2e2; color: #991b1b; padding: 2px 6px; border-radius: 4px; font-family: 'JetBrains Mono', monospace; white-space: pre-wrap; word-break: break-word;">${escapeHtml(r.actual || '')}</code>
+                            </div>` : ''}
+                        </div>
+                    </div>
+                `).join('');
+
+                // Display Raw Terminal output if any
+                if (data.stdout && data.stdout.trim().length > 0) {
+                    boxRaw.style.display = 'block';
+                    lblRaw.textContent = data.stdout;
+                }
+
+                if (isSubmitMode) {
+                    // Save final submission to MySQL database
+                    await fetch(`${baseUrl}/api/courses/practice/submit-coding`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            candidateId: getActiveCandidateId(),
+                            courseId,
+                            lessonNum,
+                            problemNumber: activeProb.problem_number || (activeProblemIndex + 1),
+                            language: lang,
+                            code,
+                            results,
+                            allPassed
+                        })
+                    }).catch(() => {});
+
+                    if (allPassed) {
+                        solvedProblemIndices.add(activeProblemIndex);
+                        const currentPill = document.getElementById(`pill-challenge-${activeProblemIndex}`);
+                        if (currentPill) {
+                            currentPill.classList.add('solved');
+                            const iconSpan = currentPill.querySelector('span:first-child');
+                            if (iconSpan) iconSpan.textContent = '✓';
+                        }
+                        showToast('🎉 Solution Submitted & Saved in DB!', `100% Test Cases Passed in ${data.timeMs || 0}ms. Submission stored in MySQL.`, 'success', 5000);
+                    } else {
+                        showToast('Solution Submitted in DB', `${passedCount}/${totalCount} Test Cases Passed. Submission recorded in MySQL.`, 'warning', 5000);
+                    }
+                } else {
+                    if (allPassed) {
+                        showToast('Test Cases Passed ✓', `All ${totalCount} test cases passed (${data.timeMs || 0}ms). Ready to submit!`, 'success', 3500);
+                    } else {
+                        showToast('Test Run Complete', `${passedCount}/${totalCount} test cases passed.`, 'warning', 3500);
+                    }
+                }
+
+            } catch (err) {
+                console.error('Compiler run error:', err);
+                alertErr.style.display = 'block';
+                alertErr.textContent = `Error connecting to backend compiler service:\n${err.message}`;
+                verdictEl.textContent = 'Connection Error ✕';
+                verdictEl.style.color = '#ef4444';
+                showToast('Connection Error', 'Could not reach backend compiler service.', 'error');
+            } finally {
+                if (runBtn) runBtn.disabled = false;
+                if (runText) runText.textContent = 'Run Test Cases';
+            }
+        }
+
+        fetchTopicData();
+
+        // ═══════════════════════════════════════════════════════
+        // ANTI-COPY, ANTI-UIA & SCREEN CAPTURE PROTECTION ENGINE
+        // ═══════════════════════════════════════════════════════
+        (function initCaptureProtection() {
+            const shield = document.getElementById('ef-capture-shield');
+            if (!shield) return;
+
+            const showShield = () => shield.classList.add('active');
+            const hideShield = () => shield.classList.remove('active');
+
+            // ── 1. CLIPBOARD PROTECTION ─────────────────────────────
+            // Block copy, cut events — intercept and clear clipboard
+            const blockCopyEvent = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                // Overwrite clipboard with empty/decoy
+                if (e.clipboardData) {
+                    e.clipboardData.setData('text/plain', '');
+                    e.clipboardData.setData('text/html', '');
+                }
+                return false;
+            };
+            document.addEventListener('copy', blockCopyEvent, true);
+            document.addEventListener('cut', blockCopyEvent, true);
+
+            // Intercept and override Clipboard API writes
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                const _origWrite = navigator.clipboard.writeText.bind(navigator.clipboard);
+                navigator.clipboard.writeText = async function(text) {
+                    // Silent deny — do nothing
+                    return Promise.resolve();
+                };
+                navigator.clipboard.write = async function(data) {
+                    return Promise.resolve();
+                };
+            }
+
+            // Periodically clear clipboard (every 2s)
+            setInterval(() => {
+                try {
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        navigator.clipboard.writeText('').catch(() => {});
+                    }
+                } catch (_) {}
+            }, 2000);
+
+            // ── 2. KEYBOARD SHORTCUT BLOCKING ───────────────────────
+            document.addEventListener('keydown', (e) => {
+                // PrintScreen
+                if (e.key === 'PrintScreen' || e.code === 'PrintScreen') {
+                    e.preventDefault(); showShield(); setTimeout(hideShield, 1500); return false;
+                }
+                // Ctrl/Cmd combos: C (copy), X (cut), A (select all), S (save), P (print), U (view-source)
+                if ((e.ctrlKey || e.metaKey) && ['c','C','x','X','a','A','s','S','p','P','u','U'].includes(e.key)) {
+                    // Allow in textarea/input/code editor
+                    if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') return;
+                    e.preventDefault(); e.stopPropagation(); return false;
+                }
+                // F12 DevTools — uncomment to block (breaks dev mode)
+                // if (e.key === 'F12') { e.preventDefault(); return false; }
+            }, true);
+
+            // ── 3. RIGHT-CLICK CONTEXT MENU ─────────────────────────
+            document.addEventListener('contextmenu', (e) => {
+                e.preventDefault(); return false;
+            }, true);
+
+            // ── 4. TEXT SELECTION BLOCK ──────────────────────────────
+            document.addEventListener('selectstart', (e) => {
+                if (!e.target.closest('textarea, input, select, .code-input-area')) {
+                    e.preventDefault(); return false;
+                }
+            }, true);
+            document.addEventListener('mousedown', (e) => {
+                // Triple-click select-all prevention
+                if (e.detail >= 2 && !e.target.closest('textarea, input, select, .code-input-area')) {
+                    e.preventDefault(); return false;
+                }
+            }, true);
+
+            // ── 5. DRAG PROTECTION ───────────────────────────────────
+            document.addEventListener('dragstart', (e) => { e.preventDefault(); return false; }, true);
+
+            // ── 6. UIA / ACCESSIBILITY TREE HARDENING ───────────────
+            // Add aria-hidden to content sections so screen readers / UIA can't read text
+            const protectedSections = [
+                '.lesson-notes-body', '.lesson-notes-card', '.mcq-practice-card',
+                '.code-problem-panel', '.prob-desc-text', '.prob-specs-box',
+                '.takeaways-alert', '#lbl-detailed-notes', '#lbl-key-takeaways'
+            ];
+            // Apply after DOM loads
+            setTimeout(() => {
+                protectedSections.forEach(sel => {
+                    document.querySelectorAll(sel).forEach(el => {
+                        el.setAttribute('aria-hidden', 'true');
+                        el.setAttribute('role', 'none');
+                    });
+                });
+            }, 1000);
+
+            // ── 7. DEVTOOLS DETECTION (size-based heuristic) ─────────
+            let devtoolsOpen = false;
+            const devtoolsCheck = setInterval(() => {
+                const threshold = 160;
+                const widthDiff = window.outerWidth - window.innerWidth > threshold;
+                const heightDiff = window.outerHeight - window.innerHeight > threshold;
+                if ((widthDiff || heightDiff) !== devtoolsOpen) {
+                    devtoolsOpen = !devtoolsOpen;
+                    if (devtoolsOpen) {
+                        showShield();
+                    } else {
+                        setTimeout(hideShield, 800);
+                    }
+                }
+            }, 1000);
+
+            // ── 8. SCREEN SHARE (getDisplayMedia) INTERCEPTION ──────
+            if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
+                const _orig = navigator.mediaDevices.getDisplayMedia.bind(navigator.mediaDevices);
+                navigator.mediaDevices.getDisplayMedia = async function (constraints) {
+                    showShield();
+                    try {
+                        const stream = await _orig(constraints);
+                        stream.getTracks().forEach(track => {
+                            track.addEventListener('ended', () => {
+                                if (!stream.getTracks().some(t => t.readyState === 'live')) hideShield();
+                            });
+                        });
+                        return stream;
+                    } catch (err) { hideShield(); throw err; }
+                };
+            }
+
+            // ── 9. VISIBILITY CHANGE (Tab switch, minimize) ──────────
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'hidden') showShield();
+                else setTimeout(hideShield, 600);
+            });
+
+        })();
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Examinations & History - ExamFort</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Plus Jakarta Sans', -apple-system, sans-serif; background: #f8fafc; color: #0f172a; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+        
+        .exams-viewport { display: flex; flex-direction: column; height: 100vh; width: 100vw; overflow: hidden; background: #f8fafc; }
+        .exams-scroll { flex: 1; overflow-y: auto; padding: 22px 36px 32px 36px; }
+        
+        /* TOP BAR */
+        .exams-top-header { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-bottom: 22px; flex-wrap: wrap; }
+        .exams-header-left h1 { font-size: 22px; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 8px; }
+        .exams-header-left p { font-size: 13px; color: #64748b; margin-top: 2px; }
+        
+        .exams-top-meta { display: flex; align-items: center; gap: 12px; }
+        .date-chip-live { background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 8px; padding: 7px 12px; font-size: 12px; font-weight: 700; color: #475569; display: flex; align-items: center; gap: 6px; }
+        
+        /* 4 STAT METRICS CARDS */
+        .metrics-4-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+        .stat-card-item { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 16px 18px; display: flex; align-items: center; gap: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); transition: transform 0.15s; }
+        .stat-card-item:hover { transform: translateY(-2px); border-color: #cbd5e1; }
+        .stat-icon-wrapper { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+        .stat-meta-col strong { display: block; font-size: 20px; font-weight: 800; color: #0f172a; line-height: 1.1; margin-bottom: 3px; }
+        .stat-meta-col label { display: block; font-size: 11.5px; font-weight: 600; color: #64748b; }
+        
+        /* TABS & SEARCH BAR */
+        .controls-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
+        .tab-filter-group { display: flex; align-items: center; gap: 6px; background: #f1f5f9; padding: 4px; border-radius: 10px; }
+        .tab-btn-pill { background: transparent; border: none; padding: 7px 16px; border-radius: 8px; font-size: 12.5px; font-weight: 700; color: #64748b; cursor: pointer; transition: all 0.15s; }
+        .tab-btn-pill.active { background: #ffffff; color: #4f46e5; box-shadow: 0 2px 6px rgba(0,0,0,0.06); }
+        
+        .search-box-input { display: flex; align-items: center; gap: 8px; background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 8px; padding: 7px 14px; font-size: 12.5px; width: 260px; }
+        .search-box-input input { border: none; outline: none; width: 100%; font-size: 12.5px; font-family: inherit; }
+        
+        /* EXAM CARDS GRID */
+        .exams-cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 20px; margin-bottom: 24px; }
+        
+        .exam-portal-card { background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 16px; padding: 22px; box-shadow: 0 1px 4px rgba(0,0,0,0.03); display: flex; flex-direction: column; transition: all 0.2s; position: relative; }
+        .exam-portal-card:hover { transform: translateY(-3px); box-shadow: 0 6px 16px rgba(0,0,0,0.06); border-color: #cbd5e1; }
+        .exam-portal-card.card-completed { border-color: #d1fae5; background: linear-gradient(180deg, #ffffff 0%, #f0fdf4 100%); }
+        .exam-portal-card.card-active { border-color: #c7d2fe; background: linear-gradient(180deg, #ffffff 0%, #f5f3ff 100%); }
+        
+        .card-top-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+        .card-cat-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 6px; }
+        .cat-badge-active { background: #ede9fe; color: #4f46e5; }
+        .cat-badge-completed { background: #dcfce7; color: #15803d; }
+        .cat-badge-upcoming { background: #fef3c7; color: #b45309; }
+        
+        .status-pill-chip { font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 6px; }
+        .status-active-pulse { background: #ecfdf5; color: #059669; display: flex; align-items: center; gap: 4px; }
+        .status-completed-badge { background: #dcfce7; color: #166534; }
+        .status-expired-badge { background: #fee2e2; color: #dc2626; }
+        
+        .card-title-text { font-size: 15.5px; font-weight: 800; color: #0f172a; line-height: 1.3; margin-bottom: 6px; }
+        .card-desc-text { font-size: 12px; color: #64748b; line-height: 1.5; margin-bottom: 16px; flex: 1; }
+        
+        .card-specs-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 12px; margin-bottom: 16px; font-size: 11.5px; }
+        .spec-item { display: flex; align-items: center; gap: 6px; color: #475569; }
+        .spec-item strong { color: #0f172a; font-weight: 700; }
+        
+        /* SCORE REPORT BANNER FOR COMPLETED EXAMS */
+        .score-report-box { background: #ffffff; border: 1.5px solid #86efac; border-radius: 10px; padding: 10px 12px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; }
+        .score-label-sub { font-size: 11px; color: #15803d; font-weight: 700; }
+        .score-val-big { font-size: 15px; font-weight: 800; color: #166534; }
+        
+        /* BUTTONS */
+        .btn-card-action { width: 100%; border: none; border-radius: 10px; padding: 11px 16px; font-size: 13px; font-weight: 800; cursor: pointer; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.15s; }
+        .btn-action-start { background: #4f46e5; color: #ffffff; box-shadow: 0 3px 10px rgba(79,70,229,0.25); }
+        .btn-action-start:hover { background: #4338ca; }
+        .btn-action-completed { background: #10b981; color: #ffffff; filter: blur(0.5px); opacity: 0.9; box-shadow: 0 2px 6px rgba(16,185,129,0.25); }
+        .btn-action-disabled { background: #94a3b8; color: #ffffff; filter: blur(0.8px); opacity: 0.6; pointer-events: none; cursor: not-allowed; }
+        
+        /* EMPTY STATE */
+        .empty-catalog-state { background: #ffffff; border: 1.5px dashed #cbd5e1; border-radius: 16px; padding: 48px 24px; text-align: center; color: #64748b; margin-bottom: 24px; }
+        .empty-icon-lg { font-size: 42px; margin-bottom: 12px; }
+        
+        /* FOOTER STATUS BAR */
+        .footer-status-bar { height: 56px; min-height: 56px; background: #ffffff; border-top: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; padding: 0 32px; }
+        .footer-left { display: flex; align-items: center; gap: 32px; }
+        .footer-status-item { display: flex; align-items: center; gap: 10px; }
+        .status-dot-circle { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 15px; }
+        .dot-green { background: #dcfce7; color: #16a34a; }
+        .status-label-group strong { display: block; font-size: 12px; font-weight: 800; color: #0f172a; }
+        .status-label-group span { display: block; font-size: 10.5px; color: #16a34a; font-weight: 600; }
+        
+        .btn-footer-close-app { display: flex; align-items: center; gap: 10px; background: none; border: 1px solid #fecaca; border-radius: 10px; padding: 8px 16px; cursor: pointer; transition: all 0.15s; }
+        .btn-footer-close-app:hover { background: #fef2f2; border-color: #ef4444; }
+        .power-circle-icon { width: 28px; height: 28px; border-radius: 50%; background: #fee2e2; color: #dc2626; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold; }
+        .close-app-text-group { text-align: left; }
+        .close-app-text-group strong { display: block; font-size: 12px; font-weight: 800; color: #dc2626; }
+        .close-app-text-group span { display: block; font-size: 10px; color: #ef4444; }
+    </style>
+</head>
+<body>
+    <div class="exams-viewport">
+        <!-- SECURITY WATERMARK -->
+        <div class="security-watermark-overlay" id="watermark-overlay"></div>
+
+        <div style="display: flex; flex: 1; overflow: hidden;">
+            <!-- SIDEBAR -->
+            <aside class="dashboard-sidebar" style="width: 240px; min-width: 240px; height: 100%; overflow-y: auto; background: #ffffff; border-right: 1.5px solid #e2e8f0; padding: 20px 14px; display: flex; flex-direction: column; justify-content: space-between; flex-shrink: 0;">
+                <div>
+                    <div class="sidebar-brand-box" style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+                        <div class="sidebar-logo" style="width: 32px; height: 32px; background: #ede9fe; color: #4f46e5; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px;">🛡️</div>
+                        <div class="sidebar-brand-title">
+                            <strong style="font-size: 14px; color: #0f172a; display: block; font-weight: 800;">ExamFort</strong>
+                            <span style="font-size: 10px; color: #64748b;">Secure Exam Environment</span>
+                        </div>
+                    </div>
+
+                    <nav class="sidebar-nav-menu" style="display: flex; flex-direction: column; gap: 4px;">
+                        <a href="dashboard.html" class="sidebar-nav-item">
+                            <span class="nav-icon">⊞</span>
+                            <span>Dashboard</span>
+                        </a>
+                        <a href="exams.html" class="sidebar-nav-item active" style="background: #4f46e5; color: #ffffff; font-weight: 700; box-shadow: 0 2px 6px rgba(79, 70, 229, 0.25);">
+                            <span class="nav-icon">📑</span>
+                            <span>My Exams</span>
+                        </a>
+                        <a href="exam_details.html" class="sidebar-nav-item">
+                            <span class="nav-icon">📄</span>
+                            <span>Exam Details</span>
+                        </a>
+                        <a href="courses.html" class="sidebar-nav-item">
+                            <span class="nav-icon">📚</span>
+                            <span>Course</span>
+                        </a>
+                        <a href="profile.html" class="sidebar-nav-item">
+                            <span class="nav-icon">👤</span>
+                            <span>My Profile</span>
+                        </a>
+                        <a href="instructions.html" class="sidebar-nav-item">
+                            <span class="nav-icon">📖</span>
+                            <span>Instructions</span>
+                        </a>
+                        <a href="support.html" class="sidebar-nav-item">
+                            <span class="nav-icon">❓</span>
+                            <span>Help & Support</span>
+                        </a>
+                        <a href="index.html?logout=1" onclick="logoutUser(event)" class="sidebar-nav-item">
+                            <span class="nav-icon">🚪</span>
+                            <span>Log Out</span>
+                        </a>
+                    </nav>
+                </div>
+
+                <div class="sidebar-secure-pill-card" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; text-align: center;">
+                    <div class="secure-icon-circle" style="width: 32px; height: 32px; border-radius: 50%; background: #ede9fe; color: #4f46e5; margin: 0 auto 6px; display: flex; align-items: center; justify-content: center; font-size: 15px;">🛡️</div>
+                    <strong style="font-size: 12px; color: #0f172a; display: block; font-weight: 800;">Secure Environment</strong>
+                    <p style="font-size: 10px; color: #64748b; margin: 2px 0 6px;">Protected & encrypted examination portal.</p>
+                    <span class="status-protected-badge" style="display: inline-block; font-size: 10px; font-weight: 800; color: #16a34a; background: #ecfdf5; padding: 2px 8px; border-radius: 10px;">Protected 🔒</span>
+                </div>
+            </aside>
+
+            <!-- MAIN EXAMS PORTAL CONTENT -->
+            <main class="exams-scroll">
+                
+                <!-- TOP HEADER -->
+                <div class="exams-top-header">
+                    <div class="exams-header-left">
+                        <h1><span>📑</span> My Examinations & History</h1>
+                        <p>View upcoming scheduled assessments, attempt active tests, and review past completed test scores.</p>
+                    </div>
+                    <div class="exams-top-meta">
+                        <div class="date-chip-live">
+                            <span>📅</span>
+                            <span id="lbl-live-date">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4 SUMMARY METRICS CARDS -->
+                <div class="metrics-4-grid">
+                    <div class="stat-card-item">
+                        <div class="stat-icon-wrapper" style="background: #ede9fe; color: #6366f1;">📄</div>
+                        <div class="stat-meta-col">
+                            <strong id="stat-total-exams">6</strong>
+                            <label>Total Exams</label>
+                        </div>
+                    </div>
+                    <div class="stat-card-item">
+                        <div class="stat-icon-wrapper" style="background: #dcfce7; color: #16a34a;">✓</div>
+                        <div class="stat-meta-col">
+                            <strong id="stat-completed-exams">3</strong>
+                            <label>Completed Exams</label>
+                        </div>
+                    </div>
+                    <div class="stat-card-item">
+                        <div class="stat-icon-wrapper" style="background: #fef3c7; color: #d97706;">🕒</div>
+                        <div class="stat-meta-col">
+                            <strong id="stat-upcoming-exams">3</strong>
+                            <label>Upcoming / Active</label>
+                        </div>
+                    </div>
+                    <div class="stat-card-item">
+                        <div class="stat-icon-wrapper" style="background: #e0f2fe; color: #0284c7;">📊</div>
+                        <div class="stat-meta-col">
+                            <strong id="stat-avg-score">75%</strong>
+                            <label>Average Score</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CONTROLS: TABS + SEARCH -->
+                <div class="controls-toolbar">
+                    <div class="tab-filter-group" id="tabs-exam-filter">
+                        <button class="tab-btn-pill active" data-tab="all" onclick="switchExamTab('all')">All Exams (<span id="cnt-tab-all">0</span>)</button>
+                        <button class="tab-btn-pill" data-tab="upcoming" onclick="switchExamTab('upcoming')">Upcoming & Active (<span id="cnt-tab-upcoming">0</span>)</button>
+                        <button class="tab-btn-pill" data-tab="completed" onclick="switchExamTab('completed')">Past & Completed (<span id="cnt-tab-completed">0</span>)</button>
+                    </div>
+                    <div class="search-box-input">
+                        <span>🔍</span>
+                        <input type="text" id="input-search-exam" placeholder="Search exams by title or code..." oninput="handleSearchExams()">
+                    </div>
+                </div>
+
+                <!-- EXAM CARDS GRID (CONTAINER) -->
+                <div class="exams-cards-grid" id="container-exams-grid">
+                    <!-- Populated dynamically via MySQL API -->
+                </div>
+
+            </main>
+        </div>
+
+        <!-- FOOTER STATUS BAR -->
+        <footer class="footer-status-bar">
+            <div class="footer-left">
+                <div class="footer-status-item">
+                    <div class="status-dot-circle dot-green">📶</div>
+                    <div class="status-label-group">
+                        <strong>Network</strong>
+                        <span id="lbl-net-status">Connected (Ping: 18 ms)</span>
+                    </div>
+                </div>
+                <div class="footer-status-item">
+                    <div class="status-dot-circle dot-green">🛡️</div>
+                    <div class="status-label-group">
+                        <strong>System Secure</strong>
+                        <span id="lbl-sec-status">All good (Monitored)</span>
+                    </div>
+                </div>
+            </div>
+            <button class="btn-footer-close-app" id="btn-footer-exit" onclick="exitApplication()">
+                <div class="power-circle-icon">⏻</div>
+                <div class="close-app-text-group">
+                    <strong>Close Application</strong>
+                    <span>App will close and exam will not start</span>
+                </div>
+            </button>
+        </footer>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script>
+        const baseUrl = window.EXAMFORT_ENV?.API_BASE_URL || 'http://localhost:5000';
+
+        function exitApplication() {
+            if (window.electronAPI?.exitApp) {
+                window.electronAPI.exitApp();
+            } else {
+                window.close();
+            }
+        }
+
+        function logoutUser(e) {
+            if (e) e.preventDefault();
+            try {
+                sessionStorage.clear();
+                localStorage.removeItem('examfort_session');
+                localStorage.removeItem('exam_candidate');
+                localStorage.removeItem('examfort_user');
+                localStorage.removeItem('exam_start_mode');
+                localStorage.removeItem('examfort_app_session_v2');
+            } catch (_) {}
+            window.location.href = 'index.html?logout=1';
+        }
+
+        let cand = null;
+        try {
+            cand = JSON.parse(sessionStorage.getItem('exam_candidate') || 'null')
+                || JSON.parse(sessionStorage.getItem('examfort_user') || 'null')
+                || JSON.parse(localStorage.getItem('examfort_session') || '{}').candidate
+                || JSON.parse(localStorage.getItem('examfort_app_session_v2') || '{}').candidate;
+        } catch (_) {}
+
+        if (!cand) {
+            window.location.href = './index.html';
+        }
+
+        const candId = cand ? (cand.student_id || cand.id || cand.userId) : 'STU123456';
+
+        // 1. Live Laptop Clock
+        function updateLiveDateTime() {
+            const el = document.getElementById('lbl-live-date');
+            if (!el) return;
+            const now = new Date();
+            const datePart = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+            const timePart = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+            el.textContent = `${datePart}, ${timePart}`;
+        }
+        updateLiveDateTime();
+        setInterval(updateLiveDateTime, 1000);
+
+        // Helper: Parse exam start & end datetimes accurately
+        function parseExamDateTimeRange(dateStr, timeStr) {
+            if (!dateStr) return { start: null, end: null, startTime: '10:00 AM', endTime: '12:00 PM' };
+            try {
+                let startPart = '';
+                let endPart = '';
+                if (timeStr && timeStr.includes('-')) {
+                    const parts = timeStr.split('-');
+                    startPart = parts[0].trim();
+                    endPart = parts[1].trim();
+                } else if (timeStr) {
+                    startPart = timeStr.trim();
+                    endPart = timeStr.trim();
+                }
+
+                function toTime24(tStr, defaultHour, defaultMin) {
+                    if (!tStr) return { hour: defaultHour, minute: defaultMin };
+                    const match = tStr.match(/(\d{1,2})(?::(\d{2}))?(?::(\d{2}))?\s*(AM|PM)?/i);
+                    if (!match) return { hour: defaultHour, minute: defaultMin };
+                    let h = parseInt(match[1], 10);
+                    let m = match[2] ? parseInt(match[2], 10) : 0;
+                    const meridian = match[4] ? match[4].toUpperCase() : null;
+                    if (meridian === 'PM' && h < 12) h += 12;
+                    if (meridian === 'AM' && h === 12) h = 0;
+                    return { hour: h, minute: m };
+                }
+
+                let year, month, day;
+                const isoMatch = String(dateStr).trim().match(/^(\d{4})[/-](\d{1,2})[/-](\d{1,2})/);
+                if (isoMatch) {
+                    year = parseInt(isoMatch[1], 10);
+                    month = parseInt(isoMatch[2], 10) - 1;
+                    day = parseInt(isoMatch[3], 10);
+                } else {
+                    const months = { jan:0, feb:1, mar:2, apr:3, may:4, jun:5, jul:6, aug:7, sep:8, oct:9, nov:10, dec:11 };
+                    const tokens = String(dateStr).trim().split(/[\s,/-]+/);
+                    let foundMonth = -1;
+                    let numbers = [];
+                    for (const t of tokens) {
+                        const low = t.toLowerCase().substring(0, 3);
+                        if (months[low] !== undefined) {
+                            foundMonth = months[low];
+                        } else if (/^\d+$/.test(t)) {
+                            numbers.push(parseInt(t, 10));
+                        }
+                    }
+                    if (foundMonth !== -1) {
+                        month = foundMonth;
+                        year = numbers.find(n => n > 1900) || new Date().getFullYear();
+                        day = numbers.find(n => n <= 31 && n !== year) || 1;
+                    } else {
+                        const temp = new Date(dateStr);
+                        if (!isNaN(temp.getTime())) {
+                            year = temp.getFullYear();
+                            month = temp.getMonth();
+                            day = temp.getDate();
+                        }
+                    }
+                }
+
+                if (year === undefined || month === undefined || day === undefined) {
+                    return { start: null, end: null, startTime: startPart || '10:00 AM', endTime: endPart || '12:00 PM' };
+                }
+
+                const tStart = toTime24(startPart, 0, 0);
+                const tEnd = toTime24(endPart, 23, 59);
+
+                const start = new Date(year, month, day, tStart.hour, tStart.minute, 0);
+                const end = new Date(year, month, day, tEnd.hour, tEnd.minute, 59);
+
+                return {
+                    start: isNaN(start.getTime()) ? null : start,
+                    end: isNaN(end.getTime()) ? null : end,
+                    startTime: startPart || '10:00 AM',
+                    endTime: endPart || '12:00 PM'
+                };
+            } catch (_) {
+                return { start: null, end: null, startTime: '10:00 AM', endTime: '12:00 PM' };
+            }
+        }
+
+        let allExamsList = [];
+        let currentTab = 'all';
+
+        // Fetch Complete Exams Catalog from MySQL
+        async function fetchExamsCatalog() {
+            try {
+                const res = await fetch(`${baseUrl}/api/user/exams/${candId}`);
+                const data = await res.json();
+                
+                if (data.success && Array.isArray(data.exams)) {
+                    const now = new Date();
+                    allExamsList = data.exams.map(ex => {
+                        // Check local submission as well
+                        const subKey = `exam_submitted_${candId}_${ex.exam_code}`;
+                        const isSubLocally = localStorage.getItem(subKey) === 'true' || sessionStorage.getItem(subKey) === 'true';
+                        const isSubmitted = ex.is_submitted || isSubLocally;
+
+                        const { start, end, startTime } = parseExamDateTimeRange(ex.exam_date, ex.exam_time);
+                        const isFuture = start ? (now < start) : false;
+                        const isExpired = end ? (now > end) : false;
+                        
+                        return {
+                            ...ex,
+                            is_submitted: isSubmitted,
+                            is_future: isFuture,
+                            is_expired: isExpired,
+                            start_time_part: startTime
+                        };
+                    });
+
+                    updateSummaryMetrics();
+                    renderExamsGrid();
+                }
+            } catch (err) {
+                console.error('Error fetching exams catalog:', err);
+            }
+        }
+
+        function updateSummaryMetrics() {
+            const total = allExamsList.length;
+            const completed = allExamsList.filter(e => e.is_submitted).length;
+            const upcoming = allExamsList.filter(e => !e.is_submitted && !e.is_expired).length;
+
+            const scores = allExamsList
+                .filter(e => e.is_submitted && e.is_results_published && e.submission && e.submission.percentage != null)
+                .map(e => e.submission.percentage);
+            
+            const avg = scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 75;
+
+            document.getElementById('stat-total-exams').textContent = total;
+            document.getElementById('stat-completed-exams').textContent = completed;
+            document.getElementById('stat-upcoming-exams').textContent = upcoming;
+            document.getElementById('stat-avg-score').textContent = `${avg}%`;
+
+            document.getElementById('cnt-tab-all').textContent = total;
+            document.getElementById('cnt-tab-upcoming').textContent = upcoming;
+            document.getElementById('cnt-tab-completed').textContent = completed;
+        }
+
+        function switchExamTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab-btn-pill').forEach(btn => {
+                if (btn.getAttribute('data-tab') === tab) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+            renderExamsGrid();
+        }
+
+        function handleSearchExams() {
+            renderExamsGrid();
+        }
+
+        function renderExamsGrid() {
+            const container = document.getElementById('container-exams-grid');
+            if (!container) return;
+
+            const query = (document.getElementById('input-search-exam')?.value || '').toLowerCase().trim();
+
+            let filtered = allExamsList.filter(ex => {
+                const matchQuery = ex.title.toLowerCase().includes(query) || ex.exam_code.toLowerCase().includes(query) || ex.category.toLowerCase().includes(query);
+                if (!matchQuery) return false;
+
+                if (currentTab === 'upcoming') {
+                    return !ex.is_submitted && !ex.is_expired;
+                } else if (currentTab === 'completed') {
+                    return ex.is_submitted;
+                }
+                return true;
+            });
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-catalog-state" style="grid-column: 1 / -1;">
+                        <div class="empty-icon-lg">${currentTab === 'completed' ? '📝' : '🔍'}</div>
+                        <strong style="font-size: 15px; color: #0f172a; display: block; margin-bottom: 4px;">
+                            ${currentTab === 'completed' ? 'No completed exams found' : (currentTab === 'upcoming' ? 'No upcoming exams scheduled' : 'No matching exams found')}
+                        </strong>
+                        <p style="font-size: 12px; color: #64748b;">
+                            ${currentTab === 'completed' ? 'Complete active assessments to see your past scorecards and evaluation reports here.' : 'Try adjusting your search query or tab filters.'}
+                        </p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = filtered.map(ex => {
+                const isCompleted = ex.is_submitted;
+                const isExpired = ex.is_expired && !isCompleted;
+                const isFuture = ex.is_future && !isCompleted && !isExpired;
+                const cardClass = isCompleted ? 'card-completed' : (isExpired ? '' : (isFuture ? 'card-future' : 'card-active'));
+
+                let statusBadge = '';
+                let actionBtn = '';
+
+                if (isCompleted) {
+                    statusBadge = `<span class="status-pill-chip status-completed-badge">✓ Completed</span>`;
+                    actionBtn = `
+                        <div class="score-report-box" style="background: #f0fdf4; border: 1.5px solid #86efac; display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; margin-bottom: 0; border-radius: 8px;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span style="font-size: 15px;">✅</span>
+                                <span style="font-weight: 700; font-size: 12.5px; color: #15803d;">Exam Submitted Successfully</span>
+                            </div>
+                            <span class="status-pill-chip status-completed-badge" style="margin: 0; padding: 4px 10px; font-size: 11px; font-weight: 700;">✓ Done</span>
+                        </div>
+                    `;
+                } else if (isFuture) {
+                    // Scheduled in future: Locked
+                    statusBadge = `<span class="status-pill-chip" style="background:#fef3c7; color:#b45309; border:1px solid #fde68a;">⏳ Scheduled</span>`;
+                    actionBtn = `
+                        <button class="btn-card-action btn-action-disabled" disabled style="background:#f8fafc; color:#64748b; border:1px solid #e2e8f0; cursor:not-allowed; display:flex; justify-content:center; align-items:center; gap:6px;" title="This examination is scheduled for ${ex.exam_date}">
+                            <span>🔒 Starts on ${ex.exam_date} (${ex.start_time_part || '10:00 AM'})</span>
+                        </button>
+                    `;
+                } else if (isExpired) {
+                    statusBadge = `<span class="status-pill-chip status-expired-badge">⌛ Time Expired</span>`;
+                    actionBtn = `
+                        <button class="btn-card-action btn-action-disabled" disabled title="The examination window has passed.">
+                            Exam Window Closed ⌛
+                        </button>
+                    `;
+                } else {
+                    // Active right now
+                    statusBadge = `<span class="status-pill-chip status-active-pulse">● Active</span>`;
+                    actionBtn = `
+                        <a href="instructions.html?code=${ex.exam_code}" class="btn-card-action btn-action-start">
+                            <span>Start Exam</span> <span>→</span>
+                        </a>
+                    `;
+                }
+
+                return `
+                    <div class="exam-portal-card ${cardClass}">
+                        <div class="card-top-row">
+                            <span class="card-cat-badge ${isCompleted ? 'cat-badge-completed' : (isExpired ? 'cat-badge-upcoming' : 'cat-badge-active')}">
+                                <span>${ex.icon || '📝'}</span>
+                                <span>${ex.category}</span>
+                            </span>
+                            ${statusBadge}
+                        </div>
+
+                        <h3 class="card-title-text">${ex.title}</h3>
+                        <p class="card-desc-text">${ex.description}</p>
+
+                        <div class="card-specs-list">
+                            <div class="spec-item">
+                                <span>📅</span>
+                                <span>Date: <strong>${ex.exam_date}</strong></span>
+                            </div>
+                            <div class="spec-item">
+                                <span>⏱️</span>
+                                <span>Duration: <strong>${ex.duration_minutes}m</strong></span>
+                            </div>
+                            <div class="spec-item">
+                                <span>📝</span>
+                                <span>Questions: <strong>${ex.total_questions}</strong></span>
+                            </div>
+                            <div class="spec-item">
+                                <span>🏆</span>
+                                <span>Total Marks: <strong>${ex.total_marks}</strong></span>
+                            </div>
+                        </div>
+
+                        ${actionBtn}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        fetchExamsCatalog();
+        document.getElementById('btn-footer-exit')?.addEventListener('click', exitApplication);
+    </script>
+</body>
+</html>

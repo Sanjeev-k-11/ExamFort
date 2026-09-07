@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Details - ExamFort</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="js/html2pdf.bundle.min.js"></script>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Plus Jakarta Sans', -apple-system, sans-serif; background: #f8fafc; color: #0f172a; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+        
+        .course-viewport { display: flex; flex-direction: column; height: 100vh; width: 100vw; overflow: hidden; background: #f8fafc; }
+        .course-scroll { flex: 1; overflow-y: auto; padding: 22px 36px 28px 36px; }
+        
+        /* BACK NAV */
+        .btn-back-nav { display: inline-flex; align-items: center; gap: 8px; color: #4f46e5; font-size: 13px; font-weight: 700; text-decoration: none; margin-bottom: 16px; cursor: pointer; transition: transform 0.15s; }
+        .btn-back-nav:hover { transform: translateX(-3px); }
+        
+        /* TOP HERO CARD (MATCHES IMAGE 4) */
+        .course-hero-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 22px 26px; display: flex; justify-content: space-between; align-items: center; gap: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); margin-bottom: 20px; }
+        .hero-left-flex { display: flex; align-items: center; gap: 18px; }
+        .hero-code-icon { width: 56px; height: 56px; border-radius: 14px; background: #ede9fe; color: #4f46e5; font-size: 24px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .hero-title-group h1 { font-size: 21px; font-weight: 800; color: #0f172a; margin-bottom: 4px; }
+        .hero-title-group p { font-size: 12.5px; color: #64748b; margin-bottom: 8px; line-height: 1.4; }
+        .hero-meta-badges { display: flex; align-items: center; gap: 14px; font-size: 11.5px; color: #475569; font-weight: 600; }
+        .hero-badge-pill { display: flex; align-items: center; gap: 5px; }
+        
+        /* HERO PROGRESS RIGHT */
+        .hero-right-progress { width: 250px; display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; }
+        .progress-header-row { display: flex; justify-content: space-between; align-items: center; font-size: 12.5px; }
+        .progress-header-row strong { color: #0f172a; font-weight: 800; }
+        .progress-header-row span { color: #4f46e5; font-weight: 800; }
+        .progress-track-bg { width: 100%; height: 7px; background: #e2e8f0; border-radius: 4px; overflow: hidden; }
+        .progress-fill-bar { height: 100%; background: #4f46e5; border-radius: 4px; transition: width 0.3s; }
+        .progress-sub-text { font-size: 10.5px; color: #64748b; }
+        .btn-continue-learning { width: 100%; background: #4f46e5; color: #ffffff; border: none; border-radius: 8px; padding: 8px 14px; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: background 0.15s; margin-top: 4px; }
+        .btn-continue-learning:hover { background: #4338ca; }
+        
+        /* TABS (MATCHES IMAGE 4) */
+        .course-tabs-bar { display: flex; gap: 24px; border-bottom: 1.5px solid #e2e8f0; margin-bottom: 22px; }
+        .course-tab-item { font-size: 13px; font-weight: 600; color: #64748b; padding-bottom: 10px; cursor: pointer; border-bottom: 2.5px solid transparent; transition: all 0.15s; }
+        .course-tab-item:hover { color: #0f172a; }
+        .course-tab-item.active { font-weight: 800; color: #4f46e5; border-bottom-color: #4f46e5; }
+        
+        /* 2-COLUMN GRID (ABOUT COURSE + ACCORDION / TABS) */
+        .course-content-grid { display: grid; grid-template-columns: 340px 1fr; gap: 24px; margin-bottom: 24px; }
+        
+        /* ABOUT THIS COURSE CARD */
+        .about-course-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 22px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); display: flex; flex-direction: column; height: fit-content; }
+        .about-course-card h3 { font-size: 14.5px; font-weight: 800; color: #0f172a; margin-bottom: 8px; }
+        .about-course-desc { font-size: 12.5px; color: #64748b; line-height: 1.6; margin-bottom: 18px; }
+        
+        .course-meta-table { display: flex; flex-direction: column; gap: 12px; border-top: 1px solid #f1f5f9; padding-top: 14px; font-size: 12px; }
+        .meta-table-row { display: flex; justify-content: space-between; align-items: center; }
+        .meta-table-label { display: flex; align-items: center; gap: 8px; color: #64748b; font-weight: 600; }
+        .meta-table-val { color: #0f172a; font-weight: 700; }
+
+        /* TAB PANES STYLING */
+        .tab-pane-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
+        .tab-pane-title { font-size: 17px; font-weight: 800; color: #0f172a; margin-bottom: 6px; }
+        .tab-pane-sub { font-size: 12.5px; color: #64748b; margin-bottom: 18px; line-height: 1.5; }
+        
+        /* MODULE ACCORDION (RIGHT) */
+        .module-accordion-container { display: flex; flex-direction: column; gap: 12px; }
+        .module-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.02); transition: border-color 0.15s; }
+        .module-card:hover { border-color: #cbd5e1; }
+        .module-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; background: #ffffff; cursor: pointer; user-select: none; }
+        .module-header-left { display: flex; align-items: center; gap: 12px; }
+        .module-badge-num { width: 26px; height: 26px; border-radius: 6px; background: #ede9fe; color: #4f46e5; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; }
+        .module-title-text { font-size: 13.5px; font-weight: 800; color: #0f172a; }
+        .module-header-right { display: flex; align-items: center; gap: 10px; font-size: 12px; color: #64748b; }
+        .module-chevron { font-size: 11px; color: #94a3b8; transition: transform 0.2s; }
+        
+        .module-lessons-list { border-top: 1px solid #f1f5f9; background: #fafafa; }
+        .module-lessons-list.hidden { display: none; }
+        .lesson-row-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 18px; border-bottom: 1px solid #f1f5f9; font-size: 12.5px; background: #ffffff; }
+        .lesson-row-item:last-child { border-bottom: none; }
+        .lesson-left-col { display: flex; align-items: center; gap: 12px; }
+        .lesson-status-icon { font-size: 14px; }
+        .lesson-num-code { color: #64748b; font-weight: 700; font-size: 12px; min-width: 26px; }
+        .lesson-title-name { color: #0f172a; font-weight: 700; }
+        
+        .lesson-right-col { display: flex; align-items: center; gap: 14px; }
+        .lesson-duration-tag { font-size: 11.5px; color: #64748b; }
+        .pill-lesson-completed { background: #dcfce7; color: #15803d; font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 6px; }
+        .btn-start-lesson-pill { background: #ffffff; border: 1.5px solid #4f46e5; color: #4f46e5; border-radius: 6px; padding: 5px 14px; font-size: 11.5px; font-weight: 700; cursor: pointer; transition: all 0.15s; }
+        .btn-start-lesson-pill:hover { background: #4f46e5; color: #ffffff; }
+        
+        /* CHEAT SHEET MODAL STYLES */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 99999; padding: 20px; }
+        .modal-overlay.active { display: flex; }
+        .modal-card { background: #ffffff; border-radius: 20px; width: 100%; max-width: 900px; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
+        .modal-header { display: flex; align-items: center; justify-content: space-between; padding: 20px 24px; border-bottom: 1.5px solid #e2e8f0; background: #ffffff; }
+        .modal-body { flex: 1; overflow-y: auto; padding: 24px; background: #f8fafc; }
+        .modal-footer { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; border-top: 1.5px solid #e2e8f0; background: #ffffff; }
+
+        /* TOAST */
+        .toast-container { position: fixed; top: 20px; right: 20px; z-index: 999999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+        .toast-box { background: #ffffff; border-left: 6px solid #10b981; border-radius: 12px; padding: 14px 18px; box-shadow: 0 15px 30px rgba(0,0,0,0.12); font-size: 13px; color: #0f172a; pointer-events: auto; }
+
+        /* FOOTER STATUS BAR */
+        .footer-status-bar { height: 56px; min-height: 56px; background: #ffffff; border-top: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; padding: 0 32px; }
+        .footer-left { display: flex; align-items: center; gap: 32px; }
+        .footer-status-item { display: flex; align-items: center; gap: 10px; }
+        .status-dot-circle { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 15px; }
+        .dot-green { background: #dcfce7; color: #16a34a; }
+        .status-label-group strong { display: block; font-size: 12px; font-weight: 800; color: #0f172a; }
+        .status-label-group span { display: block; font-size: 10.5px; color: #16a34a; font-weight: 600; }
+        
+        .btn-footer-close-app { display: flex; align-items: center; gap: 10px; background: none; border: 1px solid #fecaca; border-radius: 10px; padding: 8px 16px; cursor: pointer; transition: all 0.15s; }
+        .btn-footer-close-app:hover { background: #fef2f2; border-color: #ef4444; }
+        .power-circle-icon { width: 28px; height: 28px; border-radius: 50%; background: #fee2e2; color: #dc2626; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold; }
+        .close-app-text-group { text-align: left; }
+        .close-app-text-group strong { display: block; font-size: 12px; font-weight: 800; color: #dc2626; }
+        .close-app-text-group span { display: block; font-size: 10px; color: #ef4444; }
+    </style>
+</head>
+<body>
+    <div class="course-viewport">
+        <!-- SCROLLABLE PAGE BODY -->
+        <main class="course-scroll">
+            
+            <a class="btn-back-nav" href="courses.html">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                <span>Back to Courses</span>
+            </a>
+
+            <!-- HERO CARD (MATCHES IMAGE 4) -->
+            <div class="course-hero-card">
+                <div class="hero-left-flex">
+                    <div class="hero-code-icon" id="lbl-hero-icon">&lt;/&gt;</div>
+                    <div class="hero-title-group">
+                        <h1 id="lbl-course-title">Programming in C++</h1>
+                        <p id="lbl-course-desc">Master C++ programming from basics to advanced concepts with hands-on examples.</p>
+                        <div class="hero-meta-badges">
+                            <span class="hero-badge-pill" id="lbl-course-lessons">📖 18 Lessons</span>
+                            <span>•</span>
+                            <span class="hero-badge-pill" id="lbl-course-duration">⏱️ 6h 20m</span>
+                            <span>•</span>
+                            <span class="hero-badge-pill" id="lbl-course-level">📊 Intermediate</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="hero-right-progress">
+                    <div class="progress-header-row">
+                        <strong>Your Progress</strong>
+                        <span id="lbl-hero-pct">42%</span>
+                    </div>
+                    <div class="progress-track-bg">
+                        <div class="progress-fill-bar" id="bar-hero-fill" style="width: 42%;"></div>
+                    </div>
+                    <span class="progress-sub-text" id="lbl-hero-completed">8 of 18 Lessons Completed</span>
+                    <button class="btn-continue-learning" onclick="continueLearningAction()">
+                        <span>▶</span> Continue Learning
+                    </button>
+                </div>
+            </div>
+
+            <!-- TABS -->
+            <div class="course-tabs-bar">
+                <span class="course-tab-item active" id="tab-btn-content" onclick="switchCourseTab('content')">Course Content</span>
+                <span class="course-tab-item" id="tab-btn-overview" onclick="switchCourseTab('overview')">Overview & Syllabus</span>
+                <span class="course-tab-item" id="tab-btn-resources" onclick="switchCourseTab('resources')">Resources & Tools</span>
+                <span class="course-tab-item" id="tab-btn-notes" onclick="switchCourseTab('notes')">Quick Notes & PDF</span>
+            </div>
+
+            <!-- 2-COLUMN GRID (LEFT: ABOUT COURSE META, RIGHT: ACTIVE TAB CONTENT) -->
+            <div class="course-content-grid">
+                <!-- LEFT COLUMN: ABOUT THIS COURSE -->
+                <div class="about-course-card">
+                    <h3>About This Course</h3>
+                    <p class="about-course-desc" id="lbl-about-full">
+                        Master programming from basics to advanced concepts with hands-on examples, MCQs, and real-time coding sandbox tests.
+                    </p>
+
+                    <div class="course-meta-table">
+                        <div class="meta-table-row">
+                            <span class="meta-table-label"><span>🎯</span> Level</span>
+                            <strong class="meta-table-val" id="lbl-meta-level">Intermediate</strong>
+                        </div>
+                        <div class="meta-table-row">
+                            <span class="meta-table-label"><span>⏱️</span> Duration</span>
+                            <strong class="meta-table-val" id="lbl-meta-duration">6h 20m</strong>
+                        </div>
+                        <div class="meta-table-row">
+                            <span class="meta-table-label"><span>📖</span> Lessons</span>
+                            <strong class="meta-table-val" id="lbl-meta-lessons">18 Lessons</strong>
+                        </div>
+                        <div class="meta-table-row">
+                            <span class="meta-table-label"><span>📜</span> Certificate</span>
+                            <strong class="meta-table-val" id="lbl-meta-cert">Yes (Verified)</strong>
+                        </div>
+                        <div class="meta-table-row">
+                            <span class="meta-table-label"><span>📅</span> Last Updated</span>
+                            <strong class="meta-table-val" id="lbl-meta-updated">May 2025</strong>
+                        </div>
+                        <div class="meta-table-row">
+                            <span class="meta-table-label"><span>🌐</span> Language</span>
+                            <strong class="meta-table-val" id="lbl-meta-lang">English</strong>
+                        </div>
+                    </div>
+
+                    <!-- QUICK CHEAT SHEET SHORTCUT CARD -->
+                    <div style="margin-top: 20px; background: #eff6ff; border: 1.5px solid #bfdbfe; border-radius: 12px; padding: 14px 16px;">
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                            <span style="font-size: 16px;">📋</span>
+                            <strong style="font-size: 13px; color: #1e40af;">C++ Quick Cheat Sheet</strong>
+                        </div>
+                        <p style="font-size: 11.5px; color: #3b82f6; margin-bottom: 10px; line-height: 1.4;">Instant key syntax, STL reference &amp; time complexities.</p>
+                        <button onclick="openCheatSheetModal()" style="width: 100%; background: #2563eb; color: #ffffff; border: none; border-radius: 6px; padding: 6px 12px; font-size: 11.5px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                            <span>📖 View Cheat Sheet</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- RIGHT COLUMN: ACTIVE TAB PANE -->
+                <div class="course-tab-content-pane">
+                    
+                    <!-- TAB 1: COURSE CONTENT (MODULES ACCORDION) -->
+                    <div id="pane-tab-content" style="display: block;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                            <h3 style="font-size: 15px; font-weight: 800; color: #0f172a; margin: 0;">Course Modules &amp; Topics</h3>
+                            <span id="btn-toggle-all" style="font-size: 12px; color: #4f46e5; font-weight: 700; cursor: pointer;" onclick="toggleAllModules()">Expand All ⌵</span>
+                        </div>
+
+                        <!-- DYNAMIC ACCORDION LOADED FROM MYSQL -->
+                        <div class="module-accordion-container" id="course-modules-accordion">
+                            <div style="color:#64748b; font-size:13px; padding:20px; text-align:center;">Loading course content from MySQL database...</div>
+                        </div>
+                    </div>
+
+                    <!-- TAB 2: OVERVIEW & SYLLABUS -->
+                    <div id="pane-tab-overview" class="tab-pane-card" style="display: none;">
+                        <h2 class="tab-pane-title">Course Overview &amp; Learning Objectives</h2>
+                        <p class="tab-pane-sub">
+                            This comprehensive course provides an industry-standard path from fundamental syntax to low-level hardware control, object-oriented architecture, memory management, and modern programming patterns.
+                        </p>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
+                            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 18px;">
+                                <div style="font-size: 20px; margin-bottom: 6px;">🎯</div>
+                                <strong style="font-size: 13.5px; color: #0f172a; display: block; margin-bottom: 6px;">What You Will Master</strong>
+                                <ul style="padding-left: 18px; font-size: 12px; color: #475569; line-height: 1.6;">
+                                    <li>Core Syntax, Variables, Data Types &amp; Operators</li>
+                                    <li>Control Flow, Decision Logic &amp; Advanced Loops</li>
+                                    <li>Functions, Recursion &amp; Scope Mechanics</li>
+                                    <li>Pointers, References &amp; Dynamic Memory Management</li>
+                                    <li>Object-Oriented Design (Classes, Inheritance, Polymorphism)</li>
+                                    <li>Standard Template Library (STL) Containers &amp; Algorithms</li>
+                                </ul>
+                            </div>
+                            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 18px;">
+                                <div style="font-size: 20px; margin-bottom: 6px;">⚡</div>
+                                <strong style="font-size: 13.5px; color: #0f172a; display: block; margin-bottom: 6px;">Interactive Learning Flow</strong>
+                                <ul style="padding-left: 18px; font-size: 12px; color: #475569; line-height: 1.6;">
+                                    <li><strong>📖 Study Lessons:</strong> Detailed concepts &amp; curated theory notes.</li>
+                                    <li><strong>📝 MCQ Practice:</strong> Instant score feedback &amp; explanations.</li>
+                                    <li><strong>💻 Live Compiler Sandbox:</strong> Automated test case evaluation.</li>
+                                    <li><strong>🔄 Re-watch &amp; Re-practice:</strong> Lessons never lock after completion.</li>
+                                    <li><strong>📄 Download PDF:</strong> Save notes &amp; cheat sheets offline.</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; justify-content: space-between; align-items: center; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 18px;">
+                            <div>
+                                <strong style="font-size: 13px; color: #0f172a; display: block;">Ready to start your learning journey?</strong>
+                                <span style="font-size: 11.5px; color: #64748b;">Progress is saved automatically to your profile in real-time.</span>
+                            </div>
+                            <button class="btn-start-lesson-pill" style="padding: 8px 18px; font-size: 12px;" onclick="continueLearningAction()">
+                                <span>Continue Learning →</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- TAB 3: RESOURCES & TOOLS -->
+                    <div id="pane-tab-resources" class="tab-pane-card" style="display: none;">
+                        <h2 class="tab-pane-title">Developer Resources &amp; References</h2>
+                        <p class="tab-pane-sub">Interactive cheat sheets, compiler setup guides, and standard library references.</p>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 14px;">
+                            <!-- CHEAT SHEET CARD -->
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 18px 20px; background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px;">
+                                <div style="display: flex; align-items: center; gap: 14px;">
+                                    <span style="font-size: 26px;">📋</span>
+                                    <div>
+                                        <strong style="font-size: 14px; color: #0f172a; display: block;">Quick Reference Cheat Sheet</strong>
+                                        <span style="font-size: 12px; color: #64748b;">Key syntax, pointers, STL containers, and Big-O time complexities</span>
+                                    </div>
+                                </div>
+                                <div style="display: flex; gap: 8px; align-items: center;">
+                                    <button class="btn-start-lesson-pill" onclick="openCheatSheetModal()">📖 View Cheat Sheet</button>
+                                    <button class="btn-start-lesson-pill" onclick="downloadCheatSheetPDF()" style="background: #4f46e5; color: #ffffff;">📥 Download PDF</button>
+                                </div>
+                            </div>
+
+                            <!-- RUNTIME ENVIRONMENT CARD -->
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 18px 20px; background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px;">
+                                <div style="display: flex; align-items: center; gap: 14px;">
+                                    <span style="font-size: 26px;">⚙️</span>
+                                    <div>
+                                        <strong style="font-size: 14px; color: #0f172a; display: block;">Multi-Language Runtime Compiler Sandbox</strong>
+                                        <span style="font-size: 12px; color: #64748b;">GCC 15+, Python 3.12, OpenJDK 17, and Node.js 24 secure execution engine</span>
+                                    </div>
+                                </div>
+                                <span style="background: #dcfce7; color: #15803d; font-size: 11.5px; font-weight: 800; padding: 6px 12px; border-radius: 6px;">Active &amp; Ready ✓</span>
+                            </div>
+
+                            <!-- STL CHEATSHEET OVERVIEW -->
+                            <div style="background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 18px 20px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                    <strong style="font-size: 13.5px; color: #0f172a;">Standard Template Library (STL) Quick Complexities</strong>
+                                    <span style="font-size: 11px; color: #64748b; font-weight: 700;">C++20 Reference</span>
+                                </div>
+                                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; font-size: 12px;">
+                                    <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px;">
+                                        <strong style="color: #4f46e5; display: block;">std::vector</strong>
+                                        <span style="color: #64748b; font-size: 11px;">Access: O(1) | Push: O(1)*</span>
+                                    </div>
+                                    <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px;">
+                                        <strong style="color: #4f46e5; display: block;">std::unordered_map</strong>
+                                        <span style="color: #64748b; font-size: 11px;">Lookup: O(1) avg | Hash Table</span>
+                                    </div>
+                                    <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px;">
+                                        <strong style="color: #4f46e5; display: block;">std::map / std::set</strong>
+                                        <span style="color: #64748b; font-size: 11px;">Search: O(log n) | Red-Black Tree</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAB 4: QUICK NOTES & PDF -->
+                    <div id="pane-tab-notes" class="tab-pane-card" style="display: none;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+                            <div>
+                                <h2 class="tab-pane-title">Download Lesson Study Notes</h2>
+                                <p class="tab-pane-sub" style="margin-bottom: 0;">Download complete curated notes and code walkthroughs for offline study.</p>
+                            </div>
+                            <button class="btn-start-lesson-pill" onclick="downloadCheatSheetPDF()" style="background: #4f46e5; color: #ffffff;">
+                                <span>📥 Download Master Cheat Sheet</span>
+                            </button>
+                        </div>
+                        <div id="notes-overview-list" style="display: flex; flex-direction: column; gap: 10px;">
+                            <!-- Populated dynamically via MySQL -->
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- INTERACTIVE CHEAT SHEET MODAL -->
+            <div class="modal-overlay" id="modal-cheatsheet" onclick="if(event.target===this) closeCheatSheetModal()">
+                <div class="modal-card">
+                    <div class="modal-header">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span style="font-size: 24px;">📋</span>
+                            <div>
+                                <h2 style="font-size: 17px; font-weight: 800; color: #0f172a; margin: 0;">C++ Quick Reference Cheat Sheet</h2>
+                                <span style="font-size: 11.5px; color: #64748b;">Core Syntax, Pointers, Memory &amp; STL Containers</span>
+                            </div>
+                        </div>
+                        <button onclick="closeCheatSheetModal()" style="background: none; border: none; font-size: 22px; color: #94a3b8; cursor: pointer; padding: 4px;">✕</button>
+                    </div>
+                    
+                    <div class="modal-body" id="cheatsheet-content-container">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                            <!-- CARD 1: ESSENTIAL SYNTAX -->
+                            <div style="background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 16px;">
+                                <h3 style="font-size: 13.5px; font-weight: 800; color: #0f172a; margin-bottom: 8px; border-bottom: 1px solid #f1f5f9; padding-bottom: 6px;">1. Essential Syntax &amp; Types</h3>
+                                <pre style="background: #0f172a; color: #38bdf8; padding: 12px; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 11.5px; line-height: 1.5; overflow-x: auto; margin: 0;">// Auto Type Deduction
+auto x = 42;          // int
+auto pi = 3.14159;    // double
+
+// References vs Pointers
+int val = 100;
+int& ref = val;       // alias to val
+int* ptr = &val;      // pointer to address</pre>
+                            </div>
+
+                            <!-- CARD 2: POINTERS & RAII -->
+                            <div style="background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 16px;">
+                                <h3 style="font-size: 13.5px; font-weight: 800; color: #0f172a; margin-bottom: 8px; border-bottom: 1px solid #f1f5f9; padding-bottom: 6px;">2. Modern Memory &amp; Smart Pointers</h3>
+                                <pre style="background: #0f172a; color: #38bdf8; padding: 12px; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 11.5px; line-height: 1.5; overflow-x: auto; margin: 0;">#include &lt;memory&gt;
+
+// Unique Ownership (Zero Overhead)
+auto uPtr = std::make_unique&lt;int&gt;(50);
+
+// Shared Ownership (Ref Counted)
+auto sPtr = std::make_shared&lt;std::string&gt;("Hi");
+// No delete required! (Automatic RAII)</pre>
+                            </div>
+
+                            <!-- CARD 3: STL CONTAINERS -->
+                            <div style="background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 16px;">
+                                <h3 style="font-size: 13.5px; font-weight: 800; color: #0f172a; margin-bottom: 8px; border-bottom: 1px solid #f1f5f9; padding-bottom: 6px;">3. STL Containers</h3>
+                                <pre style="background: #0f172a; color: #38bdf8; padding: 12px; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 11.5px; line-height: 1.5; overflow-x: auto; margin: 0;">std::vector&lt;int&gt; v = {1, 2, 3};
+v.push_back(4);       // O(1) amortized
+
+std::unordered_map&lt;string, int&gt; mp;
+mp["Alice"] = 95;     // O(1) avg lookup
+
+std::sort(v.begin(), v.end()); // O(n log n)</pre>
+                            </div>
+
+                            <!-- CARD 4: OOP & CLASSES -->
+                            <div style="background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 16px;">
+                                <h3 style="font-size: 13.5px; font-weight: 800; color: #0f172a; margin-bottom: 8px; border-bottom: 1px solid #f1f5f9; padding-bottom: 6px;">4. Classes &amp; OOP</h3>
+                                <pre style="background: #0f172a; color: #38bdf8; padding: 12px; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 11.5px; line-height: 1.5; overflow-x: auto; margin: 0;">class Shape {
+public:
+    virtual void draw() const = 0; // Pure virtual
+    virtual ~Shape() = default;    // Virtual dtor
+};
+
+class Circle : public Shape {
+    void draw() const override { /*...*/ }
+};</pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <span style="font-size: 12px; color: #64748b;">ExamFort Certified C++ Developer Reference</span>
+                        <div style="display: flex; gap: 10px;">
+                            <button onclick="closeCheatSheetModal()" class="btn-start-lesson-pill" style="background: #f1f5f9; color: #475569; border-color: #cbd5e1;">Close</button>
+                            <button onclick="downloadCheatSheetPDF()" class="btn-start-lesson-pill" style="background: #4f46e5; color: #ffffff;">📥 Download PDF</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- FOOTER STATUS BAR -->
+        <footer class="footer-status-bar">
+            <div class="footer-left">
+                <div class="footer-status-item">
+                    <div class="status-dot-circle dot-green">📶</div>
+                    <div class="status-label-group">
+                        <strong>Network</strong>
+                        <span>Connected</span>
+                    </div>
+                </div>
+                <div class="footer-status-item">
+                    <div class="status-dot-circle dot-green">🛡️</div>
+                    <div class="status-label-group">
+                        <strong>System Secure</strong>
+                        <span>All good</span>
+                    </div>
+                </div>
+            </div>
+            <button class="btn-footer-close-app" id="btn-footer-exit" onclick="exitApplication()">
+                <div class="power-circle-icon">⏻</div>
+                <div class="close-app-text-group">
+                    <strong>Close Application</strong>
+                    <span>App will close cleanly</span>
+                </div>
+            </button>
+        </footer>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script>
+        const baseUrl = window.EXAMFORT_ENV?.API_BASE_URL || 'http://localhost:5000';
+        const urlParams = new URLSearchParams(window.location.search);
+        const courseId = urlParams.get('id') || 'course-cpp';
+
+        function exitApplication() {
+            if (window.electronAPI?.exitApp) {
+                window.electronAPI.exitApp();
+            } else {
+                window.close();
+            }
+        }
+
+        let currentLoadedLessons = [];
+
+        function switchCourseTab(tabName) {
+            document.querySelectorAll('.course-tab-item').forEach(t => t.classList.remove('active'));
+            document.getElementById(`tab-btn-${tabName}`)?.classList.add('active');
+
+            document.getElementById('pane-tab-content').style.display = tabName === 'content' ? 'block' : 'none';
+            document.getElementById('pane-tab-overview').style.display = tabName === 'overview' ? 'block' : 'none';
+            document.getElementById('pane-tab-resources').style.display = tabName === 'resources' ? 'block' : 'none';
+            document.getElementById('pane-tab-notes').style.display = tabName === 'notes' ? 'block' : 'none';
+        }
+
+        function openCheatSheetModal() {
+            document.getElementById('modal-cheatsheet').classList.add('active');
+        }
+
+        function closeCheatSheetModal() {
+            document.getElementById('modal-cheatsheet').classList.remove('active');
+        }
+
+        // DIRECT SILENT CHEAT SHEET PDF DOWNLOAD (NO POPUPS)
+        async function downloadCheatSheetPDF() {
+            if (typeof html2pdf === 'undefined') {
+                showToast('Initializing PDF', 'Please try again in a moment.', 'warning');
+                return;
+            }
+
+            try {
+                showToast('Generating Cheat Sheet 📄', 'Saving Quick Reference Guide to your Downloads folder...', 'info', 2500);
+
+                const element = document.getElementById('cheatsheet-content-container');
+                const filename = `CPP_Mastery_Quick_Reference_CheatSheet.pdf`;
+
+                const opt = {
+                    margin:       [8, 8, 8, 8],
+                    filename:     filename,
+                    image:        { type: 'jpeg', quality: 0.98 },
+                    html2canvas:  { scale: 2, useCORS: true, letterRendering: true, backgroundColor: '#ffffff' },
+                    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
+                };
+
+                const pdfBlob = await html2pdf().set(opt).from(element).outputPdf('blob');
+                
+                // Native guaranteed file download
+                const blobUrl = URL.createObjectURL(pdfBlob);
+                const downloadLink = document.createElement('a');
+                downloadLink.href = blobUrl;
+                downloadLink.download = filename;
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                
+                setTimeout(() => {
+                    document.body.removeChild(downloadLink);
+                    URL.revokeObjectURL(blobUrl);
+                }, 1000);
+
+                showToast('🎉 Cheat Sheet Downloaded!', `${filename} saved to your Downloads folder.`, 'success', 4500);
+            } catch (err) {
+                console.error('Cheat sheet download error:', err);
+                showToast('Download Error', 'Could not save Cheat Sheet: ' + err.message, 'error');
+            }
+        }
+
+        function showToast(title, message, type = 'info', duration = 3500) {
+            let container = document.getElementById('toast-box-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'toast-box-container';
+                container.className = 'toast-container';
+                document.body.appendChild(container);
+            }
+
+            const toast = document.createElement('div');
+            toast.className = 'toast-box';
+            if (type === 'success') toast.style.borderLeftColor = '#10b981';
+            else if (type === 'error') toast.style.borderLeftColor = '#ef4444';
+            else if (type === 'warning') toast.style.borderLeftColor = '#f59e0b';
+            else toast.style.borderLeftColor = '#3b82f6';
+
+            toast.innerHTML = `
+                <div style="font-weight: 800; margin-bottom: 2px;">${title}</div>
+                <div style="font-size: 11.5px; color: #475569;">${message}</div>
+            `;
+
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.3s';
+                setTimeout(() => toast.remove(), 300);
+            }, duration);
+        }
+
+        let allExpanded = false;
+        function toggleAllModules() {
+            allExpanded = !allExpanded;
+            document.querySelectorAll('.module-lessons-list').forEach(list => {
+                if (allExpanded) list.classList.remove('hidden');
+                else list.classList.add('hidden');
+            });
+            const btn = document.getElementById('btn-toggle-all');
+            if (btn) btn.textContent = allExpanded ? 'Collapse All ∧' : 'Expand All ⌵';
+        }
+
+        // Fetch Course Details & Lessons 100% from Backend MySQL
+        function loadCourseDataFromMySQL() {
+            fetch(`${baseUrl}/api/courses/${courseId}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.course) {
+                        const c = data.course;
+                        currentLoadedLessons = data.lessons || [];
+
+                        document.getElementById('lbl-course-title').textContent = c.title;
+                        document.getElementById('lbl-course-desc').textContent = c.description;
+                        document.getElementById('lbl-about-full').textContent = c.description;
+                        document.getElementById('lbl-hero-icon').textContent = c.icon || '</>';
+                        document.getElementById('lbl-course-lessons').textContent = `📖 ${c.lessons_count} Lessons`;
+                        document.getElementById('lbl-course-duration').textContent = `⏱️ ${c.duration_text}`;
+                        document.getElementById('lbl-course-level').textContent = `📊 ${c.level}`;
+                        document.getElementById('lbl-hero-pct').textContent = `${c.progress_percent}%`;
+                        document.getElementById('bar-hero-fill').style.width = `${c.progress_percent}%`;
+                        document.getElementById('lbl-hero-completed').textContent = `${c.completed_lessons} of ${c.lessons_count} Lessons Completed`;
+
+                        document.getElementById('lbl-meta-level').textContent = c.level;
+                        document.getElementById('lbl-meta-duration').textContent = c.duration_text;
+                        document.getElementById('lbl-meta-lessons').textContent = `${c.lessons_count} Lessons`;
+                        document.getElementById('lbl-meta-cert').textContent = c.certificate;
+                        document.getElementById('lbl-meta-updated').textContent = c.last_updated;
+                        document.getElementById('lbl-meta-lang').textContent = c.language;
+
+                        // Group lessons by module
+                        const modulesMap = {};
+                        (data.lessons || []).forEach(l => {
+                            if (!modulesMap[l.module_num]) {
+                                modulesMap[l.module_num] = {
+                                    title: l.module_title,
+                                    lessons: []
+                                };
+                            }
+                            modulesMap[l.module_num].lessons.push(l);
+                        });
+
+                        const accordion = document.getElementById('course-modules-accordion');
+                        accordion.innerHTML = Object.keys(modulesMap).map((mNum, idx) => {
+                            const mod = modulesMap[mNum];
+                            const isFirst = idx === 0;
+                            return `
+                                <div class="module-card">
+                                    <div class="module-header" onclick="toggleModule(this)">
+                                        <div class="module-header-left">
+                                            <div class="module-badge-num">${mNum}</div>
+                                            <strong class="module-title-text">${mod.title}</strong>
+                                        </div>
+                                        <div class="module-header-right">
+                                            <span>${mod.lessons.length} Lessons</span>
+                                            <span class="module-chevron">${isFirst ? '▲' : '▼'}</span>
+                                        </div>
+                                    </div>
+                                    <div class="module-lessons-list ${isFirst ? '' : 'hidden'}">
+                                        ${mod.lessons.map(ls => `
+                                            <div class="lesson-row-item">
+                                                <div class="lesson-left-col">
+                                                    <span class="lesson-status-icon" style="color:${ls.is_completed ? '#10b981' : '#94a3b8'}; font-weight:bold;">
+                                                        ${ls.is_completed ? '✓' : '○'}
+                                                    </span>
+                                                    <span class="lesson-num-code">${ls.lesson_num}</span>
+                                                    <div>
+                                                        <span class="lesson-title-name">${ls.lesson_title}</span>
+                                                        <div style="display:flex; gap:6px; margin-top:3px; font-size:10.5px; color:#64748b;">
+                                                            <span>⏱️ ${ls.duration_text}</span>
+                                                            <span>•</span>
+                                                            <span>${ls.is_completed ? '<span style="color:#10b981; font-weight:700;">Completed ✓ (Re-watch Available)</span>' : 'Pending Study'}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="lesson-right-col" style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                                                    <a href="lesson_study.html?id=${courseId}&lesson=${ls.lesson_num}&tab=study" 
+                                                       class="btn-start-lesson-pill" 
+                                                       style="text-decoration:none; background:#f5f3ff; border-color:#c7d2fe; color:#4f46e5; display:inline-flex; align-items:center; gap:4px;">
+                                                        <span>📖</span> <span>${ls.is_completed ? 'Re-watch / Study' : 'Study Lesson'}</span>
+                                                    </a>
+                                                    <a href="lesson_study.html?id=${courseId}&lesson=${ls.lesson_num}&tab=mcq" 
+                                                       class="btn-start-lesson-pill" 
+                                                       style="text-decoration:none; background:#ecfdf5; border-color:#a7f3d0; color:#065f46; display:inline-flex; align-items:center; gap:4px;">
+                                                        <span>📝</span> <span>MCQ Practice</span>
+                                                    </a>
+                                                    <a href="lesson_study.html?id=${courseId}&lesson=${ls.lesson_num}&tab=code" 
+                                                       class="btn-start-lesson-pill" 
+                                                       style="text-decoration:none; background:#eff6ff; border-color:#bfdbfe; color:#1e40af; display:inline-flex; align-items:center; gap:4px;">
+                                                        <span>💻</span> <span>Coding Practice</span>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            `;
+                        }).join('');
+
+                        // Populate Tab 4 Notes Overview
+                        const notesList = document.getElementById('notes-overview-list');
+                        if (notesList && data.lessons) {
+                            notesList.innerHTML = data.lessons.map(ls => `
+                                <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;">
+                                    <div>
+                                        <strong style="color: #0f172a; font-size: 13px;">${ls.lesson_num} ${ls.lesson_title}</strong>
+                                        <span style="display: block; font-size: 11px; color: #64748b;">${ls.module_title} • ${ls.duration_text}</span>
+                                    </div>
+                                    <a href="lesson_study.html?id=${courseId}&lesson=${ls.lesson_num}&tab=study" class="btn-start-lesson-pill" style="text-decoration: none; display: flex; align-items: center; gap: 4px;">
+                                        <span>📖 Open &amp; Download PDF</span>
+                                    </a>
+                                </div>
+                            `).join('');
+                        }
+                    }
+                })
+                .catch(err => console.error('Course details fetch error:', err));
+        }
+
+        function toggleModule(headerEl) {
+            const list = headerEl.nextElementSibling;
+            list.classList.toggle('hidden');
+            const chev = headerEl.querySelector('.module-chevron');
+            if (chev) {
+                chev.textContent = list.classList.contains('hidden') ? '▼' : '▲';
+            }
+        }
+
+        function continueLearningAction() {
+            if (currentLoadedLessons && currentLoadedLessons.length > 0) {
+                const nextUncompleted = currentLoadedLessons.find(l => !l.is_completed) || currentLoadedLessons[0];
+                window.location.href = `lesson_study.html?id=${courseId}&lesson=${nextUncompleted.lesson_num}&tab=study`;
+            } else {
+                window.location.href = `lesson_study.html?id=${courseId}&lesson=1.1&tab=study`;
+            }
+        }
+
+        loadCourseDataFromMySQL();
+        document.getElementById('btn-footer-exit')?.addEventListener('click', exitApplication);
+    </script>
+</body>
+</html>

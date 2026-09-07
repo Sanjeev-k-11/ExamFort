@@ -1,0 +1,94 @@
+{
+  "name": "examfort-lockdown",
+  "productName": "ExamFort Lockdown",
+  "version": "1.0.0",
+  "description": "ExamFort Lockdown - Secure Proctored Examination Suite & Anti-Cheat Desktop Shell",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --win",
+    "pack": "electron-builder --win dir",
+    "dist": "electron-builder --win nsis",
+    "portable": "electron-builder --win portable"
+  },
+  "author": "ExamFort Security Team",
+  "license": "ISC",
+  "homepage": "https://github.com/examfort/lockdown",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/examfort/examfort-lockdown.git"
+  },
+  "bugs": {
+    "url": "https://github.com/examfort/examfort-lockdown/issues"
+  },
+  "appId": "com.examfort.lockdown",
+  "keywords": [
+    "examfort",
+    "lockdown-browser",
+    "kiosk",
+    "proctoring",
+    "exam",
+    "security",
+    "anti-cheat",
+    "assessment-engine"
+  ],
+  "build": {
+    "appId": "com.examfort.lockdown",
+    "productName": "ExamFort Lockdown",
+    "copyright": "Copyright © 2026 ExamFort Security Systems",
+    "asar": true,
+    "asarUnpack": [
+      "keyboard_sentinel.ps1"
+    ],
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "keyboard_sentinel.ps1",
+      "src/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "keyboard_sentinel.ps1",
+        "to": "keyboard_sentinel.ps1"
+      }
+    ],
+    "protocols": [
+      {
+        "name": "ExamFort Secure Launch Protocol",
+        "schemes": [
+          "examfort",
+          "aegislock"
+        ]
+      }
+    ],
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "requestedExecutionLevel": "requireAdministrator",
+      "legalTrademarks": "ExamFort Security Suite"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": true,
+      "allowElevation": true,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "ExamFort Lockdown",
+      "uninstallDisplayName": "ExamFort Lockdown Secure Assessment Suite",
+      "deleteAppDataOnUninstall": true,
+      "runAfterFinish": true
+    }
+  },
+  "dependencies": {
+    "node-fetch": "^2.7.0"
+  },
+  "devDependencies": {
+    "electron": "^28.2.0",
+    "electron-builder": "^24.13.3"
+  }
+}

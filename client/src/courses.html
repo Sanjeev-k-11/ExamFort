@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Courses - ExamFort</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="examfort-window">
+        <!-- TOP APP BAR -->
+        <header class="window-header">
+            <div class="header-left">
+                <div class="app-logo-box">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+                </div>
+                <div class="brand-title-wrap">
+                    <span class="brand-name">ExamFort</span>
+                    <span class="brand-tag">SECURE EXAM ENVIRONMENT</span>
+                </div>
+            </div>
+            <div class="header-right-controls">
+                <span class="session-badge green-badge">● Online</span>
+                <button class="win-btn" onclick="window.location.href='dashboard.html'">Back to Dashboard</button>
+            </div>
+        </header>
+
+        <!-- MAIN LAYOUT (100% PURE MYSQL POPULATION) -->
+        <main class="view-screen">
+            <div class="dashboard-shell-layout">
+                
+                <!-- SIDEBAR -->
+                <aside class="dashboard-sidebar">
+                    <div class="sidebar-brand-box">
+                        <div class="sidebar-logo">🛡️</div>
+                        <div class="sidebar-brand-title">
+                            <strong>ExamFort</strong>
+                            <span>Secure Exam Environment</span>
+                        </div>
+                    </div>
+
+                    <nav class="sidebar-nav-menu">
+                        <a href="dashboard.html" class="sidebar-nav-item">
+                            <span class="nav-icon">⊞</span>
+                            <span>Dashboard</span>
+                        </a>
+                        <a href="exams.html" class="sidebar-nav-item">
+                            <span class="nav-icon">📑</span>
+                            <span>My Exams</span>
+                        </a>
+                        <a href="exam_details.html" class="sidebar-nav-item">
+                            <span class="nav-icon">📄</span>
+                            <span>Exam Details</span>
+                        </a>
+                        <a href="courses.html" class="sidebar-nav-item active">
+                            <span class="nav-icon">📚</span>
+                            <span>Course</span>
+                        </a>
+                        <a href="profile.html" class="sidebar-nav-item">
+                            <span class="nav-icon">👤</span>
+                            <span>My Profile</span>
+                        </a>
+                        <a href="instructions.html" class="sidebar-nav-item">
+                            <span class="nav-icon">📖</span>
+                            <span>Instructions</span>
+                        </a>
+                        <a href="support.html" class="sidebar-nav-item">
+                            <span class="nav-icon">❓</span>
+                            <span>Help & Support</span>
+                        </a>
+                        <a href="index.html?logout=1" onclick="logoutUser(event)" class="sidebar-nav-item">
+                            <span class="nav-icon">🚪</span>
+                            <span>Log Out</span>
+                        </a>
+                    </nav>
+
+                    <div class="sidebar-secure-pill-card">
+                        <div class="secure-icon-circle">🛡️</div>
+                        <strong>Secure Environment</strong>
+                        <p>Your learning environment is monitored and protected.</p>
+                        <span class="status-protected-badge">Protected 🔒</span>
+                    </div>
+                </aside>
+
+                <!-- MAIN CONTENT AREA -->
+                <section class="dashboard-main-area">
+                    <a class="btn-back-link" href="dashboard.html">← Back to Dashboard</a>
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <div>
+                            <h1 style="font-size: 22px; font-weight: 800; color: #0f172a; margin: 0;">My Courses</h1>
+                            <p style="font-size: 12px; color: #64748b; margin: 2px 0 0 0;">Continue learning and track your progress</p>
+                        </div>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <input type="text" id="input-course-search" oninput="renderCoursesList()" placeholder="🔍 Search courses..." style="padding: 6px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 12px; width: 180px;">
+                            <select id="select-course-category" onchange="renderCoursesList()" style="padding: 6px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 12px; background: white;">
+                                <option value="All">All Levels</option>
+                                <option value="Beginner">Beginner</option>
+                                <option value="Intermediate">Intermediate</option>
+                                <option value="Advanced">Advanced</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px;">
+                        <!-- COURSES LIST (100% PURE MYSQL) -->
+                        <div>
+                            <div style="display: flex; gap: 16px; border-bottom: 1.5px solid #e2e8f0; margin-bottom: 16px;">
+                                <span style="font-size: 12.5px; font-weight: 800; color: #4f46e5; border-bottom: 2px solid #4f46e5; padding-bottom: 8px; cursor: pointer;" id="lbl-tab-enrolled" onclick="filterCoursesTab('enrolled')">Enrolled Courses (0)</span>
+                                <span style="font-size: 12.5px; font-weight: 600; color: #64748b; padding-bottom: 8px; cursor: pointer;" id="lbl-tab-completed" onclick="filterCoursesTab('completed')">Completed Courses (0)</span>
+                            </div>
+
+                            <div class="courses-container-grid" id="courses-list-container">
+                                <div style="color:#64748b; font-size:12px; padding:20px; text-align:center;">Loading courses...</div>
+                            </div>
+                        </div>
+
+                        <!-- RIGHT SIDEBAR (PROGRESS & ACTIVITIES) -->
+                        <div style="display: flex; flex-direction: column; gap: 16px;">
+                            <div class="profile-card">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                    <strong style="font-size: 13px; color: #0f172a;">Your Progress</strong>
+                                    <a href="#" style="font-size: 11px; color: #4f46e5; font-weight: 700; text-decoration: none;">View Details ↗</a>
+                                </div>
+                                <div id="donut-course-wrap" style="width: 80px; height: 80px; border-radius: 50%; background: conic-gradient(#4f46e5 0% 44%, #e2e8f0 44% 100%); margin: 0 auto 12px auto; display: flex; align-items: center; justify-content: center;">
+                                    <div style="width: 64px; height: 64px; border-radius: 50%; background: white; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 15px; font-weight: 800; color: #0f172a;">
+                                        <span id="lbl-overall-course-pct">44%</span>
+                                        <span style="font-size: 8px; color: #94a3b8;">Overall</span>
+                                    </div>
+                                </div>
+                                <div style="display: flex; justify-content: space-around; text-align: center; font-size: 11px; color: #64748b; border-top: 1px solid #f1f5f9; padding-top: 10px;">
+                                    <div><strong style="display:block; color:#0f172a; font-size:13px;" id="lbl-cnt-enrolled">0</strong>Enrolled</div>
+                                    <div><strong style="display:block; color:#0f172a; font-size:13px;" id="lbl-cnt-completed">0</strong>Completed</div>
+                                    <div><strong style="display:block; color:#0f172a; font-size:13px;" id="lbl-cnt-progress">0</strong>In Progress</div>
+                                </div>
+                            </div>
+
+                            <div class="profile-card">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                    <strong style="font-size: 13px; color: #0f172a;">Recent Activity</strong>
+                                    <a href="#" style="font-size: 11px; color: #4f46e5; font-weight: 700; text-decoration: none;">View All</a>
+                                </div>
+                                <div id="container-recent-activity">
+                                    <div style="color:#94a3b8; font-size:11px;">Loading activities...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+
+        <!-- FOOTER -->
+        <footer class="window-footer">
+            <div class="footer-status-chip">
+                <div class="status-chip-icon green-glow">📶</div>
+                <div class="status-chip-text"><strong>Network</strong><span class="green-text-small">Connected</span></div>
+            </div>
+            <div class="footer-status-chip">
+                <div class="status-chip-icon green-shield">🛡️</div>
+                <div class="status-chip-text"><strong>System Secure</strong><span class="green-text-small">All good</span></div>
+            </div>
+            <div class="footer-actions-right">
+                <button class="btn-footer-close-app" id="btn-footer-exit" onclick="exitApplication()">
+                    <div class="power-circle-icon">⏻</div>
+                    <div class="close-app-text-group">
+                        <strong>Close Application</strong>
+                        <span>App will close cleanly</span>
+                    </div>
+                </button>
+            </div>
+        </footer>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script>
+        const baseUrl = window.EXAMFORT_ENV?.API_BASE_URL || 'http://localhost:5000';
+
+        function exitApplication() {
+            if (window.electronAPI?.exitApp) {
+                window.electronAPI.exitApp();
+            } else {
+                window.close();
+            }
+        }
+
+        function logoutUser(e) {
+            if (e) e.preventDefault();
+            try {
+                sessionStorage.clear();
+                localStorage.removeItem('examfort_session');
+                localStorage.removeItem('exam_candidate');
+                localStorage.removeItem('examfort_user');
+                localStorage.removeItem('exam_start_mode');
+                localStorage.removeItem('examfort_app_session_v2');
+            } catch (_) {}
+            window.location.href = 'index.html?logout=1';
+        }
+
+        let cand = null;
+        try {
+            cand = JSON.parse(sessionStorage.getItem('exam_candidate') || 'null')
+                || JSON.parse(sessionStorage.getItem('examfort_user') || 'null');
+        } catch (_) {}
+        if (!cand) {
+            cand = { id: '123', student_id: 'STU123456', name: 'Ankit Kumar' };
+            sessionStorage.setItem('exam_candidate', JSON.stringify(cand));
+        }
+
+        let allFetchedCourses = [];
+        let activeCourseFilter = 'enrolled';
+
+        function filterCoursesTab(tab) {
+            activeCourseFilter = tab;
+            document.getElementById('lbl-tab-enrolled').style.color = tab === 'enrolled' ? '#4f46e5' : '#64748b';
+            document.getElementById('lbl-tab-enrolled').style.borderBottomColor = tab === 'enrolled' ? '#4f46e5' : 'transparent';
+            document.getElementById('lbl-tab-completed').style.color = tab === 'completed' ? '#4f46e5' : '#64748b';
+            document.getElementById('lbl-tab-completed').style.borderBottomColor = tab === 'completed' ? '#4f46e5' : 'transparent';
+            renderCoursesList();
+        }
+
+        function renderCoursesList() {
+            const list = document.getElementById('courses-list-container');
+            const searchVal = (document.getElementById('input-course-search')?.value || '').toLowerCase().trim();
+            const categoryVal = document.getElementById('select-course-category')?.value || 'All';
+
+            let filtered = allFetchedCourses;
+            if (activeCourseFilter === 'completed') {
+                filtered = filtered.filter(c => (c.progress_percent || 0) >= 100);
+            }
+
+            if (searchVal) {
+                filtered = filtered.filter(c => 
+                    (c.title || '').toLowerCase().includes(searchVal) || 
+                    (c.description || '').toLowerCase().includes(searchVal)
+                );
+            }
+
+            if (categoryVal !== 'All') {
+                filtered = filtered.filter(c => (c.level || '').toLowerCase() === categoryVal.toLowerCase());
+            }
+
+            if (!filtered || filtered.length === 0) {
+                list.innerHTML = `
+                    <div style="padding: 30px; text-align: center; color: #64748b; background: #ffffff; border-radius: 12px; border: 1px dashed #cbd5e1;">
+                        <span style="font-size: 28px; display: block; margin-bottom: 8px;">📚</span>
+                        <strong>No courses found matching your criteria.</strong>
+                    </div>
+                `;
+                return;
+            }
+
+            list.innerHTML = filtered.map(c => `
+                <div class="course-card-horizontal">
+                    <div class="course-icon-square" style="background:${c.color || '#4f46e5'}20; color:${c.color || '#4f46e5'};">
+                        ${c.icon || '💻'}
+                    </div>
+                    <div class="course-meta-info">
+                        <h3>${c.title}</h3>
+                        <p>${c.description}</p>
+                        <div class="course-tags-row">
+                            <span>📖 ${c.lessons_count} Lessons</span>
+                            <span>⏱️ ${c.duration_text}</span>
+                            <span>📊 ${c.level}</span>
+                        </div>
+                    </div>
+                    <div class="course-progress-side">
+                        <div style="display:flex; justify-content:space-between; font-size:11px; font-weight:700;">
+                            <span style="color:${(c.progress_percent||0)>=100?'#10b981':'#059669'};">${c.progress_percent || 0}%${(c.progress_percent||0)>=100?' ✓':''}</span>
+                            <span style="color:#64748b;">${c.completed_lessons || 0}/${c.lessons_count || 18}</span>
+                        </div>
+                        <div style="height:6px; background:#e2e8f0; border-radius:3px; overflow:hidden;">
+                            <div style="height:100%; width:${c.progress_percent || 0}%; background:${(c.progress_percent||0)>=100?'#10b981':'#4f46e5'};"></div>
+                        </div>
+                        <a class="btn-course-continue" href="course_details.html?id=${c.course_id}">${(c.progress_percent||0)>=100?'Review Course →':'Continue Course →'}</a>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Fetch 100% Pure MySQL Courses with retry
+        function loadCoursesFromMySQL() {
+            const list = document.getElementById('courses-list-container');
+            list.innerHTML = `<div style="color:#64748b; font-size:12px; padding:20px; text-align:center;">Loading courses from database...</div>`;
+
+            fetch(`${baseUrl}/api/courses`)
+                .then(res => res.json())
+                .then(data => {
+                    const courses = Array.isArray(data) ? data : (data.courses || []);
+                    if (courses && courses.length > 0) {
+                        allFetchedCourses = courses;
+                        
+                        // Compute real stats from MySQL data
+                        const total = courses.length;
+                        const completedCourses = courses.filter(c => (c.progress_percent || 0) >= 100).length;
+                        const inProgressCourses = courses.filter(c => (c.progress_percent || 0) > 0 && (c.progress_percent || 0) < 100).length;
+                        const overallPct = total > 0 ? Math.round(courses.reduce((s, c) => s + (c.progress_percent || 0), 0) / total) : 0;
+
+                        document.getElementById('lbl-tab-enrolled').textContent = `Enrolled Courses (${total})`;
+                        document.getElementById('lbl-tab-completed').textContent = `Completed Courses (${completedCourses})`;
+                        document.getElementById('lbl-cnt-enrolled').textContent = total;
+                        document.getElementById('lbl-cnt-completed').textContent = completedCourses;
+                        document.getElementById('lbl-cnt-progress').textContent = inProgressCourses;
+
+                        // Update overall progress donut
+                        const donut = document.getElementById('donut-course-wrap');
+                        const pctLbl = document.getElementById('lbl-overall-course-pct');
+                        if (donut) donut.style.background = `conic-gradient(#4f46e5 0% ${overallPct}%, #e2e8f0 ${overallPct}% 100%)`;
+                        if (pctLbl) pctLbl.textContent = `${overallPct}%`;
+
+                        renderCoursesList();
+                    } else {
+                        list.innerHTML = `<div style="padding: 20px; text-align:center; color:#64748b;">No courses available in MySQL. <button onclick="loadCoursesFromMySQL()" style="margin-left:8px; padding:4px 10px; border-radius:6px; cursor:pointer;">Retry</button></div>`;
+                    }
+                })
+                .catch(err => {
+                    console.error('Courses fetch error:', err);
+                    list.innerHTML = `<div style="padding: 20px; text-align:center; color:#ef4444;">Could not connect to backend server. <button onclick="loadCoursesFromMySQL()" style="margin-left:8px; padding:4px 10px; border-radius:6px; cursor:pointer; background:#4f46e5; color:white; border:none;">Retry</button></div>`;
+                });
+        }
+
+        loadCoursesFromMySQL();
+
+        // Fetch 100% Pure MySQL Recent Activities
+        fetch(`${baseUrl}/api/user/activities/${cand.id}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.success && data.activities) {
+                    const actContainer = document.getElementById('container-recent-activity');
+                    actContainer.innerHTML = data.activities.slice(0, 4).map(a => `
+                        <div style="display:flex; align-items:center; justify-content:space-between; padding:8px 0; border-bottom:1px solid #f1f5f9; font-size:11.5px;">
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <span style="color:#10b981; font-weight:bold;">${a.icon || '✓'}</span>
+                                <div>
+                                    <strong style="display:block; color:#0f172a;">${a.activity_title}</strong>
+                                    <span style="color:#64748b; font-size:10px;">${a.score_info}</span>
+                                </div>
+                            </div>
+                            <span style="color:#94a3b8; font-size:9.5px;">${a.time_text}</span>
+                        </div>
+                    `).join('');
+                }
+            })
+            .catch(err => console.error('Activities error:', err));
+    </script>
+</body>
+</html>
