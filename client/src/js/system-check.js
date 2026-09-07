@@ -19,7 +19,7 @@ class SystemDiagnosticEngine {
         this.audioContext = null;
         this.analyser = null;
         this.animFrameId = null;
-        this.backendUrl = 'http://localhost:5000';
+        this.backendUrl = window.EXAMFORT_ENV?.API_BASE_URL || 'https://examfort-d6q1.onrender.com';
         this.detectedProcesses = [];
 
         this.init();
