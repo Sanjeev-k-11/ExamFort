@@ -25,14 +25,20 @@ return new class extends Migration
         }
 
         // 2. Add coding specification fields to questions table
-        if (!Schema::hasColumn('questions', 'constraints')) {
-            Schema::table('questions', function (Blueprint $table) {
+        Schema::table('questions', function (Blueprint $table) {
+            if (!Schema::hasColumn('questions', 'constraints')) {
                 $table->text('constraints')->nullable()->after('question_text');
+            }
+            if (!Schema::hasColumn('questions', 'sample_input')) {
                 $table->text('sample_input')->nullable()->after('constraints');
+            }
+            if (!Schema::hasColumn('questions', 'sample_output')) {
                 $table->text('sample_output')->nullable()->after('sample_input');
+            }
+            if (!Schema::hasColumn('questions', 'explanation')) {
                 $table->text('explanation')->nullable()->after('sample_output');
-            });
-        }
+            }
+        });
     }
 
     /**
