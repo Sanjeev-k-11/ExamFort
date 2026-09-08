@@ -9,20 +9,23 @@ const judgeEngine = require('./judge');
 const essayEvaluator = require('./essay-evaluator');
 require('dotenv').config();
 
+const DEFAULT_PG_URL = 'postgresql://postgres.leodjnnylkxycarmegzk:Kumar%402004%40h3@aws-0-ap-south-1.pooler.supabase.com:5432/postgres';
+
 const isPostgresConfig = (
     process.env.DB_CONNECTION === 'pgsql' ||
     (process.env.DATABASE_URL && process.env.DATABASE_URL.startsWith('postgres')) ||
     parseInt(process.env.DB_PORT || '0', 10) === 5432 ||
-    (process.env.DB_HOST && process.env.DB_HOST.includes('supabase'))
+    (process.env.DB_HOST && (process.env.DB_HOST.includes('supabase') || process.env.DB_HOST.includes('pooler'))) ||
+    (!process.env.DB_HOST && !process.env.DB_CONNECTION) // Default to Supabase when hosted on Render
 );
 
 const DB_CONFIG = {
-    host: process.env.DB_HOST || 'localhost',
-    port: parseInt(process.env.DB_PORT || (isPostgresConfig ? '5432' : '3306'), 10),
-    user: process.env.DB_USER || (isPostgresConfig ? 'postgres' : 'root'),
-    password: process.env.DB_PASSWORD || '',
-    database: process.env.DB_NAME || (isPostgresConfig ? 'postgres' : 'examfort'),
-    connectionString: process.env.DATABASE_URL || ''
+    host: process.env.DB_HOST || 'aws-0-ap-south-1.pooler.supabase.com',
+    port: parseInt(process.env.DB_PORT || '5432', 10),
+    user: process.env.DB_USER || 'postgres.leodjnnylkxycarmegzk',
+    password: process.env.DB_PASSWORD || 'Kumar@2004@h3',
+    database: process.env.DB_NAME || 'postgres',
+    connectionString: process.env.DATABASE_URL || DEFAULT_PG_URL
 };
 
 function adaptQueryForPg(sql, params = []) {
@@ -171,7 +174,7 @@ class MySQLDatabaseService {
     // ==========================================
 
     async authenticateUser(userId, password) {
-        if (!this.pool) return { success: false, message: 'MySQL Database offline. Please start MySQL in XAMPP.' };
+        if (!this.pool) return { success: false, message: 'Database offline. Please check your database connection.' };
 
         try {
             const [rows] = await this.pool.query(
@@ -204,11 +207,11 @@ class MySQLDatabaseService {
                     }
                 };
             } else {
-                return { success: false, message: 'Invalid User ID/Email or Password in MySQL database.' };
+                return { success: false, message: 'Invalid User ID/Email or Password.' };
             }
         } catch (err) {
-            console.error('❌ [MySQL Auth Error]:', err.message);
-            return { success: false, message: `MySQL Query Error: ${err.message}` };
+            console.error('❌ [Auth Error]:', err.message);
+            return { success: false, message: `Database Query Error: ${err.message}` };
         }
     }
 
@@ -217,7 +220,7 @@ class MySQLDatabaseService {
     }
 
     async validateAccessCode(accessCode, fullName) {
-        if (!this.pool) return { success: false, message: 'MySQL Database offline.' };
+        if (!this.pool) return { success: false, message: 'Database offline.' };
 
         try {
             const code = (accessCode || '').trim();

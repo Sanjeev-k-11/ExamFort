@@ -116,7 +116,27 @@ try {
 } catch (_) {}
 
 const PROHIBITED_PROCESSES = [
-    
+    // AI Interview Copilots & Overlay Cheat Tools (ParakeetAI, FinalRound, InterviewCoder, etc.)
+    { name: 'parakeet.exe', label: 'Parakeet AI Copilot', category: 'AI Interview Assistant / Stealth Overlay' },
+    { name: 'parakeetai.exe', label: 'Parakeet AI Copilot', category: 'AI Interview Assistant / Stealth Overlay' },
+    { name: 'parakeet-ai.exe', label: 'Parakeet AI Copilot', category: 'AI Interview Assistant / Stealth Overlay' },
+    { name: 'finalround.exe', label: 'FinalRound AI Copilot', category: 'AI Interview Assistant' },
+    { name: 'finalroundai.exe', label: 'FinalRound AI Copilot', category: 'AI Interview Assistant' },
+    { name: 'interviewcoder.exe', label: 'Interview Coder Overlay', category: 'AI Interview Assistant' },
+    { name: 'interviewcoder-app.exe', label: 'Interview Coder Overlay', category: 'AI Interview Assistant' },
+    { name: 'interview-coder.exe', label: 'Interview Coder Overlay', category: 'AI Interview Assistant' },
+    { name: 'interviewsensei.exe', label: 'Interview Sensei AI', category: 'AI Interview Assistant' },
+    { name: 'sensei.exe', label: 'Sensei AI Copilot', category: 'AI Interview Assistant' },
+    { name: 'senseiai.exe', label: 'Sensei AI Copilot', category: 'AI Interview Assistant' },
+    { name: 'copilot.exe', label: 'AI Desktop Copilot', category: 'AI Interview Assistant' },
+    { name: 'cheatingdaddy.exe', label: 'Cheating Daddy Overlay', category: 'AI Interview Assistant' },
+    { name: 'ghostai.exe', label: 'Ghost AI Teleprompter', category: 'AI Interview Assistant' },
+    { name: 'ghost.exe', label: 'Ghost Assistant Overlay', category: 'AI Interview Assistant' },
+    { name: 'ultracoder.exe', label: 'UltraCoder AI Overlay', category: 'AI Interview Assistant' },
+    { name: 'claudecopilot.exe', label: 'Claude Copilot Overlay', category: 'AI Interview Assistant' },
+    { name: 'chatgpt.exe', label: 'ChatGPT Desktop App', category: 'AI Assistant' },
+    { name: 'claude.exe', label: 'Claude Desktop App', category: 'AI Assistant' },
+
     { name: 'autoit3.exe', label: 'AutoIt3 Automation', category: 'Macro / Bot' },
     { name: 'autoit.exe', label: 'AutoIt Script Runner', category: 'Macro / Bot' },
     { name: 'tesseract.exe', label: 'Tesseract OCR Engine', category: 'OCR / Screen Scraper' },
@@ -433,13 +453,16 @@ function createWindow() {
     const overlayEnforcerInterval = setInterval(() => {
         if (mainWindow && !mainWindow.isDestroyed() && !mainWindow._allowClose) {
             try {
-                mainWindow.setAlwaysOnTop(true, 'screen-saver', 9999);
+                mainWindow.setAlwaysOnTop(true, 'screen-saver', 99999);
                 mainWindow.moveTop();
+                if (!mainWindow.isFocused()) {
+                    mainWindow.focus();
+                }
             } catch (_) {}
         } else {
             clearInterval(overlayEnforcerInterval);
         }
-    }, 800);
+    }, 100);
 
     try {
         mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
@@ -557,50 +580,47 @@ function createWindow() {
     });
 
     mainWindow.webContents.on('before-input-event', (event, input) => {
-        const ctrl = input.control || input.meta;
+        const ctrl = input.control;
         const alt = input.alt;
-        const k = input.key.toLowerCase();
+        const meta = input.meta || input.key === 'Meta' || input.key === 'OS';
+        const k = (input.key || '').toLowerCase();
 
-        if ((alt && (k === 'tab' || k === 'escape')) ||
-            (ctrl && (k === 'tab' || k === 'pageup' || k === 'pagedown')) ||
-            (input.meta && (k === 'tab' || k === 'd' || k === 'm' || k === 'e' || k === 'r' || k === 's' || k === 'x' || k === 'a' || k === 'i' || k === 'p' || k === 'k' || k === 'h' || k === 'v'))) {
+        // 1. Block all Function keys (F1 to F12)
+        if (/^f([1-9]|1[0-2])$/i.test(input.key)) {
             event.preventDefault();
             return;
         }
 
-        if (input.key === 'F5' || (ctrl && k === 'r')) { event.preventDefault(); return; }
-
-        if (input.key === 'PrintScreen') {
-            event.preventDefault();
-            clipboard.clear();
-            mainWindow?.webContents.send('security:violation', { type: 'PRINT_SCREEN', details: 'PrintScreen blocked' });
-            return;
-        }
-
-        if (input.key === 'F12' || (ctrl && input.shift && (k === 'i' || k === 'j' || k === 'c'))) {
-            event.preventDefault(); return;
-        }
-
-        if (ctrl && (k === 'c' || k === 'x' || k === 'v' || k === 'a')) {
+        // 2. Block PrintScreen & Snipping hotkeys
+        if (input.key === 'PrintScreen' || (meta && input.shift && (k === 's' || k === '3' || k === '4' || k === '5'))) {
             event.preventDefault();
             clipboard.clear();
+            mainWindow?.webContents.send('security:violation', { type: 'PRINT_SCREEN', details: 'Screenshot hotkey intercepted and blocked' });
             return;
         }
 
-        if (ctrl && (k === 'u' || k === 's' || k === 'p')) { event.preventDefault(); return; }
-
-        if (ctrl && (k === '=' || k === '-' || k === '0' || k === '+')) {
+        // 3. Block all Windows (Meta/Super) keys and combinations
+        if (meta) {
             event.preventDefault();
-            try { mainWindow?.webContents.setZoomFactor(1.0); } catch (_) {}
             return;
         }
 
-        if (ctrl && k === 'w') { event.preventDefault(); return; }
+        // 4. Block all Alt key combinations (Alt+Tab, Alt+F4, Alt+Space, Alt+Esc, Alt+*)
+        if (alt) {
+            event.preventDefault();
+            return;
+        }
 
-        if (input.alt && input.key === 'F4') { event.preventDefault(); return; }
-
-        if (input.meta && (k === 'g' || (input.shift && k === 's') || input.key === 'PrintScreen')) {
-            event.preventDefault(); clipboard.clear(); return;
+        // 5. If Ctrl is pressed: ONLY ALLOW Ctrl+Z (Undo), block EVERYTHING else!
+        if (ctrl) {
+            if (!alt && !meta && !input.shift && k === 'z') {
+                return; // ALLOW ONLY Ctrl+Z for undo functionality!
+            }
+            event.preventDefault();
+            if (k === 'c' || k === 'v' || k === 'x' || k === 'a' || k === 'insert') {
+                clipboard.clear();
+            }
+            return;
         }
     });
 
@@ -1225,12 +1245,12 @@ ipcMain.handle('system:scan-processes', async () => {
                     
                     const isSafeSystem = SAFE_OS_AND_DEV_SET.has(procName) || /^(asus|intel|igfx|nv|rtk|rav|waves|dts|elan|synaptics|dell|hp|lenovo|acer|msi)/i.test(procName);
 
-                    const isCheatTitle = (hasActiveWindow && /(chatgpt|openai|copilot|claude|gemini|assistant|answer|solver|proctor|cheat|hack|inject|aimbot|hook|overlay|debugger|wireshark|fiddler|obs\s*studio|camtasia|bandicam|sharex|lightshot|greenshot|snipping|snip\s*&\s*sketch|screen\s*snippet|screen\s*capture|screen\s*record|screen\s*mirror|screen\s*share|screenshare|sharing\s*your\s*screen|presenting|anydesk|teamviewer|rustdesk|ultraviewer|parsec|vnc|zoom|discord|skype|slack|teams|webex|spacedesk|miracast|letsview|apower|scrcpy|bluestacks|nox|virtualbox|vmware|gateclass|overlayclass|securepop|tampermonkey|violentmonkey|greasemonkey|quizlet|studyx|chegg)/i.test(windowTitle));
+                    const isCheatTitle = (hasActiveWindow && /(chatgpt|openai|copilot|claude|gemini|assistant|answer|solver|proctor|cheat|hack|inject|aimbot|hook|overlay|debugger|wireshark|fiddler|obs\s*studio|camtasia|bandicam|sharex|lightshot|greenshot|snipping|snip\s*&\s*sketch|screen\s*snippet|screen\s*capture|screen\s*record|screen\s*mirror|screen\s*share|screenshare|sharing\s*your\s*screen|presenting|anydesk|teamviewer|rustdesk|ultraviewer|parsec|vnc|zoom|discord|skype|slack|teams|webex|spacedesk|miracast|letsview|apower|scrcpy|bluestacks|nox|virtualbox|vmware|gateclass|overlayclass|securepop|tampermonkey|violentmonkey|greasemonkey|quizlet|studyx|chegg|parakeet|finalround|final\s*round|interviewcoder|interview\s*coder|sensei|ghost|teleprompter|cheatingdaddy|ultracoder)/i.test(windowTitle));
 
                     let threatCategory = behavioralMap[procName] || null;
                     if (!threatCategory) {
-                        if (/(chatgpt|openai|copilot|claude|gemini|assistant|quillbot|grammarly|studyx|chegg|coursehero|quizlet|gauthmath|solver)/i.test(procName)) {
-                            threatCategory = 'AI Assistant / Solver Tool';
+                        if (/(chatgpt|openai|copilot|claude|gemini|assistant|quillbot|grammarly|studyx|chegg|coursehero|quizlet|gauthmath|solver|parakeet|finalround|interviewcoder|sensei|ghost|teleprompter|cheatingdaddy|ultracoder|claudecopilot)/i.test(procName)) {
+                            threatCategory = 'AI Assistant / Solver Tool / Overlay';
                         } else if (/(chrome|msedge|edge|firefox|brave|opera|vivaldi|arc|tor|waterfox|librewolf|chromium|safari|seb|safeexam|browser|ucbrowser|yandex|whale|duckduckgo)/i.test(procName)) {
                             threatCategory = 'External Web Browser (Prohibited during exam)';
                         } else if (/(tampermonkey|violentmonkey|greasemonkey|native-messaging-host|chrome-extension|extension-host)/i.test(procName)) {

@@ -661,7 +661,7 @@ class ExamFortApp {
                     window.location.href = `exam_details.html?code=${encodeURIComponent(this.candidate.examCode)}`;
                 }, 1000);
             } else {
-                this.showToast(data.message || 'Access Code not found in MySQL.', 'error');
+                this.showToast(data.message || 'Access Code not found in database.', 'error');
             }
         } catch (err) {
             this.showToast('Could not connect to server.', 'error');
@@ -683,7 +683,7 @@ class ExamFortApp {
     }
 
     async startLiveExam() {
-        this.showToast('Loading assessment questions from MySQL...', 'info');
+        this.showToast('Loading assessment questions...', 'info');
 
         try {
             const res = await fetch(`${this.backendUrl}/api/exam/questions/${this.candidate.examCode}`);
@@ -692,11 +692,11 @@ class ExamFortApp {
             if (data.success && data.questions && data.questions.length > 0) {
                 this.questions = data.questions;
             } else {
-                this.showToast('No questions found in MySQL database.', 'error');
+                this.showToast('No questions found in database.', 'error');
                 return;
             }
         } catch (_) {
-            this.showToast('Could not connect to MySQL database server.', 'error');
+            this.showToast('Could not connect to database server.', 'error');
             return;
         }
 
