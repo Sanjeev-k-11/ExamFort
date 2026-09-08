@@ -168,11 +168,11 @@
 </head>
 <body>
     <div class="dash-viewport" style="display: flex; flex-direction: column; height: 100vh; overflow: hidden;">
-        <!-- SECURITY WATERMARK -->
+        
         <div class="security-watermark-overlay" id="watermark-overlay"></div>
 
         <div style="display: flex; flex: 1; overflow: hidden;">
-            <!-- SIDEBAR -->
+            
             <aside class="dashboard-sidebar" style="width: 240px; min-width: 240px; height: 100%; overflow-y: auto; background: #ffffff; border-right: 1.5px solid #e2e8f0; padding: 20px 14px; display: flex; flex-direction: column; justify-content: space-between; flex-shrink: 0;">
                 <div>
                     <div class="sidebar-brand-box" style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
@@ -227,10 +227,10 @@
                 </div>
             </aside>
 
-            <!-- MAIN DASHBOARD CONTENT -->
+            
             <main class="dash-scroll" style="flex: 1; overflow-y: auto;">
             
-            <!-- TOP GREETING & FILTERS ROW (MATCHES IMAGE 2) -->
+            
             <div class="dash-top-bar">
                 <div class="greeting-group">
                     <a class="avatar-circle-top" href="profile.html" id="lbl-avatar" title="View Profile">A</a>
@@ -252,9 +252,9 @@
                 </div>
             </div>
 
-            <!-- 6 STAT METRICS CARDS (EXACT MATCH IMAGE 2) -->
+            
             <div class="metrics-6-row">
-                <!-- 1. Exams Enrolled -->
+                
                 <div class="metric-card-pill">
                     <div class="metric-icon-box" style="background: #ede9fe; color: #6366f1;">📄</div>
                     <div class="metric-meta">
@@ -264,7 +264,7 @@
                     </div>
                 </div>
 
-                <!-- 2. Exams Completed -->
+                
                 <div class="metric-card-pill">
                     <div class="metric-icon-box" style="background: #dcfce7; color: #16a34a;">✓</div>
                     <div class="metric-meta">
@@ -274,7 +274,7 @@
                     </div>
                 </div>
 
-                <!-- 3. Upcoming Exams -->
+                
                 <div class="metric-card-pill">
                     <div class="metric-icon-box" style="background: #fef3c7; color: #d97706;">🕒</div>
                     <div class="metric-meta">
@@ -284,7 +284,7 @@
                     </div>
                 </div>
 
-                <!-- 4. Average Score -->
+                
                 <div class="metric-card-pill">
                     <div class="metric-icon-box" style="background: #e0f2fe; color: #0284c7;">📊</div>
                     <div class="metric-meta">
@@ -294,7 +294,7 @@
                     </div>
                 </div>
 
-                <!-- 5. Best Score -->
+                
                 <div class="metric-card-pill">
                     <div class="metric-icon-box" style="background: #fee2e2; color: #dc2626;">🏆</div>
                     <div class="metric-meta">
@@ -304,7 +304,7 @@
                     </div>
                 </div>
 
-                <!-- 6. Current Streak -->
+                
                 <div class="metric-card-pill">
                     <div class="metric-icon-box" style="background: #fae8ff; color: #a855f7;">🎯</div>
                     <div class="metric-meta">
@@ -315,9 +315,9 @@
                 </div>
             </div>
 
-            <!-- ROW 2: MY PROGRESS, UPCOMING EXAMS, RECENT PERFORMANCE -->
+            
             <div class="dash-3col-grid">
-                <!-- COL 1: MY PROGRESS -->
+                
                 <div class="dash-card">
                     <div class="dash-card-header">
                         <h3 class="dash-card-title">My Progress</h3>
@@ -360,14 +360,14 @@
                     </div>
                 </div>
 
-                <!-- COL 2: UPCOMING EXAMS -->
+                
                 <div class="dash-card">
                     <div class="dash-card-header">
                         <h3 class="dash-card-title">Upcoming Exams</h3>
                         <a href="exams.html" class="dash-card-link">View All →</a>
                     </div>
                     <div class="upcoming-exams-list">
-                        <!-- Primary Live Exam from MySQL -->
+                        
                         <div class="upcoming-exam-item" id="card-primary-exam">
                             <div class="ue-left">
                                 <div class="ue-icon">📅</div>
@@ -378,20 +378,20 @@
                             </div>
                             <a href="instructions.html" class="btn-start-soon btn-start-active" id="btn-start-primary">Start Exam</a>
                         </div>
-                        <!-- Additional exams fetched from MySQL (dynamically added) -->
+                        
                         <div id="extra-exams-list"></div>
                     </div>
                     <a href="exams.html" class="link-schedule-center">View Full Schedule & History →</a>
                 </div>
 
-                <!-- COL 3: RECENT PERFORMANCE CHART (100% MYSQL POWERED) -->
+                
                 <div class="dash-card">
                     <div class="dash-card-header">
                         <h3 class="dash-card-title">Recent Performance</h3>
                         <a href="profile.html" class="dash-card-link">View All →</a>
                     </div>
                     <div class="chart-box" id="perf-chart-box">
-                        <!-- DYNAMICALLY DRAWN SVG FROM MYSQL ACTIVITIES -->
+                        
                         <svg id="perf-chart-svg" width="100%" height="100%" viewBox="0 0 320 120" preserveAspectRatio="none">
                             <defs>
                                 <linearGradient id="chartGrad" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -423,16 +423,16 @@
                 </div>
             </div>
 
-            <!-- ROW 3: CONTINUE LEARNING, RECENT ACTIVITY, QUICK ACTIONS -->
+            
             <div class="dash-3col-grid">
-                <!-- COL 1: CONTINUE LEARNING -->
+                
                 <div class="dash-card">
                     <div class="dash-card-header">
                         <h3 class="dash-card-title">Continue Learning</h3>
                         <a href="courses.html" class="dash-card-link">View All →</a>
                     </div>
                     <div class="learning-items-list">
-                        <!-- 1 -->
+                        
                         <div class="learning-row-item">
                             <div class="lr-left">
                                 <div class="lr-icon" style="background:#ede9fe; color:#6366f1;">🧮</div>
@@ -449,7 +449,7 @@
                             <a href="course_details.html?id=course-aptitude" class="btn-continue-pill">Continue</a>
                         </div>
 
-                        <!-- 2 -->
+                        
                         <div class="learning-row-item">
                             <div class="lr-left">
                                 <div class="lr-icon" style="background:#ecfdf5; color:#059669;">🧠</div>
@@ -466,7 +466,7 @@
                             <a href="course_details.html?id=course-reasoning" class="btn-continue-pill">Continue</a>
                         </div>
 
-                        <!-- 3 -->
+                        
                         <div class="learning-row-item">
                             <div class="lr-left">
                                 <div class="lr-icon" style="background:#fffbeb; color:#d97706;">📊</div>
@@ -483,7 +483,7 @@
                             <a href="course_details.html?id=course-cpp" class="btn-continue-pill">Continue</a>
                         </div>
 
-                        <!-- 4 -->
+                        
                         <div class="learning-row-item">
                             <div class="lr-left">
                                 <div class="lr-icon" style="background:#eff6ff; color:#2563eb;">📖</div>
@@ -502,7 +502,7 @@
                     </div>
                 </div>
 
-                <!-- COL 2: RECENT ACTIVITY -->
+                
                 <div class="dash-card">
                     <div class="dash-card-header">
                         <h3 class="dash-card-title">Recent Activity</h3>
@@ -551,7 +551,7 @@
                     </div>
                 </div>
 
-                <!-- COL 3: QUICK ACTIONS -->
+                
                 <div class="dash-card">
                     <div class="dash-card-header">
                         <h3 class="dash-card-title">Quick Actions</h3>
@@ -621,7 +621,7 @@
         </main>
         </div>
 
-        <!-- FOOTER STATUS BAR (MATCHES ALL PAGES) -->
+        
         <footer class="footer-status-bar">
             <div class="footer-left">
                 <div class="footer-status-item">

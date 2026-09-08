@@ -6,12 +6,12 @@
 @section('content')
 <div style="max-width: 860px; margin: 0 auto;">
     <div style="margin-bottom: 24px;">
-        <a href="{{ route('exams.index') }}" style="color: #818cf8; text-decoration: none; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; margin-bottom: 8px;">
+        <a href="{{ route('exams.index') }}" style="color: #4f46e5; text-decoration: none; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; margin-bottom: 8px;">
             <i data-lucide="arrow-left" style="width: 14px; height: 14px;"></i>
             <span>Back to Exams Directory</span>
         </a>
-        <h1 style="font-size: 26px; font-weight: 800; color: #fff;">Schedule New Examination</h1>
-        <p style="color: var(--text-secondary); font-size: 14px; margin-top: 4px;">
+        <h1 style="font-size: 26px; font-weight: 800; color: #0f172a; letter-spacing: -0.02em;">Schedule New Examination</h1>
+        <p style="color: #64748b; font-size: 14px; margin-top: 4px;">
             Configure examination parameters, duration, total marks, and schedule.
         </p>
     </div>
@@ -24,7 +24,7 @@
                 <div class="form-group">
                     <label class="form-label">Exam Code (Unique Identifier) *</label>
                     <input type="text" name="exam_code" class="form-control mono" placeholder="NAT-2026-EXAM" value="{{ old('exam_code') }}" required>
-                    <small style="color: var(--text-muted); font-size: 11px;">Unique alphanumeric exam identifier (e.g. CS-FINAL-2026).</small>
+                    <small style="color: #64748b; font-size: 11px;">Unique alphanumeric exam identifier (e.g. CS-FINAL-2026).</small>
                 </div>
 
                 <div class="form-group">
@@ -76,16 +76,16 @@
                 </div>
             </div>
 
-            <div class="form-group" style="margin-top: 10px;">
-                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
-                    <input type="checkbox" name="is_results_published" value="1" {{ old('is_results_published') ? 'checked' : '' }}>
-                    <span style="font-size: 14px; font-weight: 600; color: #fff;">Publish Results to Candidates Immediately upon evaluation</span>
+            <div class="form-group" style="margin-top: 10px; background: rgba(248, 250, 252, 0.8); padding: 12px 16px; border-radius: 10px; border: 1px solid #e2e8f0;">
+                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; margin: 0;">
+                    <input type="checkbox" name="is_results_published" value="1" {{ old('is_results_published') ? 'checked' : '' }} style="width: 16px; height: 16px; accent-color: #4f46e5;">
+                    <span style="font-size: 13.5px; font-weight: 600; color: #0f172a;">Publish Results to Candidates Immediately upon evaluation</span>
                 </label>
             </div>
 
-            <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 32px; padding-top: 20px; border-top: 1px solid var(--border-color);">
-                <a href="{{ route('exams.index') }}" class="quick-action-btn secondary">Cancel</a>
-                <button type="submit" class="quick-action-btn">
+            <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 32px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
+                <a href="{{ route('exams.index') }}" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary">
                     <i data-lucide="check" style="width: 16px; height: 16px;"></i>
                     <span>Create & Open Question Bank</span>
                 </button>

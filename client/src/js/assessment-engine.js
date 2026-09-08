@@ -1,11 +1,4 @@
-/**
- * ========================================================
- * EXAMFORT ASSESSMENT ENGINE - ADVANCED MULTI-LANGUAGE VS CODE COMPILER
- * Seamless Section Switcher (MCQ / Coding / Descriptive)
- * Real VS Code Online Compiler Experience with Single-Pass Lexer Syntax Highlighting,
- * Auto-Indentation, Line Numbers Gutter, Dynamic Diagonal Watermark & Exit Modals
- * ========================================================
- */
+
 
 class AssessmentEngine {
     constructor() {
@@ -37,7 +30,6 @@ class AssessmentEngine {
         this.detailsHidden = false;
         this.isEditorFullscreen = false;
 
-        // Undo / Redo History Stack
         this.editorUndoStack = [];
         this.editorRedoStack = [];
         this.historyTimer = null;
@@ -51,7 +43,6 @@ class AssessmentEngine {
             javascript: 'JavaScript (Node.js 24)'
         };
 
-        // Proctoring Warning System (10 Strikes System: reaching 10 warnings auto-submits)
         this.warningCount = 0;
         this.maxWarnings = 10;
         this.fontSize = 14;
@@ -83,7 +74,6 @@ class AssessmentEngine {
             console.error('UI setup warning:', uiErr);
         }
 
-        // Check if candidate has already submitted this exam in MySQL
         const alreadySubmitted = await this.checkExistingSubmission();
         if (alreadySubmitted) {
             this.isSubmitting = true;
@@ -94,13 +84,11 @@ class AssessmentEngine {
             return;
         }
 
-        // Check if exam is within valid scheduled time window (Start & End Time Bounds)
         const isTimeValid = await this.checkExamTimeBounds();
         if (!isTimeValid) {
             return;
         }
 
-        // Check if exam requires Face Verification and ensure candidate completed it
         const faceVerified = await this.verifyFaceRequirement();
         if (!faceVerified) {
             return;
@@ -118,7 +106,6 @@ class AssessmentEngine {
         }
     }
 
-    // Check if candidate already has a recorded submission in MySQL or Local Session
     async checkExistingSubmission() {
         const candId = this.candidate?.id || this.candidate?.student_id || 'CAND123456';
         const localKey = `exam_submitted_${candId}_${this.examCode}`;
@@ -132,7 +119,7 @@ class AssessmentEngine {
                 sessionStorage.setItem(localKey, 'true');
                 return true;
             } else {
-                // Not submitted in database: clear any stale false locks
+                
                 localStorage.removeItem(localKey);
                 sessionStorage.removeItem(localKey);
                 localStorage.removeItem(`exam_submitted_${this.examCode}`);
@@ -145,7 +132,6 @@ class AssessmentEngine {
         }
     }
 
-    // Helper: Parse exam start & end datetimes accurately across all formats
     parseExamDateTimeRange(dateStr, timeStr) {
         if (!dateStr) return { start: null, end: null, startTime: '10:00 AM', endTime: '12:00 PM' };
         try {
@@ -226,7 +212,6 @@ class AssessmentEngine {
         }
     }
 
-    // Check if current time is within scheduled start & end window
     async checkExamTimeBounds() {
         if (!this.examDetails) {
             try {
@@ -257,7 +242,6 @@ class AssessmentEngine {
         return true;
     }
 
-    // Verify Face Match requirement (Redirects to instructions if not verified)
     async verifyFaceRequirement() {
         try {
             const res = await fetch(`${this.backendUrl}/api/exam/details/${this.examCode}`);
@@ -277,20 +261,14 @@ class AssessmentEngine {
         return true;
     }
 
-    // ========================================================
-    // 0. DYNAMIC REPEATING WATERMARK
-    // ========================================================
     renderDynamicWatermark() {
-        // Feature disabled at user's request
+        
         const watermarkEl = document.getElementById('watermark-overlay');
         if (watermarkEl) watermarkEl.style.display = 'none';
     }
 
-    // ========================================================
-    // 1. CUSTOM DROPDOWNS CONTROLLER (NO BLUR GLITCHES)
-    // ========================================================
     initCustomDropdowns() {
-        // --- Language Dropdown ---
+        
         const langTrigger = document.getElementById('btn-lang-trigger');
         const langMenu = document.getElementById('menu-coding-lang');
         const langContainer = document.getElementById('dropdown-coding-lang');
@@ -318,7 +296,6 @@ class AssessmentEngine {
             });
         }
 
-        // --- Section Switcher Dropdown ---
         const secTrigger = document.getElementById('btn-section-trigger');
         const secMenu = document.getElementById('menu-section-switcher');
         const secContainer = document.getElementById('dropdown-section-switcher');
@@ -346,14 +323,12 @@ class AssessmentEngine {
             });
         }
 
-        // Close dropdowns on document click
         document.addEventListener('click', (e) => {
             if (!e.target.closest('.custom-select-container')) {
                 this.closeAllDropdowns();
             }
         });
 
-        // Close on Escape key
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 this.closeAllDropdowns();
@@ -371,38 +346,30 @@ class AssessmentEngine {
         });
     }
 
-    // ========================================================
-    // 2. EVENT BINDING & CONFIRMATION MODALS
-    // ========================================================
     bindEvents() {
-        // Navigation Buttons - Prompt confirmation before leaving!
+        
         document.getElementById('btn-back-instructions')?.addEventListener('click', (e) => {
             e.preventDefault();
             this.showExitModal();
         });
 
-        // Header End Test Button - Prompt submission confirmation modal
         document.getElementById('btn-pause-test')?.addEventListener('click', () => {
             this.showSubmitModal();
         });
 
-        // Exit Modal Actions
         document.getElementById('btn-modal-cancel-exit')?.addEventListener('click', () => this.hideExitModal());
         document.getElementById('btn-modal-confirm-exit')?.addEventListener('click', () => this.confirmExit());
 
-        // Submit Modal Actions
         document.getElementById('btn-modal-cancel-submit')?.addEventListener('click', () => this.hideSubmitModal());
         document.getElementById('btn-modal-confirm-submit')?.addEventListener('click', () => {
             this.hideSubmitModal();
             this.submitAssessment(false);
         });
 
-        // MCQ Buttons
         document.getElementById('btn-mcq-next')?.addEventListener('click', () => this.nextQuestion());
         document.getElementById('btn-mcq-prev')?.addEventListener('click', () => this.prevQuestion());
         document.getElementById('btn-mcq-review')?.addEventListener('click', () => this.toggleReview());
 
-        // Coding Buttons
         document.getElementById('btn-code-run')?.addEventListener('click', () => this.runCompilerSandbox(false));
         document.getElementById('btn-code-submit')?.addEventListener('click', () => this.submitCodingQuestion());
         document.getElementById('btn-code-next')?.addEventListener('click', () => {
@@ -418,7 +385,6 @@ class AssessmentEngine {
         document.getElementById('btn-reset-code')?.addEventListener('click', () => this.resetCode());
         document.getElementById('btn-toggle-fullscreen')?.addEventListener('click', () => this.toggleEditorFullscreen());
 
-        // Essay / Descriptive Buttons
         document.getElementById('btn-essay-prev')?.addEventListener('click', () => this.prevQuestion());
         document.getElementById('btn-essay-review')?.addEventListener('click', () => this.toggleReview());
         document.getElementById('btn-final-submit-exam')?.addEventListener('click', () => {
@@ -426,7 +392,6 @@ class AssessmentEngine {
             this.showSubmitModal();
         });
 
-        // Custom Input Toggle
         document.getElementById('chk-custom-input-toggle')?.addEventListener('change', (e) => {
             const wrap = document.getElementById('wrap-custom-input');
             if (wrap) {
@@ -434,7 +399,6 @@ class AssessmentEngine {
             }
         });
 
-        // Test Cases & Error Console On/Off Switch Toggle
         const tcToggle = document.getElementById('chk-test-cases-toggle');
         tcToggle?.addEventListener('change', (e) => {
             const consolePanel = document.getElementById('console-test-results');
@@ -453,7 +417,6 @@ class AssessmentEngine {
             }
         });
 
-        // Console Output Tabs
         document.getElementById('tab-test-cases')?.addEventListener('click', () => {
             document.getElementById('tab-test-cases')?.classList.add('active');
             document.getElementById('tab-console-terminal')?.classList.remove('active');
@@ -468,7 +431,6 @@ class AssessmentEngine {
             document.getElementById('console-test-cards')?.classList.add('hidden');
         });
 
-        // Essay Buttons
         document.getElementById('btn-essay-prev')?.addEventListener('click', () => this.prevQuestion());
         document.getElementById('btn-essay-review')?.addEventListener('click', () => this.toggleReview());
         document.getElementById('btn-final-submit-exam')?.addEventListener('click', () => this.showSubmitModal());
@@ -478,23 +440,19 @@ class AssessmentEngine {
             if (badge) badge.textContent = `${count} Words`;
         });
 
-        // Progress Details Toggle
         document.getElementById('btn-toggle-details')?.addEventListener('click', () => {
             this.toggleProgressDetails();
         });
 
-        // Exit Footer - Intercept with modal!
         document.getElementById('btn-footer-exit')?.addEventListener('click', (e) => {
             e.preventDefault();
             this.showExitModal();
         });
 
-        // Warning Modal Acknowledge Button
         document.getElementById('btn-ack-warning')?.addEventListener('click', () => {
             this.acknowledgeWarning();
         });
 
-        // Window beforeunload safeguard
         window.addEventListener('beforeunload', (e) => {
             this.saveCurrent();
         });
@@ -526,30 +484,25 @@ class AssessmentEngine {
         }
     }
 
-    // ========================================================
-    // 2A. PROCTORING & WARNING SENTINEL (10 STRIKES SYSTEM)
-    // ========================================================
     setupProctoringListeners() {
-        // 1. Electron Native IPC Security Violation Event
+        
         if (window.electronAPI?.onSecurityViolation) {
             window.electronAPI.onSecurityViolation((violation) => {
                 this.triggerProctoringWarning(violation.type || 'SECURITY_VIOLATION', violation.details || 'Proctoring security violation detected');
             });
         }
 
-        // 2. Display / Monitor Configuration Change
         if (window.electronAPI?.onDisplayChanged) {
             window.electronAPI.onDisplayChanged((data) => {
                 this.triggerProctoringWarning('DISPLAY_CHANGE', `External display count changed (${data.displays} monitor(s) active)`);
             });
         }
 
-        // 3. Window Blur / Lost Focus / Alt+Tab / 3-Finger Gesture Detection
         window.addEventListener('blur', () => {
             const now = Date.now();
-            // Initial load grace period (2.5s) to allow clean, smooth window mounting
+            
             if (now - this.loadTime < 2500) return;
-            // Single strike guard: if already showing warning or submitted or within cooldown, ignore
+            
             if (this.isWarningModalOpen || this.isSubmitting) return;
             if (now - this.lastBlurWarningTime > 3500) {
                 this.lastBlurWarningTime = now;
@@ -557,7 +510,6 @@ class AssessmentEngine {
             }
         });
 
-        // 4. Tab Switch / Document Visibility Change
         document.addEventListener('visibilitychange', () => {
             const now = Date.now();
             if (now - this.loadTime < 2500) return;
@@ -569,51 +521,44 @@ class AssessmentEngine {
             }
         });
 
-        // 5. Block Restricted Keyboard Shortcuts with Proctored Toast / Warning
         window.addEventListener('keydown', (e) => {
             const ctrl = e.ctrlKey || e.metaKey;
             const k = e.key ? e.key.toLowerCase() : '';
 
-            // PrintScreen
             if (e.key === 'PrintScreen' || k === 'printscreen') {
                 e.preventDefault();
                 this.triggerProctoringWarning('SCREENSHOT_ATTEMPT', 'Screenshot attempt (PrintScreen) blocked');
                 return;
             }
 
-            // DevTools (F12, Ctrl+Shift+I/J/C)
             if (e.key === 'F12' || (ctrl && e.shiftKey && (k === 'i' || k === 'j' || k === 'c'))) {
                 e.preventDefault();
                 this.triggerProctoringWarning('DEVTOOLS_ATTEMPT', 'Developer tools inspection attempt blocked');
                 return;
             }
 
-            // View Source (Ctrl+U)
             if (ctrl && k === 'u') {
                 e.preventDefault();
                 this.triggerProctoringWarning('VIEW_SOURCE', 'View source shortcut (Ctrl+U) blocked');
                 return;
             }
 
-            // Print (Ctrl+P)
             if (ctrl && k === 'p') {
                 e.preventDefault();
                 this.showToast('Printing is strictly prohibited during the examination.', 'error');
                 return;
             }
 
-            // Save Webpage (Ctrl+S)
             if (ctrl && k === 's') {
                 e.preventDefault();
                 this.showToast('Exam progress is automatically saved to secure cloud.', 'info');
                 return;
             }
 
-            // Copy & Cut & Paste Block (Outside of internal editor if needed)
             if (ctrl && (k === 'c' || k === 'v' || k === 'x')) {
                 const target = e.target;
                 const isEditorTextarea = target && target.id === 'txt-code-solution';
-                // If in MCQ or instructions or non-editor, block completely
+                
                 if (!isEditorTextarea) {
                     e.preventDefault();
                     this.showToast('Copy / Paste is disabled on question prompts.', 'warning');
@@ -621,7 +566,6 @@ class AssessmentEngine {
             }
         }, true);
 
-        // 6. Right-Click Context Menu Suppression with Warning
         window.addEventListener('contextmenu', (e) => {
             e.preventDefault();
             this.showToast('Right-click context menu is disabled in secure exam.', 'warning');
@@ -634,7 +578,6 @@ class AssessmentEngine {
         this.warningCount++;
         console.warn(`[Proctoring] Strike ${this.warningCount}/${this.maxWarnings}: ${type} - ${details}`);
 
-        // Update Header Warning Indicator (e.g. 1 / 10)
         const headerBadge = document.getElementById('lbl-header-warnings');
         if (headerBadge) {
             headerBadge.textContent = `${this.warningCount} / ${this.maxWarnings}`;
@@ -643,10 +586,8 @@ class AssessmentEngine {
             }
         }
 
-        // Show toast alert
         this.showToast(`⚠️ Warning ${this.warningCount}/${this.maxWarnings}: ${details}`, 'error');
 
-        // Log violation to MySQL Backend
         fetch(`${this.backendUrl}/api/violations/log`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -658,7 +599,6 @@ class AssessmentEngine {
             })
         }).catch(() => {});
 
-        // If reached max warnings (10 strikes) -> Automatic Exam Termination & Submission!
         if (this.warningCount >= this.maxWarnings) {
             this.isSubmitting = true;
             this.showToast('🚨 Maximum warning limit reached (10 Warnings). Auto-submitting exam now...', 'error');
@@ -668,7 +608,6 @@ class AssessmentEngine {
             return;
         }
 
-        // Show Warning Modal with Strike Count & Countdown
         this.showProctoringWarningModal(type, details);
     }
 
@@ -695,7 +634,6 @@ class AssessmentEngine {
             this.isWarningModalOpen = true;
         }
 
-        // 3-second mandatory countdown before button can be clicked
         if (ackBtn && cdSpan) {
             ackBtn.disabled = true;
             let countdown = 3;
@@ -722,21 +660,18 @@ class AssessmentEngine {
             modal.classList.add('hidden');
             this.isWarningModalOpen = false;
         }
-        this.lastBlurWarningTime = Date.now() + 2000; // 2s grace cooldown after dismiss
+        this.lastBlurWarningTime = Date.now() + 2000; 
         if (this.warningAckTimer) {
             clearInterval(this.warningAckTimer);
             this.warningAckTimer = null;
         }
-        // Focus back on editor if coding question
+        
         const textarea = document.getElementById('txt-code-solution');
         if (textarea && !textarea.classList.contains('hidden')) {
             textarea.focus();
         }
     }
 
-    // ========================================================
-    // 2B. WORKSPACE RESIZER & FONT SIZE CONTROLLER (BARA / CHOTA)
-    // ========================================================
     setupSplitterResizer() {
         const splitter = document.getElementById('coding-workspace-splitter');
         const problemPanel = document.getElementById('coding-problem-side');
@@ -760,7 +695,6 @@ class AssessmentEngine {
             const mouseX = e.clientX - gridRect.left;
             const totalWidth = gridRect.width;
 
-            // Constrain width percentage between 20% and 75%
             let percent = (mouseX / totalWidth) * 100;
             if (percent < 20) percent = 20;
             if (percent > 75) percent = 75;
@@ -783,7 +717,6 @@ class AssessmentEngine {
         window.addEventListener('mousemove', onMouseMove);
         window.addEventListener('mouseup', onMouseUp);
 
-        // Double-click splitter to reset to default 45% split
         splitter.addEventListener('dblclick', () => {
             grid.style.setProperty('--problem-pane-width', '45%');
             this.syncEditorHighlight();
@@ -791,9 +724,6 @@ class AssessmentEngine {
         });
     }
 
-    // ========================================================
-    // 2C. CODE EDITOR & TEST CASES VERTICAL HEIGHT RESIZERS (BARA / CHOTA)
-    // ========================================================
     setupEditorHeightResizer() {
         const resizer = document.getElementById('editor-height-resizer');
         const editorBox = document.getElementById('vs-code-editor-box');
@@ -819,7 +749,6 @@ class AssessmentEngine {
             const deltaY = e.clientY - startY;
             let newHeight = startHeight + deltaY;
 
-            // Constrain editor height between 180px and 850px
             if (newHeight < 180) newHeight = 180;
             if (newHeight > 850) newHeight = 850;
 
@@ -841,14 +770,12 @@ class AssessmentEngine {
         window.addEventListener('mousemove', onMouseMove);
         window.addEventListener('mouseup', onMouseUp);
 
-        // Double click to reset to default 350px
         resizer.addEventListener('dblclick', () => {
             document.documentElement.style.setProperty('--editor-box-height', '350px');
             this.syncEditorHighlight();
             this.showToast('Editor height reset to default (350px)', 'info');
         });
 
-        // Quick height preset toggle button in editor header toolbar
         const presets = [350, 520, 720, 240];
         let presetIdx = 0;
         btnToggleHeight?.addEventListener('click', () => {
@@ -885,7 +812,7 @@ class AssessmentEngine {
 
         const onMouseMove = (e) => {
             if (!isDragging) return;
-            // Dragging upwards increases test case panel height, dragging downwards decreases it
+            
             const deltaY = startY - e.clientY;
             let newHeight = startHeight + deltaY;
 
@@ -908,13 +835,11 @@ class AssessmentEngine {
         window.addEventListener('mousemove', onMouseMove);
         window.addEventListener('mouseup', onMouseUp);
 
-        // Double click to reset to 190px
         resizer.addEventListener('dblclick', () => {
             document.documentElement.style.setProperty('--console-body-height', '190px');
             this.showToast('Test cases panel height reset (190px)', 'info');
         });
 
-        // Expand / Minimize Console Panel Button
         let isMaximized = false;
         btnExpand?.addEventListener('click', () => {
             isMaximized = !isMaximized;
@@ -923,7 +848,6 @@ class AssessmentEngine {
             this.showToast(isMaximized ? 'Expanded test cases panel' : 'Restored test cases height', 'info');
         });
 
-        // Close Console Panel Button (Syncs with Toggle Switch)
         btnClose?.addEventListener('click', () => {
             consolePanel.classList.add('hidden');
             consolePanel.style.display = 'none';
@@ -942,7 +866,7 @@ class AssessmentEngine {
             if (newSize > 22) newSize = 22;
             this.fontSize = newSize;
 
-            const lineHeight = Math.round(newSize * 1.714); // 14px -> 24px, 16px -> 27px, 12px -> 20px
+            const lineHeight = Math.round(newSize * 1.714); 
             document.documentElement.style.setProperty('--editor-font-size', `${newSize}px`);
             document.documentElement.style.setProperty('--editor-line-height', `${lineHeight}px`);
 
@@ -1055,9 +979,6 @@ class AssessmentEngine {
         this.syncEditorHighlight();
     }
 
-    // ========================================================
-    // 3. ROCK-SOLID SINGLE-PASS LEXER & UNDO/REDO ENGINE
-    // ========================================================
     pushEditorHistory(val, selStart, selEnd, force = false) {
         if (this.isPerformingHistoryAction) return;
         const state = { value: val, selectionStart: selStart, selectionEnd: selEnd };
@@ -1133,12 +1054,10 @@ class AssessmentEngine {
 
         if (!textarea) return;
 
-        // Initialize first history entry
         if (this.editorUndoStack.length === 0 && textarea.value) {
             this.pushEditorHistory(textarea.value, textarea.selectionStart || 0, textarea.selectionEnd || 0, true);
         }
 
-        // Exact subpixel scroll synchronization
         const syncScroll = () => {
             if (highlightLayer) {
                 highlightLayer.scrollTop = textarea.scrollTop;
@@ -1151,20 +1070,17 @@ class AssessmentEngine {
 
         textarea.addEventListener('scroll', syncScroll);
 
-        // Input sync
         textarea.addEventListener('input', () => {
             this.pushEditorHistory(textarea.value, textarea.selectionStart, textarea.selectionEnd);
             this.syncEditorHighlight();
             syncScroll();
         });
 
-        // Advanced keyboard shortcuts (Ctrl+Z, Ctrl+Y, Tab, Auto-Indent, Auto-Pair Closing)
         textarea.addEventListener('keydown', (e) => {
             const start = textarea.selectionStart;
             const end = textarea.selectionEnd;
             const val = textarea.value;
 
-            // 0. UNDO (Ctrl+Z / Cmd+Z) and REDO (Ctrl+Y / Ctrl+Shift+Z)
             if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
                 e.preventDefault();
                 if (e.shiftKey) {
@@ -1183,7 +1099,6 @@ class AssessmentEngine {
                 return;
             }
 
-            // 1. TAB INDENTATION (4 SPACES)
             if (e.key === 'Tab') {
                 e.preventDefault();
                 this.pushEditorHistory(val, start, end, true);
@@ -1203,7 +1118,6 @@ class AssessmentEngine {
                 return;
             }
 
-            // 2. ENTER KEY AUTO-INDENT & SMART EXPANSION BETWEEN {}
             if (e.key === 'Enter') {
                 e.preventDefault();
                 this.pushEditorHistory(val, start, end, true);
@@ -1212,7 +1126,6 @@ class AssessmentEngine {
                 const indentMatch = curLine.match(/^\s*/);
                 let indent = indentMatch ? indentMatch[0] : '';
 
-                // If cursor is between { and }
                 const prevChar = val[start - 1];
                 const nextChar = val[start];
                 if (prevChar === '{' && nextChar === '}') {
@@ -1237,7 +1150,6 @@ class AssessmentEngine {
                 return;
             }
 
-            // 3. AUTO BRACKET & QUOTE PAIRS
             const pairs = { '(': ')', '[': ']', '{': '}', '"': '"', "'": "'" };
             if (pairs[e.key]) {
                 const closeChar = pairs[e.key];
@@ -1268,14 +1180,12 @@ class AssessmentEngine {
                 }
             }
 
-            // 4. CLOSING BRACKET OVERRIDE
             if ((e.key === ')' || e.key === ']' || e.key === '}' || e.key === '"' || e.key === "'") && start === end && val[start] === e.key) {
                 e.preventDefault();
                 textarea.selectionStart = textarea.selectionEnd = start + 1;
                 return;
             }
 
-            // 5. BACKSPACE PAIR DELETION
             if (e.key === 'Backspace' && start === end && start > 0) {
                 const prev = val[start - 1];
                 const next = val[start];
@@ -1310,7 +1220,6 @@ class AssessmentEngine {
         const rawCode = textarea.value;
         const lines = rawCode.split('\n');
 
-        // 1. Update Gutter line numbers (strictly synchronized height)
         if (gutter) {
             let gutterHtml = '';
             const totalLines = Math.max(lines.length, 18);
@@ -1320,10 +1229,8 @@ class AssessmentEngine {
             gutter.innerHTML = gutterHtml;
         }
 
-        // 2. Syntax Highlight (Pixel-perfect matching)
         codeDisplay.innerHTML = this.highlightSyntax(rawCode, this.selectedLanguage);
 
-        // 3. Keep scroll offset locked
         if (highlightLayer) {
             highlightLayer.scrollTop = textarea.scrollTop;
             highlightLayer.scrollLeft = textarea.scrollLeft;
@@ -3001,7 +2908,6 @@ class AssessmentEngine {
     }
 }
 
-// Auto Initialize
 window.addEventListener('DOMContentLoaded', () => {
     window.assessmentEngine = new AssessmentEngine();
 });

@@ -6,11 +6,11 @@
 @section('content')
 <div style="max-width: 860px; margin: 0 auto;">
     <div style="margin-bottom: 24px;">
-        <a href="{{ route('teachers.show', $teacher->id) }}" style="color: #818cf8; text-decoration: none; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; margin-bottom: 8px;">
+        <a href="{{ route('teachers.show', $teacher->id) }}" style="color: #4f46e5; text-decoration: none; font-size: 13px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; margin-bottom: 8px;">
             <i data-lucide="arrow-left" style="width: 14px; height: 14px;"></i>
             <span>Back to Profile</span>
         </a>
-        <h1 style="font-size: 26px; font-weight: 800; color: #fff;">Edit Faculty & Quota Permissions</h1>
+        <h1 style="font-size: 26px; font-weight: 900; color: #0f172a; letter-spacing: -0.5px;">Edit Faculty & Quota Permissions</h1>
     </div>
 
     <div class="glass-card">
@@ -42,7 +42,7 @@
                 </div>
             </div>
 
-            <div style="font-size: 15px; font-weight: 700; color: #818cf8; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin: 24px 0 20px; display: flex; align-items: center; gap: 8px;">
+            <div style="font-size: 15px; font-weight: 800; color: #4f46e5; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin: 24px 0 20px; display: flex; align-items: center; gap: 8px;">
                 <i data-lucide="sliders" style="width: 18px; height: 18px;"></i>
                 <span>Quota Allocations</span>
             </div>
@@ -60,82 +60,82 @@
             </div>
 
             <!-- Granular Permissions Matrix by Principal -->
-            <div style="font-size: 15px; font-weight: 700; color: #34d399; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin: 24px 0 20px; display: flex; align-items: center; justify-content: space-between;">
+            <div style="font-size: 15px; font-weight: 800; color: #059669; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin: 24px 0 20px; display: flex; align-items: center; justify-content: space-between;">
                 <div style="display: flex; align-items: center; gap: 8px;">
                     <i data-lucide="shield-check" style="width: 18px; height: 18px;"></i>
                     <span>Faculty Authority & Feature Permissions (Principal Granted)</span>
                 </div>
-                <span style="font-size: 11px; color: var(--text-muted); font-weight: 500;">Toggle access per teacher</span>
+                <span style="font-size: 11.5px; color: var(--text-muted); font-weight: 600;">Toggle access per teacher</span>
             </div>
 
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin-bottom: 24px;">
-                <label style="display: flex; align-items: flex-start; gap: 12px; padding: 14px; background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: var(--radius-md); cursor: pointer; transition: all 0.2s;">
-                    <input type="checkbox" name="can_create_exams" value="1" {{ old('can_create_exams', $teacher->can_create_exams ?? true) ? 'checked' : '' }} style="margin-top: 3px; accent-color: #6366f1; width: 18px; height: 18px;">
+                <label style="display: flex; align-items: flex-start; gap: 12px; padding: 14px; background: rgba(248, 250, 252, 0.9); border: 1px solid var(--border-color); border-radius: var(--radius-md); cursor: pointer; transition: all 0.2s;">
+                    <input type="checkbox" name="can_create_exams" value="1" {{ old('can_create_exams', $teacher->can_create_exams ?? true) ? 'checked' : '' }} style="margin-top: 3px; accent-color: #4f46e5; width: 18px; height: 18px;">
                     <div>
-                        <div style="font-size: 13px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 6px;">
-                            <span>📋 Create & Schedule Exams</span>
+                        <div style="font-size: 13px; font-weight: 700; color: #0f172a;">
+                            📋 Create & Schedule Exams
                         </div>
-                        <div style="font-size: 11px; color: var(--text-secondary); margin-top: 3px;">Authorize to author new exam papers and test schedules.</div>
+                        <div style="font-size: 11.5px; color: var(--text-secondary); margin-top: 3px;">Authorize to author new exam papers and test schedules.</div>
                     </div>
                 </label>
 
-                <label style="display: flex; align-items: flex-start; gap: 12px; padding: 14px; background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: var(--radius-md); cursor: pointer; transition: all 0.2s;">
-                    <input type="checkbox" name="can_set_questions" value="1" {{ old('can_set_questions', $teacher->can_set_questions ?? true) ? 'checked' : '' }} style="margin-top: 3px; accent-color: #6366f1; width: 18px; height: 18px;">
+                <label style="display: flex; align-items: flex-start; gap: 12px; padding: 14px; background: rgba(248, 250, 252, 0.9); border: 1px solid var(--border-color); border-radius: var(--radius-md); cursor: pointer; transition: all 0.2s;">
+                    <input type="checkbox" name="can_set_questions" value="1" {{ old('can_set_questions', $teacher->can_set_questions ?? true) ? 'checked' : '' }} style="margin-top: 3px; accent-color: #4f46e5; width: 18px; height: 18px;">
                     <div>
-                        <div style="font-size: 13px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 6px;">
-                            <span>📝 Set Questions & AI Generator</span>
+                        <div style="font-size: 13px; font-weight: 700; color: #0f172a;">
+                            📝 Set Questions & AI Generator
                         </div>
-                        <div style="font-size: 11px; color: var(--text-secondary); margin-top: 3px;">Authorize to set MCQ, coding challenges, & AI questions.</div>
+                        <div style="font-size: 11.5px; color: var(--text-secondary); margin-top: 3px;">Authorize to set MCQ, coding challenges, & AI questions.</div>
                     </div>
                 </label>
 
-                <label style="display: flex; align-items: flex-start; gap: 12px; padding: 14px; background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: var(--radius-md); cursor: pointer; transition: all 0.2s;">
-                    <input type="checkbox" name="can_manage_lessons" value="1" {{ old('can_manage_lessons', $teacher->can_manage_lessons ?? true) ? 'checked' : '' }} style="margin-top: 3px; accent-color: #6366f1; width: 18px; height: 18px;">
+                <label style="display: flex; align-items: flex-start; gap: 12px; padding: 14px; background: rgba(248, 250, 252, 0.9); border: 1px solid var(--border-color); border-radius: var(--radius-md); cursor: pointer; transition: all 0.2s;">
+                    <input type="checkbox" name="can_manage_lessons" value="1" {{ old('can_manage_lessons', $teacher->can_manage_lessons ?? true) ? 'checked' : '' }} style="margin-top: 3px; accent-color: #4f46e5; width: 18px; height: 18px;">
                     <div>
-                        <div style="font-size: 13px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 6px;">
-                            <span>📖 Author Lessons & PDF Notes</span>
+                        <div style="font-size: 13px; font-weight: 700; color: #0f172a;">
+                            📖 Author Lessons & PDF Notes
                         </div>
-                        <div style="font-size: 11px; color: var(--text-secondary); margin-top: 3px;">Authorize to write lesson notes, theory materials & notes.</div>
+                        <div style="font-size: 11.5px; color: var(--text-secondary); margin-top: 3px;">Authorize to write lesson notes, theory materials & notes.</div>
                     </div>
                 </label>
 
-                <label style="display: flex; align-items: flex-start; gap: 12px; padding: 14px; background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: var(--radius-md); cursor: pointer; transition: all 0.2s;">
-                    <input type="checkbox" name="can_manage_courses" value="1" {{ old('can_manage_courses', $teacher->can_manage_courses ?? false) ? 'checked' : '' }} style="margin-top: 3px; accent-color: #6366f1; width: 18px; height: 18px;">
+                <label style="display: flex; align-items: flex-start; gap: 12px; padding: 14px; background: rgba(248, 250, 252, 0.9); border: 1px solid var(--border-color); border-radius: var(--radius-md); cursor: pointer; transition: all 0.2s;">
+                    <input type="checkbox" name="can_manage_courses" value="1" {{ old('can_manage_courses', $teacher->can_manage_courses ?? false) ? 'checked' : '' }} style="margin-top: 3px; accent-color: #4f46e5; width: 18px; height: 18px;">
                     <div>
-                        <div style="font-size: 13px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 6px;">
-                            <span>🎓 Course Track Authoring</span>
+                        <div style="font-size: 13px; font-weight: 700; color: #0f172a;">
+                            🎓 Course Track Authoring
                         </div>
-                        <div style="font-size: 11px; color: var(--text-secondary); margin-top: 3px;">Authorize to create full curriculum tracks & courses.</div>
+                        <div style="font-size: 11.5px; color: var(--text-secondary); margin-top: 3px;">Authorize to create full curriculum tracks & courses.</div>
                     </div>
                 </label>
 
-                <label style="display: flex; align-items: flex-start; gap: 12px; padding: 14px; background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: var(--radius-md); cursor: pointer; transition: all 0.2s;">
-                    <input type="checkbox" name="can_enroll_students" value="1" {{ old('can_enroll_students', $teacher->can_enroll_students ?? true) ? 'checked' : '' }} style="margin-top: 3px; accent-color: #6366f1; width: 18px; height: 18px;">
+                <label style="display: flex; align-items: flex-start; gap: 12px; padding: 14px; background: rgba(248, 250, 252, 0.9); border: 1px solid var(--border-color); border-radius: var(--radius-md); cursor: pointer; transition: all 0.2s;">
+                    <input type="checkbox" name="can_enroll_students" value="1" {{ old('can_enroll_students', $teacher->can_enroll_students ?? true) ? 'checked' : '' }} style="margin-top: 3px; accent-color: #4f46e5; width: 18px; height: 18px;">
                     <div>
-                        <div style="font-size: 13px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 6px;">
-                            <span>👥 Enroll Students & PINs</span>
+                        <div style="font-size: 13px; font-weight: 700; color: #0f172a;">
+                            👥 Enroll Students & PINs
                         </div>
-                        <div style="font-size: 11px; color: var(--text-secondary); margin-top: 3px;">Authorize to register candidates and issue access codes.</div>
+                        <div style="font-size: 11.5px; color: var(--text-secondary); margin-top: 3px;">Authorize to register candidates and issue access codes.</div>
                     </div>
                 </label>
 
-                <label style="display: flex; align-items: flex-start; gap: 12px; padding: 14px; background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: var(--radius-md); cursor: pointer; transition: all 0.2s;">
-                    <input type="checkbox" name="can_view_results" value="1" {{ old('can_view_results', $teacher->can_view_results ?? true) ? 'checked' : '' }} style="margin-top: 3px; accent-color: #6366f1; width: 18px; height: 18px;">
+                <label style="display: flex; align-items: flex-start; gap: 12px; padding: 14px; background: rgba(248, 250, 252, 0.9); border: 1px solid var(--border-color); border-radius: var(--radius-md); cursor: pointer; transition: all 0.2s;">
+                    <input type="checkbox" name="can_view_results" value="1" {{ old('can_view_results', $teacher->can_view_results ?? true) ? 'checked' : '' }} style="margin-top: 3px; accent-color: #4f46e5; width: 18px; height: 18px;">
                     <div>
-                        <div style="font-size: 13px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 6px;">
-                            <span>📊 Evaluate & Publish Results</span>
+                        <div style="font-size: 13px; font-weight: 700; color: #0f172a;">
+                            📊 Evaluate & Publish Results
                         </div>
-                        <div style="font-size: 11px; color: var(--text-secondary); margin-top: 3px;">Authorize to grade submissions and view audit scores.</div>
+                        <div style="font-size: 11.5px; color: var(--text-secondary); margin-top: 3px;">Authorize to grade submissions and view audit scores.</div>
                     </div>
                 </label>
 
-                <label style="display: flex; align-items: flex-start; gap: 12px; padding: 14px; background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: var(--radius-md); cursor: pointer; transition: all 0.2s;">
-                    <input type="checkbox" name="can_create_teachers" value="1" {{ old('can_create_teachers', $teacher->can_create_teachers ?? false) ? 'checked' : '' }} style="margin-top: 3px; accent-color: #6366f1; width: 18px; height: 18px;">
+                <label style="display: flex; align-items: flex-start; gap: 12px; padding: 14px; background: rgba(248, 250, 252, 0.9); border: 1px solid var(--border-color); border-radius: var(--radius-md); cursor: pointer; transition: all 0.2s;">
+                    <input type="checkbox" name="can_create_teachers" value="1" {{ old('can_create_teachers', $teacher->can_create_teachers ?? false) ? 'checked' : '' }} style="margin-top: 3px; accent-color: #4f46e5; width: 18px; height: 18px;">
                     <div>
-                        <div style="font-size: 13px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 6px;">
-                            <span>🏛️ Register Department Faculty</span>
+                        <div style="font-size: 13px; font-weight: 700; color: #0f172a;">
+                            🏛️ Register Department Faculty
                         </div>
-                        <div style="font-size: 11px; color: var(--text-secondary); margin-top: 3px;">Authorize this HOD to register and create new faculty & proctors.</div>
+                        <div style="font-size: 11.5px; color: var(--text-secondary); margin-top: 3px;">Authorize this HOD to register and create new faculty & proctors.</div>
                     </div>
                 </label>
             </div>

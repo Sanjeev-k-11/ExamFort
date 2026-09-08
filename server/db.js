@@ -1,27 +1,114 @@
-const mysql = require('mysql2/promise');
+let mysql;
+try { mysql = require('mysql2/promise'); } catch (_) {}
+let pg;
+try { pg = require('pg'); } catch (_) {}
+
 const fs = require('fs');
 const path = require('path');
 const judgeEngine = require('./judge');
 const essayEvaluator = require('./essay-evaluator');
 require('dotenv').config();
 
+const isPostgresConfig = (
+    process.env.DB_CONNECTION === 'pgsql' ||
+    (process.env.DATABASE_URL && process.env.DATABASE_URL.startsWith('postgres')) ||
+    parseInt(process.env.DB_PORT || '0', 10) === 5432 ||
+    (process.env.DB_HOST && process.env.DB_HOST.includes('supabase'))
+);
+
 const DB_CONFIG = {
     host: process.env.DB_HOST || 'localhost',
-    port: parseInt(process.env.DB_PORT || '3306', 10),
-    user: process.env.DB_USER || 'root',
+    port: parseInt(process.env.DB_PORT || (isPostgresConfig ? '5432' : '3306'), 10),
+    user: process.env.DB_USER || (isPostgresConfig ? 'postgres' : 'root'),
     password: process.env.DB_PASSWORD || '',
-    database: process.env.DB_NAME || 'examfort'
+    database: process.env.DB_NAME || (isPostgresConfig ? 'postgres' : 'examfort'),
+    connectionString: process.env.DATABASE_URL || ''
 };
+
+function adaptQueryForPg(sql, params = []) {
+    let pgSql = sql;
+    
+    // 1. Convert backticks to double quotes: `column` -> "column"
+    pgSql = pgSql.replace(/`([^`]+)`/g, '"$1"');
+
+    // 2. MySQL specific functions -> PostgreSQL functions
+    pgSql = pgSql.replace(/\bIFNULL\s*\(/gi, 'COALESCE(');
+
+    // 3. Convert ? to $1, $2, $3...
+    let idx = 1;
+    pgSql = pgSql.replace(/\?/g, () => `$${idx++}`);
+
+    return { sql: pgSql, params };
+}
 
 class MySQLDatabaseService {
     constructor() {
         this.pool = null;
         this.isInitialized = false;
+        this.dbType = isPostgresConfig ? 'POSTGRESQL' : 'MYSQL';
         this.init();
     }
 
     async init() {
+        if (isPostgresConfig) {
+            await this.initPostgreSQL();
+        } else {
+            await this.initMySQL();
+        }
+    }
+
+    async initPostgreSQL() {
         try {
+            if (!pg) {
+                throw new Error('pg package is not installed. Please run `npm install pg` in server.');
+            }
+
+            const pgPoolConfig = DB_CONFIG.connectionString
+                ? {
+                    connectionString: DB_CONFIG.connectionString,
+                    ssl: { rejectUnauthorized: false }
+                }
+                : {
+                    host: DB_CONFIG.host,
+                    port: DB_CONFIG.port,
+                    user: DB_CONFIG.user,
+                    password: DB_CONFIG.password,
+                    database: DB_CONFIG.database,
+                    ssl: { rejectUnauthorized: false }
+                };
+
+            const rawPgPool = new pg.Pool(pgPoolConfig);
+
+            // Test connection
+            const testClient = await rawPgPool.connect();
+            testClient.release();
+
+            // Create wrapper matching mysql2 [rows, fields] interface
+            this.pool = {
+                rawPool: rawPgPool,
+                query: async (sql, params = []) => {
+                    const { sql: finalSql, params: finalParams } = adaptQueryForPg(sql, params);
+                    const res = await rawPgPool.query(finalSql, finalParams);
+                    const rows = res.rows || [];
+                    rows.insertId = rows[0]?.id || res.rowCount || 0;
+                    rows.affectedRows = res.rowCount || 0;
+                    return [rows, res.fields];
+                }
+            };
+
+            console.log(`🐘 [PostgreSQL] Successfully connected to PostgreSQL / Supabase database "${DB_CONFIG.database}" on ${DB_CONFIG.host}:${DB_CONFIG.port}`);
+            this.isInitialized = true;
+            this.dbType = 'POSTGRESQL';
+        } catch (err) {
+            console.error('❌ [PostgreSQL Connection Error]:', err.message);
+            console.warn('⚠️ Falling back to check MySQL connection...');
+            await this.initMySQL();
+        }
+    }
+
+    async initMySQL() {
+        try {
+            if (!mysql) return;
             // Step 1: Connect to MySQL server to ensure DB exists
             const tempConnection = await mysql.createConnection({
                 host: DB_CONFIG.host,
@@ -37,7 +124,6 @@ class MySQLDatabaseService {
             // Check if database tables already exist
             const [existingTables] = await tempConnection.query(`SHOW TABLES LIKE 'users';`);
             if (existingTables.length === 0) {
-                // Table doesn't exist, safely load initial schema with IF NOT EXISTS
                 const schemaPath = path.join(__dirname, 'schema.sql');
                 if (fs.existsSync(schemaPath)) {
                     try {
@@ -57,19 +143,6 @@ class MySQLDatabaseService {
                 }
             }
 
-            // Ensure seed users exist if table is empty
-            try {
-                const [userCount] = await tempConnection.query(`SELECT count(*) as count FROM users;`);
-                if (userCount[0].count === 0) {
-                    const seedScript = path.join(__dirname, 'seed_permanent_users.js');
-                    if (fs.existsSync(seedScript)) {
-                        console.log('🌱 [MySQL] users table was empty. Running seed...');
-                        const { execSync } = require('child_process');
-                        execSync(`node "${seedScript}"`, { cwd: __dirname });
-                    }
-                }
-            } catch (_) {}
-
             try { await tempConnection.end(); } catch (_) {}
 
             // Step 2: Create connection pool to the examfort database
@@ -85,11 +158,11 @@ class MySQLDatabaseService {
                 multipleStatements: true
             });
 
-            console.log(`🐬 [MySQL] Successfully connected to XAMPP MySQL database "${DB_CONFIG.database}" on ${DB_CONFIG.host}:${DB_CONFIG.port}`);
+            console.log(`🐬 [MySQL] Successfully connected to MySQL database "${DB_CONFIG.database}" on ${DB_CONFIG.host}:${DB_CONFIG.port}`);
             this.isInitialized = true;
+            this.dbType = 'MYSQL';
         } catch (err) {
-            console.error('❌ [MySQL Connection Error] Could not connect to XAMPP MySQL:', err.message);
-            console.warn('⚠️ Please ensure MySQL service is RUNNING in your XAMPP Control Panel.');
+            console.error('❌ [Database Connection Error]:', err.message);
         }
     }
 

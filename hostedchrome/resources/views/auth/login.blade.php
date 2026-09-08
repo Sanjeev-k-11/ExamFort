@@ -7,16 +7,16 @@
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <style>
         :root {
-            --bg-base: #060911;
-            --bg-card: rgba(15, 23, 42, 0.85);
-            --border: rgba(255, 255, 255, 0.08);
-            --primary: #6366f1;
-            --primary-glow: rgba(99, 102, 241, 0.35);
+            --bg-base: #f8fafc;
+            --bg-card: rgba(255, 255, 255, 0.95);
+            --border: rgba(226, 232, 240, 0.9);
+            --primary: #4f46e5;
+            --primary-glow: rgba(79, 70, 229, 0.25);
         }
 
         * {
@@ -28,15 +28,17 @@
 
         body {
             background-color: var(--bg-base);
-            color: #f8fafc;
+            color: #0f172a;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 24px;
             background-image: 
-                radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.15) 0%, transparent 40%),
-                radial-gradient(circle at 90% 80%, rgba(14, 165, 233, 0.12) 0%, transparent 40%);
+                radial-gradient(at 10% 20%, rgba(99, 102, 241, 0.12) 0px, transparent 50%),
+                radial-gradient(at 90% 80%, rgba(6, 182, 212, 0.12) 0px, transparent 50%),
+                radial-gradient(at 50% 50%, rgba(244, 63, 94, 0.06) 0px, transparent 50%);
+            background-attachment: fixed;
         }
 
         .login-box {
@@ -44,10 +46,11 @@
             max-width: 480px;
             background: var(--bg-card);
             backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
             border: 1px solid var(--border);
-            border-radius: 20px;
+            border-radius: 24px;
             padding: 40px 36px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.8) inset;
             position: relative;
             overflow: hidden;
         }
@@ -59,7 +62,7 @@
             left: 0;
             right: 0;
             height: 4px;
-            background: linear-gradient(90deg, #6366f1, #3b82f6, #06b6d4);
+            background: linear-gradient(90deg, #4f46e5, #06b6d4, #10b981);
         }
 
         .brand-header {
@@ -68,15 +71,15 @@
         }
 
         .brand-icon {
-            width: 56px;
-            height: 56px;
-            background: linear-gradient(135deg, #6366f1, #3b82f6);
-            border-radius: 14px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #4f46e5, #06b6d4);
+            border-radius: 18px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             color: white;
-            box-shadow: 0 0 25px var(--primary-glow);
+            box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.4);
             margin-bottom: 16px;
         }
 
@@ -84,12 +87,13 @@
             font-family: 'Outfit', sans-serif;
             font-size: 24px;
             font-weight: 800;
+            color: #0f172a;
             letter-spacing: -0.02em;
         }
 
         .brand-subtitle {
-            font-size: 13px;
-            color: #94a3b8;
+            font-size: 13.5px;
+            color: #64748b;
             margin-top: 4px;
         }
 
@@ -100,8 +104,8 @@
         .form-label {
             display: block;
             font-size: 13px;
-            font-weight: 600;
-            color: #cbd5e1;
+            font-weight: 700;
+            color: #334155;
             margin-bottom: 8px;
         }
 
@@ -114,39 +118,40 @@
         .input-icon {
             position: absolute;
             left: 14px;
-            color: #64748b;
+            color: #94a3b8;
             pointer-events: none;
         }
 
         .form-control {
             width: 100%;
             padding: 12px 16px 12px 44px;
-            background: rgba(10, 15, 29, 0.8);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            color: #fff;
+            background: #ffffff;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 12px;
+            color: #0f172a;
             font-size: 14px;
-            transition: all 0.2s;
+            font-weight: 500;
+            transition: all 0.2s ease;
         }
 
         .form-control:focus {
             outline: none;
             border-color: var(--primary);
-            box-shadow: 0 0 0 3px var(--primary-glow);
-            background: rgba(15, 23, 42, 1);
+            box-shadow: 0 0 0 4px var(--primary-glow);
+            background: #ffffff;
         }
 
         .btn-submit {
             width: 100%;
             padding: 14px;
-            background: linear-gradient(135deg, #6366f1, #4f46e5);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 10px;
+            background: linear-gradient(135deg, #4f46e5, #4338ca);
+            border: none;
+            border-radius: 12px;
             color: white;
             font-size: 15px;
             font-weight: 700;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.2s ease;
             box-shadow: 0 4px 15px var(--primary-glow);
             display: flex;
             align-items: center;
@@ -157,15 +162,15 @@
 
         .btn-submit:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.5);
+            box-shadow: 0 8px 25px rgba(79, 70, 229, 0.4);
         }
 
         .alert-error {
-            background: rgba(239, 68, 68, 0.15);
-            border: 1px solid rgba(239, 68, 68, 0.3);
-            color: #f87171;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #dc2626;
             padding: 12px 16px;
-            border-radius: 8px;
+            border-radius: 10px;
             font-size: 13px;
             margin-bottom: 20px;
             display: flex;
@@ -176,26 +181,27 @@
         .demo-accounts {
             margin-top: 24px;
             padding-top: 18px;
-            border-top: 1px solid var(--border);
+            border-top: 1px solid #e2e8f0;
             font-size: 12px;
-            color: #94a3b8;
+            color: #64748b;
         }
 
         .demo-chip {
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid var(--border);
-            padding: 8px 12px;
-            border-radius: 8px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 10px 14px;
+            border-radius: 10px;
             display: block;
             margin-top: 8px;
             cursor: pointer;
-            transition: all 0.15s;
+            transition: all 0.15s ease;
+            color: #334155;
         }
 
         .demo-chip:hover {
-            background: rgba(99, 102, 241, 0.15);
-            border-color: rgba(99, 102, 241, 0.4);
-            color: #fff;
+            background: #eef2ff;
+            border-color: #c7d2fe;
+            color: #0f172a;
             transform: translateX(4px);
         }
 
@@ -205,10 +211,10 @@
         }
 
         .back-link a {
-            color: #818cf8;
+            color: #4f46e5;
             font-size: 13px;
             text-decoration: none;
-            font-weight: 600;
+            font-weight: 700;
         }
 
         .back-link a:hover {
@@ -235,7 +241,7 @@
         @endif
 
         @if(session('success'))
-            <div style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); color: #34d399; padding: 12px 16px; border-radius: 8px; font-size: 13px; margin-bottom: 20px;">
+            <div style="background: #ecfdf5; border: 1px solid #a7f3d0; color: #059669; padding: 12px 16px; border-radius: 10px; font-size: 13px; margin-bottom: 20px; font-weight: 600;">
                 {{ session('success') }}
             </div>
         @endif
@@ -265,15 +271,15 @@
         </form>
 
         <div class="demo-accounts">
-            <div><strong>Click to Quick-Fill Credentials:</strong></div>
+            <div style="font-weight: 700; color: #0f172a; margin-bottom: 4px;">Click to Quick-Fill Credentials:</div>
             <div class="demo-chip" onclick="fillCreds('admin@examfort.com', 'admin123')">
-                🛡️ <strong>Super Admin:</strong> <span style="color: #818cf8;">admin@examfort.com</span> / admin123
+                🛡️ <strong>Super Admin:</strong> <span style="color: #4f46e5; font-weight: 700;">admin@examfort.com</span> / admin123
             </div>
             <div class="demo-chip" onclick="fillCreds('principal@examfort.com', 'principal123')">
-                🏛️ <strong>Dean / Principal:</strong> <span style="color: #fbbf24;">principal@examfort.com</span> / principal123
+                🏛️ <strong>Dean / Principal:</strong> <span style="color: #d97706; font-weight: 700;">principal@examfort.com</span> / principal123
             </div>
             <div class="demo-chip" onclick="fillCreds('teacher@examfort.com', 'teacher123')">
-                🎓 <strong>Teacher / Proctor:</strong> <span style="color: #34d399;">teacher@examfort.com</span> / teacher123
+                🎓 <strong>Teacher / Proctor:</strong> <span style="color: #059669; font-weight: 700;">teacher@examfort.com</span> / teacher123
             </div>
         </div>
 

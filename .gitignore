@@ -19,6 +19,9 @@ build/
 out/
 .artifacts/
 .system_generated/
+.build-staging/
+*/.build-staging/
+*.zip
 
 # Laravel Storage & Cache
 hostedchrome/storage/*.key

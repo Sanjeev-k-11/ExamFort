@@ -405,7 +405,7 @@
     </style>
 </head>
 <body>
-    <!-- ANTI-CAPTURE BLACK SHIELD OVERLAY -->
+    
     <div id="ef-capture-shield">
         <div class="shield-icon">🛡️</div>
         <div>Screen Capture Blocked</div>
@@ -413,7 +413,7 @@
     </div>
 
     <div class="study-viewport">
-        <!-- TOP NAV -->
+        
         <header class="study-top-nav">
             <div class="nav-left-group">
                 <a href="course_details.html?id=course-cpp" id="btn-back-course" class="btn-nav-back">
@@ -428,7 +428,7 @@
                 </div>
             </div>
 
-            <!-- 3 MODE SWITCHER TABS (DYNAMIC BADGES) -->
+            
             <div class="mode-tabs-center">
                 <button class="mode-tab-btn active" id="tab-btn-study" onclick="switchStudyMode('study')">
                     <span>📖</span> <span>1. Study Lesson</span>
@@ -446,10 +446,10 @@
             </div>
         </header>
 
-        <!-- BODY (DRAWER + ACTIVE TAB CONTENT) -->
+        
         <div class="study-body-wrap">
             
-            <!-- TOPIC DRAWER (SIDEBAR) -->
+            
             <aside class="topic-drawer" id="topic-drawer">
                 <div class="drawer-header">
                     <div style="display: flex; align-items: center; gap: 8px;">
@@ -464,15 +464,15 @@
                     </div>
                 </div>
                 <div class="drawer-module-group" id="container-drawer-lessons">
-                    <!-- Populated dynamically via MySQL -->
+                    
                 </div>
             </aside>
             <div class="drawer-resizer" id="drawer-resizer"></div>
 
-            <!-- MAIN CONTENT AREA -->
+            
             <main class="study-main-pane">
 
-                <!-- 1. LESSON STUDY TAB -->
+                
                 <div id="pane-study-lesson" style="display: block;">
                     <div class="lesson-notes-card">
                         <div class="lesson-hero-header">
@@ -485,12 +485,12 @@
                             </button>
                         </div>
 
-                        <!-- Theory & Content from MySQL -->
+                        
                         <div class="lesson-notes-body" id="lbl-detailed-notes">
-                            <!-- Populated via MySQL -->
+                            
                         </div>
 
-                        <!-- Code Example Block -->
+                        
                         <div class="code-example-box" id="box-code-example">
                             <div class="code-box-header">
                                 <span>Code Walkthrough (C++)</span>
@@ -499,13 +499,13 @@
                             <pre class="code-snippet-pre" id="lbl-code-snippet"></pre>
                         </div>
 
-                        <!-- Key Takeaways -->
+                        
                         <div class="takeaways-alert">
                             <strong>💡 Key Takeaways:</strong>
                             <span id="lbl-key-takeaways">Always write modular code and manage resources cleanly.</span>
                         </div>
 
-                        <!-- Action Bar -->
+                        
                         <div class="study-bottom-action-bar">
                             <button class="btn-mark-completed" id="btn-toggle-complete" onclick="markLessonComplete()">
                                 <span>✓</span> <span>Mark Completed & Update Progress</span>
@@ -517,7 +517,7 @@
                     </div>
                 </div>
 
-                <!-- 2. MCQ PRACTICE TAB -->
+                
                 <div id="pane-mcq-practice" style="display: none;">
                     <div class="mcq-practice-card">
                         <div class="mcq-header-row">
@@ -533,7 +533,7 @@
                             </div>
                         </div>
 
-                        <!-- Scorecard (Hidden until submitted) -->
+                        
                         <div class="mcq-scorecard-banner" id="banner-mcq-score" style="display: none;">
                             <div class="scorecard-left">
                                 <strong id="lbl-mcq-score-title">Practice Score: 3 / 3 (100%)</strong>
@@ -544,12 +544,12 @@
                             </button>
                         </div>
 
-                        <!-- Questions Container -->
+                        
                         <div id="container-mcq-questions">
-                            <!-- Populated dynamically via MySQL -->
+                            
                         </div>
 
-                        <!-- Submit Practice Quiz Button -->
+                        
                         <div style="margin-top: 24px; padding-top: 18px; border-top: 1px solid #f1f5f9; display: flex; justify-content: flex-end; gap: 12px;">
                             <button class="btn-next-mcq-tab" id="btn-submit-mcq" onclick="submitTopicMcqs()">
                                 <span>Submit Practice Answers</span> <span>✓</span>
@@ -558,15 +558,15 @@
                     </div>
                 </div>
 
-                <!-- 3. CODING PRACTICE TAB (SPLIT VIEW) -->
+                
                 <div id="pane-coding-practice" style="display: none;">
                     <div class="coding-split-container">
                         
-                        <!-- LEFT PANEL: PROBLEM SPEC & CHALLENGE SELECTOR -->
+                        
                         <div class="code-problem-panel">
-                            <!-- MULTI-CHALLENGE SELECTOR PILLS -->
+                            
                             <div class="coding-challenge-tabs" id="container-challenge-pills" style="display: none;">
-                                <!-- Dynamically generated pills -->
+                                
                             </div>
 
                             <div class="prob-title-row">
@@ -607,7 +607,7 @@
 
                         <div class="coding-resizer" id="coding-resizer"></div>
 
-                        <!-- RIGHT PANEL: CODE EDITOR + TEST RUNNER -->
+                        
                         <div class="code-editor-panel">
                             <div class="editor-top-toolbar">
                                 <select class="editor-lang-select" id="sel-code-lang" onchange="handleLangChange()">
@@ -627,7 +627,7 @@
                                 </div>
                             </div>
 
-                            <!-- Custom Input Box (Collapsible) -->
+                            
                             <div id="box-custom-input" style="display: none; background: #1e293b; padding: 10px 16px; border-bottom: 1px solid #334155;">
                                 <label style="font-size: 11px; color: #94a3b8; font-weight: 700; display: block; margin-bottom: 4px;">Standard Input (stdin):</label>
                                 <textarea id="txt-custom-input" rows="2" style="width: 100%; background: #0f172a; color: #f8fafc; border: 1px solid #475569; border-radius: 6px; padding: 6px 10px; font-family: 'JetBrains Mono', monospace; font-size: 12px; outline: none; resize: vertical;" placeholder="Type custom stdin test arguments..."></textarea>
@@ -637,22 +637,22 @@
                                 <textarea class="code-input-area" id="txt-practice-code" spellcheck="false"></textarea>
                             </div>
 
-                            <!-- TEST CASES RUNNER RESULTS & TERMINAL OUTPUT -->
+                            
                             <div class="test-cases-output-panel" id="panel-tc-results" style="display: none;">
                                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px; border-bottom: 1px solid #f1f5f9; padding-bottom: 6px;">
                                     <strong style="font-size: 12.5px; color: #0f172a;" id="lbl-tc-verdict">Compiler Output</strong>
                                     <span style="font-size: 11.5px; font-weight: 800;" id="lbl-tc-passed-badge">3/3 Passed</span>
                                 </div>
                                 
-                                <!-- Error Alert Banner if Compile / Syntax Error -->
+                                
                                 <div id="alert-compile-error" style="display: none; background: #fef2f2; border: 1.5px solid #fca5a5; border-radius: 8px; padding: 12px; margin-bottom: 10px; font-size: 12px; color: #991b1b; font-family: 'JetBrains Mono', monospace; white-space: pre-wrap;"></div>
 
-                                <!-- Test Cases Cards List -->
+                                
                                 <div class="tc-mini-grid" id="container-tc-rows">
-                                    <!-- Populated dynamically -->
+                                    
                                 </div>
 
-                                <!-- Raw Standard Output Terminal -->
+                                
                                 <div id="box-raw-terminal" style="display: none; margin-top: 10px;">
                                     <label style="font-size: 10.5px; font-weight: 800; color: #64748b; text-transform: uppercase;">Standard Terminal Output (stdout / stderr):</label>
                                     <pre id="lbl-raw-stdout" style="background: #0f172a; color: #f8fafc; border-radius: 6px; padding: 10px; font-size: 11.5px; font-family: 'JetBrains Mono', monospace; max-height: 120px; overflow-y: auto; white-space: pre-wrap; margin-top: 4px;"></pre>

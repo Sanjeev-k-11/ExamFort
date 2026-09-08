@@ -1,6 +1,4 @@
-/* ========================================================
-   EXAMFORT SECURE ASSESSMENT PLATFORM - MASTER STYLESHEET
-   ======================================================== */
+
 
 :root {
     --bg-main: #f8fafc;
@@ -52,9 +50,6 @@ body {
     position: relative;
 }
 
-/* ========================================================
-   TOP TITLEBAR
-   ======================================================== */
 .window-titlebar {
     height: 48px;
     background: #ffffff;
@@ -132,9 +127,6 @@ body {
     border-color: #fca5a5;
 }
 
-/* ========================================================
-   PERSISTENT BOTTOM FOOTER (IMAGE MATCH)
-   ======================================================== */
 .window-footer {
     height: 64px;
     background: #ffffff;
@@ -228,9 +220,6 @@ body {
     font-weight: 600;
 }
 
-/* ========================================================
-   VIEW SCREENS CONTAINER
-   ======================================================== */
 .view-screen {
     flex: 1;
     display: flex;
@@ -248,9 +237,6 @@ body {
     display: none !important;
 }
 
-/* ========================================================
-   SCREEN 1: SYSTEM CHECK
-   ======================================================== */
 .system-check-content {
     max-width: 680px;
     margin: 20px auto;
@@ -457,9 +443,6 @@ body {
     gap: 8px;
 }
 
-/* ========================================================
-   SCREEN 2: AUTHENTICATION (SIGN IN & ACCESS CODE)
-   ======================================================== */
 .auth-layout-two-col {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -624,9 +607,6 @@ body {
     background: #ffffff;
 }
 
-/* ========================================================
-   SCREEN 3: CANDIDATE DASHBOARD (IMAGE 4 MATCH)
-   ======================================================== */
 .dashboard-shell-layout {
     display: grid;
     grid-template-columns: 240px 1fr;
@@ -865,9 +845,6 @@ body {
     font-weight: 800;
 }
 
-/* ========================================================
-   SCREEN 4: EXAM DETAILS & INSTRUCTIONS (IMAGE 2/3 MATCH)
-   ======================================================== */
 .instructions-page-layout {
     padding: 24px 36px;
     overflow-y: auto;
@@ -1070,9 +1047,6 @@ body {
     cursor: pointer;
 }
 
-/* ========================================================
-   SCREEN 5: LIVE SECURE ASSESSMENT (IMAGE 0 & 1 MATCH)
-   ======================================================== */
 .security-watermark-overlay {
     display: none !important;
 }
@@ -1179,7 +1153,6 @@ body {
     overflow: hidden;
 }
 
-/* --- MCQ MODE (IMAGE 1 MATCH) --- */
 .mcq-question-column {
     flex: 1;
     background: #ffffff;
@@ -1334,7 +1307,6 @@ body {
     box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
 }
 
-/* Palette Sidebar (Image 1 Right Match) */
 .palette-sidebar-card {
     width: 380px;
     background: #ffffff;
@@ -1426,7 +1398,6 @@ body {
     outline: none;
 }
 
-/* --- CODING MODE (IMAGE 0 MATCH) --- */
 .coding-problem-column {
     width: 45%;
     background: #ffffff;
@@ -1661,7 +1632,6 @@ input:checked + .slider:before { transform: translateX(16px); }
     box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
 }
 
-/* --- ESSAY / PARAGRAPH MODE --- */
 .essay-prompt-column {
     width: 45%;
     background: #ffffff;
@@ -1714,9 +1684,6 @@ input:checked + .slider:before { transform: translateX(16px); }
     border-top: 1px solid var(--border-color);
 }
 
-/* ========================================================
-   SCREEN 6: EXAM COMPLETED
-   ======================================================== */
 .completed-center-card {
     max-width: 580px;
     margin: 30px auto;
@@ -1762,7 +1729,6 @@ input:checked + .slider:before { transform: translateX(16px); }
     line-height: 1.5;
 }
 
-/* 🌟 WARM WISHES & INSPIRATION CARD */
 .wishes-banner-card {
     background: linear-gradient(135deg, #fefce8 0%, #fffbeb 50%, #fef3c7 100%);
     border: 1.5px solid #fde047;
@@ -1820,7 +1786,6 @@ input:checked + .slider:before { transform: translateX(16px); }
 
 .green-text { color: var(--success-green); font-weight: 700; font-size: 11.5px; }
 
-/* Dynamic Action Buttons Group */
 .completed-actions-stack {
     display: flex;
     flex-direction: column;
@@ -1901,7 +1866,6 @@ input:checked + .slider:before { transform: translateX(16px); }
     color: #1e293b;
 }
 
-/* Toast Notifications (Unified Universal Styles) */
 .toast-container {
     position: fixed;
     top: 24px;
@@ -1967,7 +1931,6 @@ input:checked + .slider:before { transform: translateX(16px); }
     color: #a16207;
 }
 
-/* Blurred & Protected Hidden Test Case Cards */
 .hidden-test-card {
     background: #090d16 !important;
     border: 1px dashed #6366f1 !important;
@@ -2024,9 +1987,6 @@ input:checked + .slider:before { transform: translateX(16px); }
     font-style: italic;
 }
 
-/* ========================================================
-   DASHBOARD / SHELL LAYOUT (IMAGE 4 MATCH)
-   ======================================================== */
 .dashboard-shell-layout {
     display: flex;
     height: 100%;
@@ -2141,9 +2101,6 @@ input:checked + .slider:before { transform: translateX(16px); }
     padding: 24px 32px;
 }
 
-/* ========================================================
-   PROFILE PAGE STYLES (IMAGE 0 MATCH)
-   ======================================================== */
 .profile-page-wrapper {
     padding: 20px 32px 80px 32px;
     background: #f8fafc;
@@ -2311,9 +2268,6 @@ input:checked + .slider:before { transform: translateX(16px); }
     background: #f8fafc;
 }
 
-/* ========================================================
-   COURSES & LESSON ACCORDION (IMAGE 2 & 3 MATCH)
-   ======================================================== */
 .courses-container-grid {
     display: flex;
     flex-direction: column;
@@ -2395,7 +2349,6 @@ input:checked + .slider:before { transform: translateX(16px); }
     color: #ffffff;
 }
 
-/* Accordion Module List */
 .module-accordion-card {
     background: #ffffff;
     border: 1px solid #e2e8f0;
@@ -2469,9 +2422,6 @@ input:checked + .slider:before { transform: translateX(16px); }
     cursor: pointer;
 }
 
-/* ========================================================
-   SYSTEM CHECK - EXACT PIXEL PERFECT MATCH WITH SCREENSHOT
-   ======================================================== */
 .hero-check-horizontal {
     display: flex;
     align-items: center;
@@ -2558,7 +2508,6 @@ input:checked + .slider:before { transform: translateX(16px); }
     100% { transform: rotate(360deg); }
 }
 
-/* Red Tint Detected Applications Card */
 .detected-apps-card {
     background: #fef2f2;
     border: 1px solid #fee2e2;
@@ -2694,7 +2643,6 @@ input:checked + .slider:before { transform: translateX(16px); }
     font-size: 8px;
 }
 
-/* Checklist Details */
 .chk-check-icon {
     width: 16px;
     height: 16px;
@@ -2721,7 +2669,6 @@ input:checked + .slider:before { transform: translateX(16px); }
     gap: 6px;
 }
 
-/* 6 Status Pills Row */
 .status-pills-row-6 {
     display: grid;
     grid-template-columns: repeat(6, 1fr);
@@ -2769,7 +2716,6 @@ input:checked + .slider:before { transform: translateX(16px); }
     color: #64748b;
 }
 
-/* Bottom Footer Exact Match */
 .window-footer-exact {
     height: 64px;
     background: #ffffff;
@@ -2860,9 +2806,6 @@ input:checked + .slider:before { transform: translateX(16px); }
     font-size: 14px;
 }
 
-/* ========================================================
-   MASTER APP HEADER & GLOBAL SVG SIZING
-   ======================================================== */
 .window-header {
     height: 56px;
     min-height: 56px;
@@ -2963,9 +2906,6 @@ input:checked + .slider:before { transform: translateX(16px); }
     border-color: #cbd5e1;
 }
 
-/* ========================================================
-   COURSES & PROFILE SHARED LAYOUT
-   ======================================================== */
 .view-screen {
     flex: 1;
     overflow-y: auto;
@@ -3072,7 +3012,6 @@ input:checked + .slider:before { transform: translateX(16px); }
 .profile-info-item span { color: #64748b; }
 .profile-info-item strong { color: #0f172a; }
 
-/* Dashboard Shell for Courses */
 .dashboard-shell-layout {
     display: flex;
     flex: 1;
@@ -3184,7 +3123,6 @@ input:checked + .slider:before { transform: translateX(16px); }
     overflow-y: auto;
 }
 
-/* Instructions Layout */
 .instructions-page-layout {
     padding: 24px 32px 60px 32px;
     max-width: 960px;
@@ -3262,9 +3200,6 @@ input:checked + .slider:before { transform: translateX(16px); }
     margin-bottom: 4px;
 }
 
-/* ========================================================
-   LIVE ASSESSMENT PAGE - PIXEL-PERFECT EXACT REPLICA
-   ======================================================== */
 .assessment-body {
     background-color: #f8fafc !important;
     color: #0f172a;
@@ -3286,12 +3221,10 @@ input:checked + .slider:before { transform: translateX(16px); }
     overflow: hidden;
 }
 
-/* ── WATERMARK PATTERN (SVG text set by JS) ── */
 .security-watermark-overlay {
     display: none !important;
 }
 
-/* ── MAIN CONTENT VIEWPORT ── */
 .assessment-main-content {
     flex: 1;
     display: flex;
@@ -3304,7 +3237,6 @@ input:checked + .slider:before { transform: translateX(16px); }
     scroll-behavior: smooth;
 }
 
-/* ── TOP HEADER ── */
 .assessment-top-header {
     display: flex;
     align-items: center;
@@ -3382,7 +3314,6 @@ input:checked + .slider:before { transform: translateX(16px); }
     margin: 0;
 }
 
-/* ── RIGHT STATS CARD (MATCHES IMAGE) ── */
 .assessment-header-right-card {
     display: flex;
     align-items: center;
@@ -3460,7 +3391,6 @@ input:checked + .slider:before { transform: translateX(16px); }
     color: #0f172a;
 }
 
-/* ── TOP SECTION TABS BAR ── */
 .assessment-section-tabs-bar {
     display: flex;
     align-items: center;
@@ -3516,7 +3446,6 @@ input:checked + .slider:before { transform: translateX(16px); }
     color: #ffffff;
 }
 
-/* ── WORKSPACE GRID ── */
 .assessment-workspace-grid {
     flex: 1;
     display: grid;
@@ -3549,7 +3478,6 @@ input:checked + .slider:before { transform: translateX(16px); }
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02) !important;
 }
 
-/* ── ESSAY / PARAGRAPH WORKSPACE ── */
 .essay-box-wrap {
     display: flex;
     flex-direction: column;
@@ -3595,7 +3523,6 @@ input:checked + .slider:before { transform: translateX(16px); }
     box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
 }
 
-/* ── LEFT QUESTION PANEL ── */
 .question-workspace-panel {
     background: #ffffff;
     border: 1px solid #e8ecf0;
@@ -3700,7 +3627,6 @@ input:checked + .slider:before { transform: translateX(16px); }
     margin-left: 2px;
 }
 
-/* ── QUESTION TEXT PROMPT ── */
 .question-prompt-scrollable {
     flex-shrink: 0;
     max-height: 220px;
@@ -3716,7 +3642,6 @@ input:checked + .slider:before { transform: translateX(16px); }
     font-weight: 600;
 }
 
-/* ── MCQ OPTIONS LIST (100% WORKING & SELECTABLE) ── */
 .mcq-options-list {
     flex: 1;
     overflow-y: auto;
@@ -3790,7 +3715,6 @@ input:checked + .slider:before { transform: translateX(16px); }
     flex: 1;
 }
 
-/* ── BOTTOM CARD FOOTER NAVIGATION ── */
 .question-card-footer {
     display: flex;
     align-items: center;
@@ -3840,7 +3764,6 @@ input:checked + .slider:before { transform: translateX(16px); }
     box-shadow: 0 4px 14px rgba(67, 56, 202, 0.35);
 }
 
-/* ── RIGHT SIDEBAR ── */
 .assessment-sidebar-panel {
     display: flex;
     flex-direction: column;
@@ -3889,7 +3812,6 @@ input:checked + .slider:before { transform: translateX(16px); }
     cursor: pointer;
 }
 
-/* ── PROGRESS CIRCLE ── */
 .progress-ring-container {
     display: flex;
     justify-content: center;
@@ -3943,7 +3865,6 @@ input:checked + .slider:before { transform: translateX(16px); }
     margin-top: 3px;
 }
 
-/* ── PROGRESS STATS ROW ── */
 .progress-legend-row {
     display: flex;
     justify-content: space-between;
@@ -3985,7 +3906,6 @@ input:checked + .slider:before { transform: translateX(16px); }
     white-space: nowrap;
 }
 
-/* ── CUSTOM DROPDOWN SELECT COMPONENTS (ZERO BLUR GLITCHES) ── */
 .custom-select-container {
     position: relative;
     display: inline-block;
@@ -4091,7 +4011,6 @@ input:checked + .slider:before { transform: translateX(16px); }
     display: block;
 }
 
-/* ── SECTION SWITCHER DROPDOWN ── */
 .section-select-container {
     width: 100%;
 }
@@ -4160,7 +4079,6 @@ input:checked + .slider:before { transform: translateX(16px); }
     font-weight: 500;
 }
 
-/* ── REAL CODING WORKSPACE GRID (MATCHES SCREENSHOT 1) ── */
 .coding-card-container {
     height: 100%;
     display: flex;
@@ -4204,7 +4122,6 @@ input:checked + .slider:before { transform: translateX(16px); }
     display: none !important;
 }
 
-/* ↔️ INTERACTIVE DRAGGABLE WORKSPACE SPLITTER */
 .coding-workspace-splitter {
     width: 14px;
     margin: 0 4px;
@@ -4318,7 +4235,6 @@ input:checked + .slider:before { transform: translateX(16px); }
     font-family: 'JetBrains Mono', 'Consolas', monospace;
 }
 
-/* ── REAL VS CODE / ONLINE COMPILER SIDE ── */
 .coding-editor-side {
     flex: 1 1 0;
     min-width: 320px;
@@ -4370,7 +4286,6 @@ input:checked + .slider:before { transform: translateX(16px); }
     gap: 8px;
 }
 
-/* FONT ZOOM CONTROLS */
 .editor-font-zoom-group {
     display: inline-flex;
     align-items: center;
@@ -4416,10 +4331,9 @@ input:checked + .slider:before { transform: translateX(16px); }
     padding: 6px 8px;
 }
 
-/* ── VS CODE EDITOR SURFACE & SYNTAX TOKENS (ZERO CURSOR DRIFT) ── */
 .vs-code-editor-wrapper {
     display: flex;
-    flex-shrink: 0;   /* NEVER let the editor compress */
+    flex-shrink: 0;   
     flex-grow: 0;
     height: var(--editor-box-height, 350px);
     min-height: 180px;
@@ -4433,7 +4347,6 @@ input:checked + .slider:before { transform: translateX(16px); }
     transition: height 0.08s ease-out;
 }
 
-/* ↕️ HORIZONTAL RESIZER FOR CODE EDITOR HEIGHT (BARA / CHOTA) */
 .editor-height-resizer {
     height: 12px;
     margin: 4px 0 6px 0;
@@ -4605,7 +4518,6 @@ input:checked + .slider:before { transform: translateX(16px); }
     color: transparent !important;
 }
 
-/* Custom smooth scrollbars for editor, right coding side and problem panel */
 .vs-code-textarea::-webkit-scrollbar,
 .coding-problem-side::-webkit-scrollbar,
 .coding-editor-side::-webkit-scrollbar,
@@ -4635,7 +4547,6 @@ input:checked + .slider:before { transform: translateX(16px); }
     background: #94a3b8;
 }
 
-/* Syntax Highlighting Token Colors (Strict Uniform Font-Weight 500 & Inherit for Zero Character Advance Drift) */
 .vs-code-highlight-layer * {
     font-family: inherit !important;
     font-size: inherit !important;
@@ -4648,15 +4559,14 @@ input:checked + .slider:before { transform: translateX(16px); }
     box-sizing: border-box !important;
 }
 
-.tok-kw { color: #d946ef !important; font-weight: 500 !important; } /* Purple keyword */
-.tok-directive { color: #9333ea !important; font-weight: 500 !important; } /* Include/Import */
-.tok-type { color: #2563eb !important; font-weight: 500 !important; } /* Blue Type */
-.tok-fn { color: #0284c7 !important; font-weight: 500 !important; } /* Function cyan */
-.tok-str { color: #059669 !important; font-weight: 500 !important; } /* Emerald string */
-.tok-comment { color: #16a34a !important; font-weight: 500 !important; } /* Green comment */
-.tok-num { color: #ea580c !important; font-weight: 500 !important; } /* Orange number */
+.tok-kw { color: #d946ef !important; font-weight: 500 !important; } 
+.tok-directive { color: #9333ea !important; font-weight: 500 !important; } 
+.tok-type { color: #2563eb !important; font-weight: 500 !important; } 
+.tok-fn { color: #0284c7 !important; font-weight: 500 !important; } 
+.tok-str { color: #059669 !important; font-weight: 500 !important; } 
+.tok-comment { color: #16a34a !important; font-weight: 500 !important; } 
+.tok-num { color: #ea580c !important; font-weight: 500 !important; } 
 
-/* ── CUSTOM INPUT TOGGLE ── */
 .custom-input-toggle-row {
     display: flex;
     align-items: center;
@@ -4735,8 +4645,6 @@ input:checked + .slider:before { transform: translateX(16px); }
     resize: vertical;
 }
 
-/* ── COMPILER OUTPUT CONSOLE PANEL ── */
-/* ── COMPILER OUTPUT CONSOLE PANEL (MATCHES CUSTOM INPUT CARD DESIGN) ── */
 .compiler-console-panel {
     margin-top: 10px;
     background: #f8fafc;
@@ -4856,10 +4764,6 @@ input:checked + .slider:before { transform: translateX(16px); }
     to { transform: rotate(360deg); }
 }
 
-/* ═══════════════════════════════════════════════════════════
-   CLEAN LIGHT-THEMED TEST CASE ITEM CARDS (MATCHES USER SCREENSHOT)
-   ═══════════════════════════════════════════════════════════ */
-
 .tc-item-card {
     border-radius: 8px;
     padding: 10px 14px;
@@ -4970,10 +4874,6 @@ input:checked + .slider:before { transform: translateX(16px); }
     filter: blur(2.5px);
     user-select: none;
 }
-
-/* ═══════════════════════════════════════════════════════════
-   COMPILE / SYNTAX ERROR CARD (CLEAN LIGHT DESIGN)
-   ═══════════════════════════════════════════════════════════ */
 
 .compile-error-box {
     background: #fff1f2;
@@ -5107,7 +5007,6 @@ input:checked + .slider:before { transform: translateX(16px); }
 .actual-match { color: #15803d; font-weight: 700; background: #dcfce7; }
 .actual-mismatch { color: #b91c1c; font-weight: 700; background: #fee2e2; }
 
-/* ── CODING CARD FOOTER (PINNED STICKY SO SUBMIT BUTTON IS ALWAYS ACCESSIBLE) ── */
 .coding-card-footer {
     position: sticky;
     bottom: -18px;
@@ -5179,7 +5078,6 @@ input:checked + .slider:before { transform: translateX(16px); }
     background: #fef2f2;
 }
 
-/* ── TIP BOX CARD ── */
 .tip-box-card {
     background: #f5f3ff !important;
     border: 1px solid #e0e7ff !important;
@@ -5208,7 +5106,6 @@ input:checked + .slider:before { transform: translateX(16px); }
     font-weight: 500;
 }
 
-/* ── BOTTOM FIXED STATUS BAR ── */
 .assessment-bottom-footer {
     height: 58px;
     min-height: 58px;
@@ -5315,9 +5212,6 @@ input:checked + .slider:before { transform: translateX(16px); }
     color: #dc2626;
 }
 
-/* ========================================================
-   MODAL CONFIRMATION DIALOGS (EXIT & SUBMIT)
-   ======================================================== */
 .exam-modal-backdrop {
     position: fixed;
     inset: 0;
@@ -5482,9 +5376,6 @@ input:checked + .slider:before { transform: translateX(16px); }
     background: #4338ca;
 }
 
-/* ========================================================
-   PROCTORING & SECURITY WARNING MODAL (10 STRIKES SYSTEM)
-   ======================================================== */
 .warning-stat-item {
     border: 1px solid #fee2e2 !important;
     background: #fef2f2 !important;
@@ -5582,9 +5473,6 @@ input:checked + .slider:before { transform: translateX(16px); }
     cursor: not-allowed;
 }
 
-/* ================================================================
-   LEETCODE-STYLE COMPILE / RUNTIME ERROR CARD (Dark Theme)
-   ================================================================ */
 .compile-error-box {
     background: #1a0a0a;
     border: 1px solid #7f1d1d;
@@ -5656,16 +5544,12 @@ input:checked + .slider:before { transform: translateX(16px); }
     color: #38bdf8;
 }
 
-/* Runtime Error within test card */
 .runtime-error-inline {
     color: #f87171;
     font-size: 11.5px;
     font-style: italic;
 }
 
-/* ================================================================
-   ENHANCED TEST CASE CARDS (LeetCode Result Style)
-   ================================================================ */
 .tc-result-card {
     background: #0f172a;
     border-radius: 10px;

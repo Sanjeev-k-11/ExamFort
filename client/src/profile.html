@@ -137,7 +137,7 @@
 <body>
     <div class="profile-window" style="display: flex; flex-direction: column; height: 100vh; overflow: hidden;">
         <div style="display: flex; flex: 1; overflow: hidden;">
-            <!-- SIDEBAR -->
+            
             <aside class="dashboard-sidebar" style="width: 240px; min-width: 240px; height: 100%; overflow-y: auto; background: #ffffff; border-right: 1.5px solid #e2e8f0; padding: 20px 14px; display: flex; flex-direction: column; justify-content: space-between; flex-shrink: 0;">
                 <div>
                     <div class="sidebar-brand-box" style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
@@ -192,7 +192,7 @@
                 </div>
             </aside>
 
-            <!-- SCROLLABLE PAGE BODY -->
+            
             <main class="profile-scroll" style="flex: 1; overflow-y: auto;">
             
             <a class="btn-back-nav" href="dashboard.html">
@@ -200,7 +200,7 @@
                 <span>Back to Dashboard</span>
             </a>
 
-            <!-- TOP HEADER WITH NOTIFICATION BELL (IMAGE 1) -->
+            
             <div class="profile-title-bar">
                 <div>
                     <h1>My Profile</h1>
@@ -212,9 +212,9 @@
                 </div>
             </div>
 
-            <!-- ROW 1: CANDIDATE CARD, ABOUT ME, PROFILE COMPLETION -->
+            
             <div class="prof-row-1">
-                <!-- COL 1: CANDIDATE CARD -->
+                
                 <div class="prof-card">
                     <div class="avatar-top-flex">
                         <div class="avatar-wrap-pos">
@@ -252,7 +252,7 @@
                     </button>
                 </div>
 
-                <!-- COL 2: ABOUT ME -->
+                
                 <div class="prof-card">
                     <div class="prof-card-header">
                         <h3 class="prof-card-title">About Me</h3>
@@ -301,7 +301,7 @@
                     </div>
                 </div>
 
-                <!-- COL 3: PROFILE COMPLETION -->
+                
                 <div class="prof-card">
                     <div class="prof-card-header">
                         <h3 class="prof-card-title">Profile Completion</h3>
@@ -339,9 +339,9 @@
                 </div>
             </div>
 
-            <!-- ROW 2: ACCOUNT INFORMATION & STATISTICS -->
+            
             <div class="prof-row-2">
-                <!-- COL 1: ACCOUNT INFORMATION -->
+                
                 <div class="prof-card">
                     <div class="prof-card-header">
                         <h3 class="prof-card-title">Account Information</h3>
@@ -399,7 +399,7 @@
                     </div>
                 </div>
 
-                <!-- COL 2: STATISTICS -->
+                
                 <div class="prof-card">
                     <div class="prof-card-header">
                         <h3 class="prof-card-title">Statistics</h3>
@@ -441,9 +441,9 @@
                 </div>
             </div>
 
-            <!-- ROW 3: PREFERENCES & CONNECTED DEVICES -->
+            
             <div class="prof-row-3">
-                <!-- COL 1: PREFERENCES -->
+                
                 <div class="prof-card">
                     <div class="prof-card-header">
                         <h3 class="prof-card-title">Preferences</h3>
@@ -492,7 +492,7 @@
                     </div>
                 </div>
 
-                <!-- COL 2: CONNECTED DEVICES -->
+                
                 <div class="prof-card">
                     <div class="prof-card-header">
                         <h3 class="prof-card-title">Connected Devices</h3>
@@ -532,7 +532,7 @@
         </main>
         </div>
 
-        <!-- EDIT PROFILE MODAL (SAVES DIRECTLY TO MYSQL VIA PUT) -->
+        
         <div id="edit-profile-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); backdrop-filter:blur(4px); z-index:1000; align-items:center; justify-content:center;">
             <div style="background:#fff; border-radius:20px; padding:28px 32px; width:540px; max-width:94vw; max-height:85vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,0.25);">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
@@ -550,7 +550,7 @@
 
                 <form id="form-edit-profile" onsubmit="saveProfileToMySQLModal(event)" style="display:flex; flex-direction:column; gap:14px;">
                     
-                    <!-- EDITABLE FIELDS SECTION -->
+                    
                     <div style="font-size:12px; font-weight:800; color:#4f46e5; text-transform:uppercase; letter-spacing:0.5px; border-bottom:1px solid #f1f5f9; padding-bottom:4px;">
                         Editable Details
                     </div>
@@ -577,7 +577,7 @@
                         <input id="edit-interests" type="text" style="width:100%; border:1.5px solid #cbd5e1; border-radius:8px; padding:9px 12px; font-size:13px; font-family:inherit; outline:none;" placeholder="Programming, Problem Solving, Reading">
                     </div>
 
-                    <!-- LOCKED OFFICIAL IDENTITY FIELDS -->
+                    
                     <div style="font-size:12px; font-weight:800; color:#64748b; text-transform:uppercase; letter-spacing:0.5px; border-bottom:1px solid #f1f5f9; padding-bottom:4px; margin-top:6px; display:flex; align-items:center; gap:6px;">
                         <span>🔒</span> <span>Verified Institutional Records (Locked)</span>
                     </div>
@@ -616,7 +616,7 @@
             </div>
         </div>
 
-        <!-- FOOTER STATUS BAR -->
+        
         <footer class="footer-status-bar">
             <div class="footer-left">
                 <div class="footer-status-item">

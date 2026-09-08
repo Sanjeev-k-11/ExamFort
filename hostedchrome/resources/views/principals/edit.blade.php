@@ -6,11 +6,11 @@
 @section('content')
 <div style="max-width: 860px; margin: 0 auto;">
     <div style="margin-bottom: 24px;">
-        <a href="{{ route('principals.show', $principal->id) }}" style="color: #818cf8; text-decoration: none; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; margin-bottom: 8px;">
+        <a href="{{ route('principals.show', $principal->id) }}" style="color: #4f46e5; text-decoration: none; font-size: 13px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; margin-bottom: 8px;">
             <i data-lucide="arrow-left" style="width: 14px; height: 14px;"></i>
             <span>Back to Principal Profile</span>
         </a>
-        <h1 style="font-size: 26px; font-weight: 800; color: #fff;">Edit Principal Credentials & Quota</h1>
+        <h1 style="font-size: 26px; font-weight: 900; color: #0f172a; letter-spacing: -0.5px;">Edit Principal Credentials & Quota</h1>
     </div>
 
     <div class="glass-card">
@@ -66,8 +66,8 @@
             </div>
 
             <!-- Annual Quota -->
-            <div style="background: rgba(0,0,0,0.25); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 20px; margin: 20px 0;">
-                <h4 style="font-size: 15px; font-weight: 700; color: #818cf8; margin-bottom: 14px;">
+            <div style="background: rgba(248, 250, 252, 0.9); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 20px; margin: 20px 0;">
+                <h4 style="font-size: 15px; font-weight: 800; color: #4f46e5; margin-bottom: 14px;">
                     Annual Exam Quota & Student Limits
                 </h4>
 

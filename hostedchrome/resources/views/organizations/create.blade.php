@@ -6,11 +6,11 @@
 @section('content')
 <div style="max-width: 860px; margin: 0 auto;">
     <div style="margin-bottom: 24px;">
-        <a href="{{ route('organizations.index') }}" style="color: #818cf8; text-decoration: none; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; margin-bottom: 8px;">
+        <a href="{{ route('organizations.index') }}" style="color: #4f46e5; text-decoration: none; font-size: 13px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; margin-bottom: 8px;">
             <i data-lucide="arrow-left" style="width: 14px; height: 14px;"></i>
             <span>Back to Organizations</span>
         </a>
-        <h1 style="font-size: 26px; font-weight: 800; color: #fff;">Register Partner Organization / College</h1>
+        <h1 style="font-size: 26px; font-weight: 900; color: #0f172a; letter-spacing: -0.5px;">Register Partner Organization / College</h1>
         <p style="color: var(--text-secondary); font-size: 14px; margin-top: 4px;">
             Configure institutional profile, address, and allocate annual examination and student quotas.
         </p>
@@ -51,8 +51,8 @@
             </div>
 
             <!-- Annual Quota Allocation Section -->
-            <div style="background: rgba(0,0,0,0.25); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 20px; margin: 20px 0;">
-                <h4 style="font-size: 15px; font-weight: 700; color: #818cf8; margin-bottom: 14px; display: flex; align-items: center; gap: 8px;">
+            <div style="background: rgba(248, 250, 252, 0.9); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 20px; margin: 20px 0;">
+                <h4 style="font-size: 15px; font-weight: 800; color: #4f46e5; margin-bottom: 14px; display: flex; align-items: center; gap: 8px;">
                     <i data-lucide="sliders" style="width: 18px; height: 18px;"></i>
                     <span>Super Admin Institutional Quota Allocations</span>
                 </h4>
@@ -61,19 +61,19 @@
                     <div class="form-group" style="margin-bottom: 0;">
                         <label class="form-label">Annual Exam Quota (Per Year) *</label>
                         <input type="number" name="max_exams_allowed" class="form-control" min="1" value="{{ old('max_exams_allowed', 100) }}" required>
-                        <small style="font-size: 11px; color: var(--text-muted);">Max exams Dean/Principal can conduct/yr.</small>
+                        <small style="font-size: 11.5px; color: var(--text-muted); margin-top: 4px; display: block;">Max exams Dean/Principal can conduct/yr.</small>
                     </div>
 
                     <div class="form-group" style="margin-bottom: 0;">
                         <label class="form-label">Student Capacity Cap *</label>
                         <input type="number" name="max_students_allowed" class="form-control" min="1" value="{{ old('max_students_allowed', 5000) }}" required>
-                        <small style="font-size: 11px; color: var(--text-muted);">Total candidate accounts allowed.</small>
+                        <small style="font-size: 11.5px; color: var(--text-muted); margin-top: 4px; display: block;">Total candidate accounts allowed.</small>
                     </div>
 
                     <div class="form-group" style="margin-bottom: 0;">
                         <label class="form-label">Faculty / Teacher Quota *</label>
                         <input type="number" name="max_teachers_allowed" class="form-control" min="1" value="{{ old('max_teachers_allowed', 50) }}" required>
-                        <small style="font-size: 11px; color: var(--text-muted);">Max teachers Principal can create.</small>
+                        <small style="font-size: 11.5px; color: var(--text-muted); margin-top: 4px; display: block;">Max teachers Principal can create.</small>
                     </div>
                 </div>
             </div>

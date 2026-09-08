@@ -6,16 +6,17 @@
 @section('styles')
 <style>
     .tc-card {
-        background: rgba(15, 23, 42, 0.7);
-        border: 1px solid var(--border-color);
-        border-radius: var(--radius-sm);
+        background: rgba(248, 250, 252, 0.9);
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
         padding: 14px;
         margin-bottom: 12px;
         position: relative;
-        transition: border-color 0.2s;
+        transition: all 0.2s;
     }
     .tc-card:hover {
-        border-color: rgba(99, 102, 241, 0.4);
+        border-color: #818cf8;
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.06);
     }
     .tc-header {
         display: flex;
@@ -26,44 +27,47 @@
     .tc-badge {
         font-size: 11px;
         font-weight: 700;
-        padding: 2px 8px;
-        border-radius: 4px;
+        padding: 3px 8px;
+        border-radius: 6px;
     }
     .tc-badge.pub {
-        background: rgba(16, 185, 129, 0.15);
-        color: #34d399;
+        background: #ecfdf5;
+        color: #059669;
+        border: 1px solid #a7f3d0;
     }
     .tc-badge.hid {
-        background: rgba(245, 158, 11, 0.15);
-        color: #fbbf24;
+        background: #fffbeb;
+        color: #d97706;
+        border: 1px solid #fde68a;
     }
     .tc-badge.rubric {
-        background: rgba(99, 102, 241, 0.15);
-        color: #818cf8;
+        background: #eef2ff;
+        color: #4f46e5;
+        border: 1px solid #c7d2fe;
     }
     .btn-icon-del {
-        background: none;
+        background: #fee2e2;
         border: none;
-        color: #f87171;
+        color: #dc2626;
         cursor: pointer;
-        padding: 4px;
-        border-radius: 4px;
-        transition: background 0.15s;
+        padding: 5px;
+        border-radius: 6px;
+        transition: all 0.15s;
     }
     .btn-icon-del:hover {
-        background: rgba(239, 68, 68, 0.15);
+        background: #fecaca;
     }
 </style>
 @endsection
 
 @section('content')
 <div style="margin-bottom: 24px;">
-    <a href="{{ route('questions.index') }}" style="color: #818cf8; text-decoration: none; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; margin-bottom: 8px;">
+    <a href="{{ route('questions.index') }}" style="color: #4f46e5; text-decoration: none; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; margin-bottom: 8px;">
         <i data-lucide="arrow-left" style="width: 14px; height: 14px;"></i>
         <span>Back to Question Bank</span>
     </a>
-    <h1 style="font-size: 26px; font-weight: 800; color: #fff;">Author New Assessment Item</h1>
-    <p style="color: var(--text-secondary); font-size: 14px; margin-top: 4px;">
+    <h1 style="font-size: 26px; font-weight: 800; color: #0f172a; letter-spacing: -0.02em;">Author New Assessment Item</h1>
+    <p style="color: #64748b; font-size: 14px; margin-top: 4px;">
         Configure coding challenge problem description, constraints, sample I/O, automated test cases, and multi-language templates.
     </p>
 </div>
@@ -120,10 +124,10 @@
         <!-- ========================================================================= -->
         <!-- SECTION: Coding Challenge Specification (Constraints, Sample I/O, Test Cases) -->
         <!-- ========================================================================= -->
-        <div id="sectionCoding" style="background: rgba(0, 0, 0, 0.25); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 22px; margin-top: 24px;">
-            <h4 style="font-size: 16px; font-weight: 700; color: #34d399; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+        <div id="sectionCoding" style="background: rgba(248, 250, 252, 0.9); border: 1px solid #e2e8f0; border-radius: var(--radius-md); padding: 22px; margin-top: 24px;">
+            <h4 style="font-size: 16px; font-weight: 700; color: #059669; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
                 <i data-lucide="code-2" style="width: 20px; height: 20px;"></i>
-                <span>Coding Problem Specification & Constraints (Rendered on Student Client)</span>
+                <span>Coding Problem Specification & Constraints</span>
             </h4>
 
             <!-- Constraints Box -->
@@ -166,8 +170,8 @@
             </div>
 
             <!-- Multi-Language Starter Boilerplate Tabs -->
-            <div style="margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--border-color);">
-                <label class="form-label" style="font-weight: 700; color: #fff; margin-bottom: 10px;">
+            <div style="margin-top: 18px; padding-top: 16px; border-top: 1px solid #e2e8f0;">
+                <label class="form-label" style="font-weight: 700; color: #0f172a; margin-bottom: 10px;">
                     Language Starter Code Templates for Students
                 </label>
 
@@ -233,15 +237,15 @@ int main() {
             </div>
 
             <!-- VISUAL PUBLIC TEST CASES BUILDER -->
-            <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border-color);">
+            <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
                 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
                     <div>
-                        <h5 style="font-size: 14px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 6px;">
-                            <i data-lucide="eye" style="width: 16px; height: 16px; color: #34d399;"></i>
-                            <span>Public Test Cases (Visible to Students in Compiler Console)</span>
+                        <h5 style="font-size: 14px; font-weight: 700; color: #0f172a; display: flex; align-items: center; gap: 6px;">
+                            <i data-lucide="eye" style="width: 16px; height: 16px; color: #059669;"></i>
+                            <span>Public Test Cases (Visible in Compiler Console)</span>
                         </h5>
                     </div>
-                    <button type="button" onclick="addPublicTestCase()" class="quick-action-btn secondary" style="font-size: 12px; padding: 6px 12px;">
+                    <button type="button" onclick="addPublicTestCase()" class="btn btn-secondary" style="font-size: 12px; padding: 6px 12px;">
                         <i data-lucide="plus" style="width: 14px; height: 14px;"></i>
                         <span>Add Public Test Case</span>
                     </button>
@@ -251,15 +255,15 @@ int main() {
             </div>
 
             <!-- VISUAL HIDDEN TEST CASES BUILDER -->
-            <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border-color);">
+            <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
                 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
                     <div>
-                        <h5 style="font-size: 14px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 6px;">
-                            <i data-lucide="eye-off" style="width: 16px; height: 16px; color: #fbbf24;"></i>
-                            <span>Hidden Edge Test Cases (Secret Automated Grading Suite)</span>
+                        <h5 style="font-size: 14px; font-weight: 700; color: #0f172a; display: flex; align-items: center; gap: 6px;">
+                            <i data-lucide="eye-off" style="width: 16px; height: 16px; color: #d97706;"></i>
+                            <span>Hidden Edge Test Cases (Automated Grading Suite)</span>
                         </h5>
                     </div>
-                    <button type="button" onclick="addHiddenTestCase()" class="quick-action-btn secondary" style="font-size: 12px; padding: 6px 12px;">
+                    <button type="button" onclick="addHiddenTestCase()" class="btn btn-secondary" style="font-size: 12px; padding: 6px 12px;">
                         <i data-lucide="plus" style="width: 14px; height: 14px;"></i>
                         <span>Add Hidden Test Case</span>
                     </button>
@@ -275,8 +279,8 @@ int main() {
         <!-- ========================================================================= -->
         <!-- SECTION: MCQ Options -->
         <!-- ========================================================================= -->
-        <div id="sectionMCQ" style="background: rgba(0, 0, 0, 0.25); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 20px; margin-top: 24px; display: none;">
-            <h4 style="font-size: 15px; font-weight: 700; color: #818cf8; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+        <div id="sectionMCQ" style="background: rgba(248, 250, 252, 0.9); border: 1px solid #e2e8f0; border-radius: var(--radius-md); padding: 20px; margin-top: 24px; display: none;">
+            <h4 style="font-size: 15px; font-weight: 700; color: #4f46e5; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
                 <i data-lucide="check-square" style="width: 18px; height: 18px;"></i>
                 <span>Multiple Choice Options & Correct Key</span>
             </h4>
@@ -314,15 +318,15 @@ int main() {
         <!-- ========================================================================= -->
         <!-- SECTION: Essay / Descriptive Rubrics -->
         <!-- ========================================================================= -->
-        <div id="sectionParagraph" style="background: rgba(0, 0, 0, 0.25); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 22px; margin-top: 24px; display: none;">
+        <div id="sectionParagraph" style="background: rgba(248, 250, 252, 0.9); border: 1px solid #e2e8f0; border-radius: var(--radius-md); padding: 22px; margin-top: 24px; display: none;">
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
                 <div>
-                    <h4 style="font-size: 16px; font-weight: 700; color: #fbbf24; display: flex; align-items: center; gap: 8px;">
+                    <h4 style="font-size: 16px; font-weight: 700; color: #d97706; display: flex; align-items: center; gap: 8px;">
                         <i data-lucide="file-text" style="width: 18px; height: 18px;"></i>
                         <span>Descriptive Answer Evaluation Rubrics</span>
                     </h4>
                 </div>
-                <button type="button" onclick="addRubricConcept()" class="quick-action-btn secondary" style="font-size: 12px; padding: 6px 12px;">
+                <button type="button" onclick="addRubricConcept()" class="btn btn-secondary" style="font-size: 12px; padding: 6px 12px;">
                     <i data-lucide="plus" style="width: 14px; height: 14px;"></i>
                     <span>Add Evaluation Concept</span>
                 </button>
@@ -343,9 +347,9 @@ int main() {
             <textarea name="rubric_json_raw" id="rubric_json_raw" style="display:none;"></textarea>
         </div>
 
-        <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 32px; padding-top: 20px; border-top: 1px solid var(--border-color);">
-            <a href="{{ route('questions.index') }}" class="quick-action-btn secondary">Cancel</a>
-            <button type="submit" class="quick-action-btn">
+        <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 32px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
+            <a href="{{ route('questions.index') }}" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn btn-primary">
                 <i data-lucide="check" style="width: 16px; height: 16px;"></i>
                 <span>Save Question to Bank</span>
             </button>

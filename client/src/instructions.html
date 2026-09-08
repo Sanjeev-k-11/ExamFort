@@ -139,7 +139,7 @@
 </head>
 <body>
     <div class="instruct-window">
-        <!-- SCROLLABLE PAGE BODY -->
+        
         <main class="instruct-scroll">
             
             <a class="btn-back-nav" href="exam_details.html">
@@ -147,7 +147,7 @@
                 <span>Back to Exam Details</span>
             </a>
 
-            <!-- TOP HEADER WITH CANDIDATE CARD (MATCHES IMAGE 1) -->
+            
             <div class="instruct-header-row">
                 <div class="header-left-col">
                     <div class="cal-icon-large-box">📅</div>
@@ -176,14 +176,14 @@
                 </div>
             </div>
 
-            <!-- MAIN 2 COLUMNS (GENERAL INSTRUCTIONS + BEFORE YOU START) -->
+            
             <div class="instruct-main-grid">
                 
-                <!-- LEFT COLUMN: GENERAL INSTRUCTIONS (FROM MYSQL) -->
+                
                 <div class="general-instruct-card">
                     <h3>General Instructions</h3>
                     <div class="instructions-list-container" id="container-general-instructions">
-                        <!-- Loaded dynamically from MySQL exam_instructions table -->
+                        
                         <div class="instruction-line-row">
                             <div class="inst-icon-round">📶</div>
                             <div class="inst-text">Ensure a stable internet connection throughout the exam.</div>
@@ -219,7 +219,7 @@
                     </div>
                 </div>
 
-                <!-- RIGHT COLUMN: BEFORE YOU START CHECKLIST (MATCHES IMAGE 1) -->
+                
                 <div class="before-start-card">
                     <div class="before-start-header">
                         <div class="info-i">i</div>
@@ -249,7 +249,7 @@
                         </div>
                     </div>
 
-                    <!-- SINGLE-ATTEMPT ENFORCEMENT & AGREEMENT -->
+                    
                     <div id="section-agreement">
                         <div class="agreement-box-row">
                             <input type="checkbox" id="chk-agree" class="agreement-checkbox-input">
@@ -261,7 +261,7 @@
                         </button>
                     </div>
 
-                    <!-- ALREADY COMPLETED STATE (Strict Single-Attempt) -->
+                    
                     <div id="section-already-submitted" style="display: none; margin-top: auto;">
                         <div style="background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 12px; font-size: 12px; color: #065f46; font-weight: 700; margin-bottom: 12px; line-height: 1.4;">
                             ✓ You have already submitted this exam. Each candidate can attempt this examination only once.
@@ -272,7 +272,7 @@
                         </a>
                     </div>
 
-                    <!-- NOT STARTED YET STATE (Scheduled in Future) -->
+                    
                     <div id="section-not-started-yet" style="display: none; margin-top: auto;">
                         <div id="lbl-not-started-msg" style="background: #fffbeb; border: 1.5px solid #fde68a; border-radius: 8px; padding: 12px; font-size: 12px; color: #92400e; font-weight: 700; margin-bottom: 12px; line-height: 1.4;">
                             ⏳ This examination is scheduled for a future date/time. You cannot start the exam before the scheduled time.
@@ -282,7 +282,7 @@
                         </button>
                     </div>
 
-                    <!-- TIME EXPIRED STATE -->
+                    
                     <div id="section-time-expired" style="display: none; margin-top: auto;">
                         <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 12px; font-size: 12px; color: #991b1b; font-weight: 700; margin-bottom: 12px; line-height: 1.4;">
                             ⌛ The scheduled time window for this examination has ended. You can no longer start this exam.
@@ -294,7 +294,7 @@
                 </div>
             </div>
 
-            <!-- BOTTOM ROW: SYSTEM REQUIREMENTS (MATCHES IMAGE 1) -->
+            
             <div class="sys-req-card">
                 <h3>System Requirements</h3>
                 <div class="sys-req-grid" id="container-sys-req">
@@ -335,7 +335,7 @@
 
         </main>
 
-        <!-- FOOTER STATUS BAR -->
+        
         <footer class="footer-status-bar">
             <div class="footer-left">
                 <div class="footer-status-item">
@@ -363,7 +363,7 @@
         </footer>
     </div>
 
-    <!-- HIGH-TECH FACE VERIFICATION MODAL OVERLAY -->
+    
     <div id="modal-face-verify" class="face-verify-overlay" style="display: none;">
         <div class="face-verify-card">
             <div class="face-verify-header">
@@ -375,32 +375,32 @@
             </div>
 
             <div class="face-scanner-box">
-                <!-- Live Video Preview -->
+                
                 <video id="face-video-feed" autoplay playsinline muted></video>
                 <canvas id="face-capture-canvas" style="display: none;"></canvas>
                 
-                <!-- Oval Alignment Reticle & Scanning Animation -->
+                
                 <div class="face-reticle-oval" id="face-reticle">
                     <div class="laser-scan-line" id="laser-scan"></div>
                 </div>
 
-                <!-- Captured Snapshot Overlay -->
+                
                 <img id="face-captured-img" class="face-captured-img" style="display: none;" alt="Captured Face" />
 
-                <!-- Scanning / Processing Badge -->
+                
                 <div class="face-status-chip" id="face-status-chip">
                     <span class="pulse-dot"></span>
                     <span id="face-status-text">Align your face inside the frame</span>
                 </div>
             </div>
 
-            <!-- Verification Progress & Feedback Alert -->
+            
             <div id="face-feedback-box" class="face-feedback-box info">
                 <span id="face-feedback-icon">📷</span>
                 <span id="face-feedback-msg">Please look straight at the camera and ensure good lighting.</span>
             </div>
 
-            <!-- Action Buttons -->
+            
             <div class="face-actions-row">
                 <button type="button" class="btn-cancel-verify" onclick="closeFaceVerifyModal()">Cancel</button>
                 <button type="button" id="btn-capture-verify" class="btn-capture-verify" onclick="captureAndVerifyFace()">

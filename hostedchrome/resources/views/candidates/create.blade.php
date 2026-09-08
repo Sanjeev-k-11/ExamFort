@@ -6,11 +6,11 @@
 @section('content')
 <div style="max-width: 860px; margin: 0 auto;">
     <div style="margin-bottom: 24px;">
-        <a href="{{ route('candidates.index') }}" style="color: #818cf8; text-decoration: none; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; margin-bottom: 8px;">
+        <a href="{{ route('candidates.index') }}" style="color: #4f46e5; text-decoration: none; font-size: 13px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; margin-bottom: 8px;">
             <i data-lucide="arrow-left" style="width: 14px; height: 14px;"></i>
             <span>Back to Student Roster</span>
         </a>
-        <h1 style="font-size: 26px; font-weight: 800; color: #fff;">Register New Candidate / Student</h1>
+        <h1 style="font-size: 26px; font-weight: 900; color: #0f172a; letter-spacing: -0.5px;">Register New Candidate / Student</h1>
         <p style="color: var(--text-secondary); font-size: 14px; margin-top: 4px;">
             Add student credentials, college stream, and examination access codes.
         </p>
@@ -35,7 +35,7 @@
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                 <div class="form-group">
                     <label class="form-label">System Candidate Key (Unique ID) *</label>
-                    <input type="text" name="id" class="form-control" placeholder="CAND_{{ time() }}" value="{{ old('id', 'CAND_' . time()) }}" required>
+                    <input type="text" name="id" class="form-control mono" placeholder="CAND_{{ time() }}" value="{{ old('id', 'CAND_' . time()) }}" required>
                 </div>
 
                 <div class="form-group">

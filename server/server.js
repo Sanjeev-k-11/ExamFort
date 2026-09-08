@@ -104,6 +104,7 @@ app.get('/api/health', (req, res) => {
     res.status(200).json({
         status: 'ONLINE',
         database: db.isInitialized ? 'DATABASE_CONNECTED' : 'STANDBY',
+        database_type: db.dbType || 'POSTGRESQL',
         uptime: process.uptime(),
         timestamp: new Date().toISOString(),
         service: 'ExamFort Real-time Security & Assessment Engine',

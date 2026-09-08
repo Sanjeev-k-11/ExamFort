@@ -1,15 +1,4 @@
-/**
- * ========================================================
- * EXAMFORT ASSESSMENT CLIENT APPLICATION - CONTROLLER
- * Connects to XAMPP MySQL Backend & Manages All Screens:
- * 1. Diagnostics Check
- * 2. Sign In & Access Code
- * 3. Candidate Dashboard (Image 4)
- * 4. Exam Instructions (Image 2/3)
- * 5. Assessment Workspace (MCQ: Image 1 | Coding: Image 0 | Essay)
- * 6. Submission Confirmation
- * ========================================================
- */
+
 
 class ExamFortApp {
     constructor() {
@@ -21,15 +10,13 @@ class ExamFortApp {
             examCode: window.EXAMFORT_ENV?.DEFAULT_EXAM_CODE || 'NAT-2026-EXAM'
         };
 
-        // Exam State
         this.questions = [];
-        this.currentQuestionIndex = 0; // 0-indexed (0 to 12)
-        this.answers = {}; // { [questionNumber]: { selectedOption, codeSolution, essayText, status } }
+        this.currentQuestionIndex = 0; 
+        this.answers = {}; 
         this.markedForReview = new Set();
-        this.timerSeconds = 120 * 60; // 120 minutes
+        this.timerSeconds = 120 * 60; 
         this.timerInterval = null;
 
-        // System Diagnostics State
         this.detectedApps = [];
         this.systemStatus = {
             processesClean: false,
@@ -41,13 +28,9 @@ class ExamFortApp {
         this.init();
     }
 
-    // ==========================================
-    // SESSION CONSTANTS
-    // ==========================================
     static get SESSION_KEY() { return 'examfort_session'; }
-    static get SESSION_EXPIRY_MS() { return 2 * 24 * 60 * 60 * 1000; } // 2 days
+    static get SESSION_EXPIRY_MS() { return 2 * 24 * 60 * 60 * 1000; } 
 
-    // Save session with timestamp to localStorage
     saveSession(candidate) {
         const session = {
             candidate,
@@ -57,7 +40,6 @@ class ExamFortApp {
         localStorage.setItem(ExamFortApp.SESSION_KEY, JSON.stringify(session));
     }
 
-    // Load & validate session — returns candidate or null if expired/missing
     loadSession() {
         try {
             const raw = localStorage.getItem(ExamFortApp.SESSION_KEY);
@@ -65,7 +47,7 @@ class ExamFortApp {
             const session = JSON.parse(raw);
             if (!session || !session.expiresAt || !session.candidate) return null;
             if (Date.now() > session.expiresAt) {
-                // Expired — clear and return null
+                
                 localStorage.removeItem(ExamFortApp.SESSION_KEY);
                 return null;
             }
@@ -73,7 +55,6 @@ class ExamFortApp {
         } catch (_) { return null; }
     }
 
-    // Clear session (logout)
     clearSession() {
         localStorage.removeItem(ExamFortApp.SESSION_KEY);
         localStorage.removeItem('exam_candidate');
@@ -88,12 +69,11 @@ class ExamFortApp {
 
     async init() {
         console.log('🚀 [ExamFort] Initializing Secure Assessment Application...');
-        // Expose instance globally so security guard can check detectedApps
+        
         window._examFortAppInstance = this;
         window.__detectedApps = this.detectedApps;
         this.bindEvents();
 
-        // ── LOGOUT PARAMETER CHECK ──
         if (window.location.search.includes('logout=1')) {
             this.clearSession();
             try {
@@ -103,9 +83,6 @@ class ExamFortApp {
             return;
         }
 
-        // ── PERSISTENT LOGIN CHECK ──
-        // If a valid <2-day session exists AND system is clean → go to dashboard
-        // If threats are detected → show system-check screen first (CANNOT BYPASS)
         const savedCandidate = this.loadSession();
         if (savedCandidate) {
             console.log('[Session] Valid session found for:', savedCandidate.name);
@@ -113,44 +90,39 @@ class ExamFortApp {
             sessionStorage.setItem('examfort_user', JSON.stringify(savedCandidate));
             sessionStorage.setItem('exam_candidate', JSON.stringify(savedCandidate));
 
-            // ⛔ Security check: scan processes before allowing dashboard access
             if (window.electronAPI?.scanProcesses) {
                 try {
                     const threats = await window.electronAPI.scanProcesses() || [];
                     if (threats.length === 0) {
-                        // Environment clean — safe to go to dashboard
+                        
                         console.log('[Session] Environment clean. Navigating to dashboard.');
                         window.location.href = './dashboard.html';
                         return;
                     } else {
-                        // Threats found — force system-check screen, block dashboard
+                        
                         console.warn(`[Session] ${threats.length} threat(s) found. Blocking dashboard access.`);
                         this.showToast(`⛔ ${threats.length} prohibited app(s) running. Terminate them to access dashboard.`, 'error');
-                        // Fall through to normal system-check flow below
+                        
                     }
                 } catch (_) {
-                    // Scan error — allow dashboard (fail-open for usability)
+                    
                     window.location.href = './dashboard.html';
                     return;
                 }
             } else {
-                // No Electron API (browser mode) — go to dashboard directly
+                
                 window.location.href = './dashboard.html';
                 return;
             }
         }
 
-        // No valid session OR threats detected — normal flow with system-check
         this.switchScreen('system-check');
         this.startSystemCheckLoop();
         this.listenForSecurityViolations();
     }
 
-    // ==========================================
-    // UI EVENT BINDINGS
-    // ==========================================
     bindEvents() {
-        // Window Titlebar Controls
+        
         document.getElementById('btn-win-min')?.addEventListener('click', () => {
             if (window.electronAPI?.minimizeWindow) window.electronAPI.minimizeWindow();
         });
@@ -176,38 +148,32 @@ class ExamFortApp {
         document.getElementById('btn-footer-exit')?.addEventListener('click', () => this.handleExit());
         document.getElementById('btn-finish-app-exit')?.addEventListener('click', () => this.handleExit());
 
-        // Terminate All Button (Diagnostics)
         document.getElementById('btn-terminate-all')?.addEventListener('click', (e) => {
             e.preventDefault();
             this.handleTerminateAllProcesses();
         });
 
-        // Rescan Button (Diagnostics)
         document.getElementById('btn-rescan-apps')?.addEventListener('click', (e) => {
             e.preventDefault();
             this.showToast('Rescanning running applications...', 'info');
             this.runRealProcessScan();
         });
 
-        // Proceed to Sign In (From Diagnostics)
         document.getElementById('btn-proceed-to-signin')?.addEventListener('click', (e) => {
             e.preventDefault();
             this.switchScreen('signin');
         });
 
-        // Sign In Form Submit
         document.getElementById('form-signin')?.addEventListener('submit', async (e) => {
             e.preventDefault();
             await this.handleRealSignIn();
         });
 
-        // Access Code Form Submit
         document.getElementById('form-access-code')?.addEventListener('submit', async (e) => {
             e.preventDefault();
             await this.handleRealAccessCodeSubmit();
         });
 
-        // Navigation between Sign In and Access Code
         document.getElementById('btn-nav-access-code')?.addEventListener('click', (e) => {
             e.preventDefault();
             this.switchScreen('access-code');
@@ -217,7 +183,6 @@ class ExamFortApp {
             this.switchScreen('signin');
         });
 
-        // Toggle Password Visibility (with eye icon flip)
         document.getElementById('btn-toggle-password')?.addEventListener('click', () => {
             const passInput = document.getElementById('input-password');
             const btn = document.getElementById('btn-toggle-password');
@@ -227,7 +192,6 @@ class ExamFortApp {
             if (btn) btn.textContent = isHidden ? '🙈' : '👁️';
         });
 
-        // Dashboard Upcoming Exam Card -> Instructions Page
         document.getElementById('card-upcoming-exam')?.addEventListener('click', () => {
             this.switchScreen('exam-details');
         });
@@ -244,39 +208,32 @@ class ExamFortApp {
             this.switchScreen('signin');
         });
 
-        // Back to Dashboard from Instructions
         document.getElementById('btn-back-to-dashboard')?.addEventListener('click', () => {
             this.switchScreen('dashboard');
         });
 
-        // Start Assessment Button -> Live Exam Workspace
         document.getElementById('btn-start-live-assessment')?.addEventListener('click', async () => {
             await this.startLiveExam();
         });
 
-        // Back to Instructions from Assessment
         document.getElementById('btn-exam-back-instructions')?.addEventListener('click', () => {
             this.switchScreen('exam-details');
         });
 
-        // End Test Button
         document.getElementById('btn-action-end-test')?.addEventListener('click', () => {
             this.promptSubmitExam();
         });
 
-        // MCQ Mode Navigation
         document.getElementById('btn-mcq-next')?.addEventListener('click', () => this.handleNextQuestion());
         document.getElementById('btn-mcq-prev')?.addEventListener('click', () => this.handlePrevQuestion());
         document.getElementById('btn-mcq-mark-review')?.addEventListener('click', () => this.toggleMarkForReview());
 
-        // Coding Mode Navigation & Actions
         document.getElementById('btn-code-save-prev')?.addEventListener('click', () => this.handlePrevQuestion());
         document.getElementById('btn-code-run')?.addEventListener('click', () => this.runLiveCodeTests());
         document.getElementById('btn-code-submit')?.addEventListener('click', () => this.handleNextQuestion());
         document.getElementById('btn-code-mark-review')?.addEventListener('click', () => this.toggleMarkForReview());
         document.getElementById('btn-code-reset')?.addEventListener('click', () => this.resetCodeToStarter());
 
-        // Essay Mode Navigation & Actions
         document.getElementById('btn-essay-prev')?.addEventListener('click', () => this.handlePrevQuestion());
         document.getElementById('btn-essay-submit')?.addEventListener('click', () => this.promptSubmitExam());
         document.getElementById('btn-essay-mark-review')?.addEventListener('click', () => this.toggleMarkForReview());
@@ -286,7 +243,6 @@ class ExamFortApp {
             if (badge) badge.textContent = `${count} Words`;
         });
 
-        // Code Editor Line Numbers Sync
         const codeInput = document.getElementById('txt-live-coding-input');
         codeInput?.addEventListener('input', () => this.updateLineNumbers());
         codeInput?.addEventListener('scroll', () => {
@@ -294,19 +250,14 @@ class ExamFortApp {
             if (gutter) gutter.scrollTop = codeInput.scrollTop;
         });
 
-        // Go to Question Select Dropdown
         document.getElementById('select-goto-question')?.addEventListener('change', (e) => {
             const idx = parseInt(e.target.value, 10);
             if (!isNaN(idx)) this.jumpToQuestion(idx);
         });
 
-        // Setup Access Code OTP inputs
         this.setupOtpInputBehavior();
     }
 
-    // ==========================================
-    // SCREEN SWITCHER
-    // ==========================================
     switchScreen(screenName) {
         console.log(`[Navigation] Switching to screen: ${screenName}`);
         this.currentScreen = screenName;
@@ -334,9 +285,6 @@ class ExamFortApp {
         }
     }
 
-    // ==========================================
-    // 1. SYSTEM DIAGNOSTICS SCANNER
-    // ==========================================
     async startSystemCheckLoop() {
         await this.runRealProcessScan();
         setInterval(() => {
@@ -359,10 +307,9 @@ class ExamFortApp {
 
         if (window.electronAPI?.scanProcesses) {
             try {
-                // 1. Scan OS processes via native tasklist
-                const procViolations = await window.electronAPI.scanProcesses() || [];
                 
-                // 2. Scan behavioral screenshare (virtual monitors, ports, services)
+                const procViolations = await window.electronAPI.scanProcesses() || [];
+
                 let shareViolations = [];
                 if (window.electronAPI?.detectScreenShare) {
                     const threats = await window.electronAPI.detectScreenShare() || [];
@@ -375,7 +322,7 @@ class ExamFortApp {
                 }
 
                 this.detectedApps = [...procViolations, ...shareViolations];
-                // Keep global reference in sync for security guards
+                
                 window.__detectedApps = this.detectedApps;
 
                 if (this.detectedApps.length > 0) {
@@ -390,11 +337,10 @@ class ExamFortApp {
                         valStepApps.innerHTML = `<span style="color:#dc2626; font-weight:800;">Action Required (${this.detectedApps.length})</span><span style="color:#dc2626;">⚠️</span>`;
                     }
 
-                    // ── 20-Second Auto-Terminate Window upon Detection ──
                     if (!this.threatDetectionStartTime) {
                         this.threatDetectionStartTime = Date.now();
                         this.manualKillPanelShown = false;
-                        // Attempt immediate background auto-kill
+                        
                         if (window.electronAPI?.killProcess) {
                             window.electronAPI.killProcess({ processes: this.detectedApps });
                         }
@@ -410,12 +356,12 @@ class ExamFortApp {
                         if (actionLbl) {
                             actionLbl.textContent = `Auto-terminating ${this.detectedApps.length} prohibited processes (${remainingSec}s remaining)...`;
                         }
-                        // Retry auto-kill every 3s during the 20s window
+                        
                         if (elapsedSec > 0 && elapsedSec % 3 === 0 && window.electronAPI?.killProcess) {
                             window.electronAPI.killProcess({ processes: this.detectedApps });
                         }
                     } else {
-                        // 20s expired! Show manual action panel
+                        
                         if (countTxt) {
                             countTxt.innerHTML = `🚫 <strong>Auto-termination timed out (20s).</strong> Please terminate the application(s) manually below.`;
                         }
@@ -431,7 +377,7 @@ class ExamFortApp {
 
                     this.renderDetectedAppChips();
                 } else {
-                    // Clean! Reset timers and remove manual panel
+                    
                     this.threatDetectionStartTime = null;
                     this.manualKillPanelShown = false;
                     document.getElementById('__manual-kill-panel')?.remove();
@@ -453,15 +399,14 @@ class ExamFortApp {
                 console.error('Process sentinel error:', err);
             }
         } else {
-            // Browser fallback — keep proceed button LOCKED by default
-            // Only show it if no threats in detectedApps
+
             if (this.detectedApps.length === 0) {
                 if (actionBox) actionBox.classList.remove('hidden');
                 if (progressBar) progressBar.style.width = '100%';
                 if (progressLbl) progressLbl.textContent = '100%';
                 if (actionLbl) actionLbl.textContent = 'All system parameters verified. Environment is clean & secure.';
             } else {
-                if (actionBox) actionBox.classList.add('hidden'); // ⛔ keep locked
+                if (actionBox) actionBox.classList.add('hidden'); 
             }
         }
     }
@@ -471,13 +416,11 @@ class ExamFortApp {
         if (!container) return;
         container.innerHTML = '';
 
-        // Make sure no old extra panels exist
         document.getElementById('__manual-kill-panel')?.remove();
 
         const termAllBtn = document.getElementById('btn-terminate-all');
         const rescanBtn = document.getElementById('btn-rescan-apps');
 
-        // Extract unique EXEs for copy all command
         const uniqueExes = new Map();
         this.detectedApps.forEach(app => {
             let rawExe = app.name || app.label || 'application.exe';
@@ -497,7 +440,6 @@ class ExamFortApp {
             if (!rawExe.toLowerCase().endsWith('.exe')) rawExe += '.exe';
             const cleanCmd = `taskkill /F /IM "${rawExe}"`;
 
-            // Risk tags
             let iconHtml = '<span>⚙️</span>';
             let risk = 'Medium';
             let riskStyle = 'font-size: 10px; font-weight: 900; padding: 2px 7px; border-radius: 6px; background: #fef3c7; color: #b45309;';
@@ -513,7 +455,7 @@ class ExamFortApp {
             chip.className = 'app-chip-item';
 
             if (this.manualKillPanelShown) {
-                // ── MANUAL MODE: ONLY CLEAN EXE NAME CHIP (NO PID, NO EXTRA BUTTONS) ──
+                
                 chip.style.cssText = 'background: #ffffff; border: 1.5px solid #ef4444; border-radius: 12px; padding: 7px 14px; display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 800; color: #0f172a; box-shadow: 0 1px 4px rgba(239, 68, 68, 0.08);';
 
                 chip.innerHTML = `
@@ -521,7 +463,7 @@ class ExamFortApp {
                     <span style="font-weight: 800; color: #0f172a;">${rawExe}</span>
                 `;
             } else {
-                // ── NORMAL DETECTED MODE: PILL CHIP WITH TRASH BUTTON ──
+                
                 chip.style.cssText = 'background: #ffffff; border: 1.5px solid #fed7aa; border-radius: 12px; padding: 6px 12px; display: inline-flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; color: #0f172a; box-shadow: 0 1px 3px rgba(0,0,0,0.04);';
 
                 chip.innerHTML = `
@@ -554,14 +496,9 @@ class ExamFortApp {
         });
     }
 
-    // ════════════════════════════════════════════════
-    // Activates manual termination mode directly in
-    // the existing Detected Applications Card
-    // ════════════════════════════════════════════════
     showManualKillPanel(apps) {
         if (!apps || apps.length === 0) return;
 
-        // Ensure no external duplicate dark card is ever created
         document.getElementById('__manual-kill-panel')?.remove();
 
         this.manualKillPanelShown = true;
@@ -594,13 +531,10 @@ class ExamFortApp {
 
         this.showToast(`⏳ Attempting to terminate ${this.detectedApps.length} process(es)...`, 'info');
 
-        // 1. Send kill request to OS backend
         await window.electronAPI.killProcess({ processes: this.detectedApps });
-        
-        // 2. Wait 800ms for OS process table to settle
+
         await new Promise(r => setTimeout(r, 800));
 
-        // 3. Rescan to get fresh live process state
         await this.runRealProcessScan();
 
         if (termBtn) {
@@ -610,13 +544,12 @@ class ExamFortApp {
             termBtn.innerHTML = origBtnHtml || `<span>🗑️</span><span>Terminate All</span>`;
         }
 
-        // 4. Check if termination succeeded or failed
         if (this.detectedApps.length === 0) {
-            // All cleared successfully!
+            
             this.showToast('✅ All prohibited applications terminated! System is clean & secure.', 'success');
             document.getElementById('__manual-kill-panel')?.remove();
         } else {
-            // Termination failed for some exes -> immediately put into Manual Action Panel!
+            
             const failedApps = [...this.detectedApps];
             this.showToast(
                 `⚠️ Auto-termination failed for ${failedApps.length} process(es). Please terminate manually below.`,
@@ -626,10 +559,6 @@ class ExamFortApp {
         }
     }
 
-
-    // ==========================================
-    // 2. AUTHENTICATION & LOGIN (MYSQL)
-    // ==========================================
     async handleRealSignIn() {
         const userId = document.getElementById('input-user-id')?.value.trim();
         const password = document.getElementById('input-password')?.value;
@@ -670,11 +599,11 @@ class ExamFortApp {
                 sessionStorage.setItem('exam_candidate', JSON.stringify(this.candidate));
                 sessionStorage.setItem('examfort_user', JSON.stringify(this.candidate));
                 if (data.token) sessionStorage.setItem('examfort_token', data.token);
-                // ── Save persistent 2-day session ──
+                
                 this.saveSession(this.candidate);
                 this.showToast(`Welcome ${this.candidate.name}! Authentication verified.`, 'success');
                 setTimeout(() => {
-                    // Navigate to dashboard using same folder as index.html
+                    
                     window.location.href = './dashboard.html';
                 }, 1200);
             } else {
@@ -685,9 +614,6 @@ class ExamFortApp {
         }
     }
 
-    // ==========================================
-    // 3. EXAM ACCESS CODE VERIFICATION
-    // ==========================================
     async handleRealAccessCodeSubmit() {
         const name = document.getElementById('input-full-name')?.value.trim();
         const codeDigits = Array.from(document.querySelectorAll('#code-inputs-wrapper input'))
@@ -756,9 +682,6 @@ class ExamFortApp {
         if (watermark) watermark.setAttribute('data-watermark', this.candidate.id);
     }
 
-    // ==========================================
-    // 3. LIVE ASSESSMENT ENGINE (MCQ + CODING + ESSAY)
-    // ==========================================
     async startLiveExam() {
         this.showToast('Loading assessment questions from MySQL...', 'info');
 
@@ -777,7 +700,6 @@ class ExamFortApp {
             return;
         }
 
-        // Initialize empty answers state
         this.questions.forEach(q => {
             if (!this.answers[q.question_number]) {
                 this.answers[q.question_number] = {
@@ -796,7 +718,6 @@ class ExamFortApp {
         this.renderQuestionPalette();
         this.renderCurrentQuestion();
 
-        // Lock Kiosk mode in Electron
         if (window.electronAPI?.enterLockdown) {
             window.electronAPI.enterLockdown();
         }
@@ -810,7 +731,6 @@ class ExamFortApp {
         const progressLbl = document.getElementById('lbl-header-q-progress');
         if (progressLbl) progressLbl.textContent = `${qNum} / ${this.questions.length}`;
 
-        // Header Category Badge
         const categoryBadge = document.getElementById('lbl-header-category');
         const testTitle = document.getElementById('lbl-header-test-title');
         if (categoryBadge && testTitle) {
@@ -830,7 +750,6 @@ class ExamFortApp {
         const modeCoding = document.getElementById('mode-coding-view');
         const modeEssay = document.getElementById('mode-essay-view');
 
-        // Hide all modes
         modeMCQ?.classList.add('hidden');
         modeCoding?.classList.add('hidden');
         modeEssay?.classList.add('hidden');
@@ -849,7 +768,6 @@ class ExamFortApp {
         this.updatePaletteHighlight();
     }
 
-    // --- MCQ View Render (Image 1 Match) ---
     renderMCQView(q) {
         const qNumLbl = document.getElementById('lbl-mcq-qnum');
         const qTextLbl = document.getElementById('lbl-mcq-question-text');
@@ -888,7 +806,6 @@ class ExamFortApp {
         });
     }
 
-    // --- Coding View Render (Image 0 Match) ---
     renderCodingView(q) {
         const qNumLbl = document.getElementById('lbl-code-qnum');
         const titleLbl = document.getElementById('lbl-code-title');
@@ -907,7 +824,6 @@ class ExamFortApp {
         }
     }
 
-    // --- Essay View Render ---
     renderEssayView(q) {
         const essayInput = document.getElementById('txt-essay-response');
         if (essayInput) {
@@ -931,7 +847,6 @@ class ExamFortApp {
         gutter.innerHTML = lineNumbersHtml;
     }
 
-    // --- Test Cases Execution ---
     async runLiveCodeTests() {
         const q = this.questions[this.currentQuestionIndex];
         const code = document.getElementById('txt-live-coding-input')?.value;
@@ -986,7 +901,6 @@ class ExamFortApp {
         }
     }
 
-    // --- Question Navigation ---
     handleNextQuestion() {
         this.saveCurrentResponse();
         if (this.currentQuestionIndex < this.questions.length - 1) {
@@ -1051,7 +965,6 @@ class ExamFortApp {
         this.updatePaletteHighlight();
     }
 
-    // --- Question Palette (Image 1 Right Match) ---
     renderQuestionPalette() {
         const grid = document.getElementById('palette-tiles-grid');
         const select = document.getElementById('select-goto-question');
@@ -1103,7 +1016,6 @@ class ExamFortApp {
         });
     }
 
-    // --- Timer Countdown ---
     startExamTimer() {
         if (this.timerInterval) clearInterval(this.timerInterval);
         const timerLbl = document.getElementById('lbl-exam-timer');
@@ -1126,9 +1038,6 @@ class ExamFortApp {
         }, 1000);
     }
 
-    // ==========================================
-    // 4. SUBMISSION & MYSQL DATABASE STORAGE
-    // ==========================================
     promptSubmitExam() {
         this.saveCurrentResponse();
         const confirmSubmit = confirm('Are you sure you want to submit your assessment?\n\nAll answers, code solutions, and essay responses will be recorded and evaluated.');
@@ -1164,7 +1073,7 @@ class ExamFortApp {
             this.switchScreen('completed');
             this.showToast('Exam successfully submitted and recorded!', 'success');
         } catch (err) {
-            // Local fallback
+            
             const candLbl = document.getElementById('lbl-final-candidate-id');
             const scoreLbl = document.getElementById('lbl-final-evaluated-score');
             if (candLbl) candLbl.textContent = this.candidate.id;
@@ -1173,9 +1082,6 @@ class ExamFortApp {
         }
     }
 
-    // ==========================================
-    // UTILITIES
-    // ==========================================
     setupOtpInputBehavior() {
         const wrapper = document.getElementById('code-inputs-wrapper');
         if (!wrapper) return;

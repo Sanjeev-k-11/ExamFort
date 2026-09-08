@@ -121,7 +121,7 @@
 </head>
 <body>
     <div class="course-viewport">
-        <!-- SCROLLABLE PAGE BODY -->
+        
         <main class="course-scroll">
             
             <a class="btn-back-nav" href="courses.html">
@@ -129,7 +129,7 @@
                 <span>Back to Courses</span>
             </a>
 
-            <!-- HERO CARD (MATCHES IMAGE 4) -->
+            
             <div class="course-hero-card">
                 <div class="hero-left-flex">
                     <div class="hero-code-icon" id="lbl-hero-icon">&lt;/&gt;</div>
@@ -161,7 +161,7 @@
                 </div>
             </div>
 
-            <!-- TABS -->
+            
             <div class="course-tabs-bar">
                 <span class="course-tab-item active" id="tab-btn-content" onclick="switchCourseTab('content')">Course Content</span>
                 <span class="course-tab-item" id="tab-btn-overview" onclick="switchCourseTab('overview')">Overview & Syllabus</span>
@@ -169,9 +169,9 @@
                 <span class="course-tab-item" id="tab-btn-notes" onclick="switchCourseTab('notes')">Quick Notes & PDF</span>
             </div>
 
-            <!-- 2-COLUMN GRID (LEFT: ABOUT COURSE META, RIGHT: ACTIVE TAB CONTENT) -->
+            
             <div class="course-content-grid">
-                <!-- LEFT COLUMN: ABOUT THIS COURSE -->
+                
                 <div class="about-course-card">
                     <h3>About This Course</h3>
                     <p class="about-course-desc" id="lbl-about-full">
@@ -205,7 +205,7 @@
                         </div>
                     </div>
 
-                    <!-- QUICK CHEAT SHEET SHORTCUT CARD -->
+                    
                     <div style="margin-top: 20px; background: #eff6ff; border: 1.5px solid #bfdbfe; border-radius: 12px; padding: 14px 16px;">
                         <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
                             <span style="font-size: 16px;">📋</span>
@@ -218,23 +218,23 @@
                     </div>
                 </div>
 
-                <!-- RIGHT COLUMN: ACTIVE TAB PANE -->
+                
                 <div class="course-tab-content-pane">
                     
-                    <!-- TAB 1: COURSE CONTENT (MODULES ACCORDION) -->
+                    
                     <div id="pane-tab-content" style="display: block;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
                             <h3 style="font-size: 15px; font-weight: 800; color: #0f172a; margin: 0;">Course Modules &amp; Topics</h3>
                             <span id="btn-toggle-all" style="font-size: 12px; color: #4f46e5; font-weight: 700; cursor: pointer;" onclick="toggleAllModules()">Expand All ⌵</span>
                         </div>
 
-                        <!-- DYNAMIC ACCORDION LOADED FROM MYSQL -->
+                        
                         <div class="module-accordion-container" id="course-modules-accordion">
                             <div style="color:#64748b; font-size:13px; padding:20px; text-align:center;">Loading course content from MySQL database...</div>
                         </div>
                     </div>
 
-                    <!-- TAB 2: OVERVIEW & SYLLABUS -->
+                    
                     <div id="pane-tab-overview" class="tab-pane-card" style="display: none;">
                         <h2 class="tab-pane-title">Course Overview &amp; Learning Objectives</h2>
                         <p class="tab-pane-sub">
@@ -278,13 +278,13 @@
                         </div>
                     </div>
 
-                    <!-- TAB 3: RESOURCES & TOOLS -->
+                    
                     <div id="pane-tab-resources" class="tab-pane-card" style="display: none;">
                         <h2 class="tab-pane-title">Developer Resources &amp; References</h2>
                         <p class="tab-pane-sub">Interactive cheat sheets, compiler setup guides, and standard library references.</p>
                         
                         <div style="display: flex; flex-direction: column; gap: 14px;">
-                            <!-- CHEAT SHEET CARD -->
+                            
                             <div style="display: flex; justify-content: space-between; align-items: center; padding: 18px 20px; background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px;">
                                 <div style="display: flex; align-items: center; gap: 14px;">
                                     <span style="font-size: 26px;">📋</span>
@@ -299,7 +299,7 @@
                                 </div>
                             </div>
 
-                            <!-- RUNTIME ENVIRONMENT CARD -->
+                            
                             <div style="display: flex; justify-content: space-between; align-items: center; padding: 18px 20px; background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px;">
                                 <div style="display: flex; align-items: center; gap: 14px;">
                                     <span style="font-size: 26px;">⚙️</span>
@@ -311,7 +311,7 @@
                                 <span style="background: #dcfce7; color: #15803d; font-size: 11.5px; font-weight: 800; padding: 6px 12px; border-radius: 6px;">Active &amp; Ready ✓</span>
                             </div>
 
-                            <!-- STL CHEATSHEET OVERVIEW -->
+                            
                             <div style="background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 18px 20px;">
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
                                     <strong style="font-size: 13.5px; color: #0f172a;">Standard Template Library (STL) Quick Complexities</strong>
@@ -335,7 +335,7 @@
                         </div>
                     </div>
 
-                    <!-- TAB 4: QUICK NOTES & PDF -->
+                    
                     <div id="pane-tab-notes" class="tab-pane-card" style="display: none;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
                             <div>
@@ -347,14 +347,14 @@
                             </button>
                         </div>
                         <div id="notes-overview-list" style="display: flex; flex-direction: column; gap: 10px;">
-                            <!-- Populated dynamically via MySQL -->
+                            
                         </div>
                     </div>
 
                 </div>
             </div>
 
-            <!-- INTERACTIVE CHEAT SHEET MODAL -->
+            
             <div class="modal-overlay" id="modal-cheatsheet" onclick="if(event.target===this) closeCheatSheetModal()">
                 <div class="modal-card">
                     <div class="modal-header">
@@ -370,7 +370,7 @@
                     
                     <div class="modal-body" id="cheatsheet-content-container">
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-                            <!-- CARD 1: ESSENTIAL SYNTAX -->
+                            
                             <div style="background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 16px;">
                                 <h3 style="font-size: 13.5px; font-weight: 800; color: #0f172a; margin-bottom: 8px; border-bottom: 1px solid #f1f5f9; padding-bottom: 6px;">1. Essential Syntax &amp; Types</h3>
                                 <pre style="background: #0f172a; color: #38bdf8; padding: 12px; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 11.5px; line-height: 1.5; overflow-x: auto; margin: 0;">// Auto Type Deduction
@@ -383,7 +383,7 @@ int& ref = val;       // alias to val
 int* ptr = &val;      // pointer to address</pre>
                             </div>
 
-                            <!-- CARD 2: POINTERS & RAII -->
+                            
                             <div style="background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 16px;">
                                 <h3 style="font-size: 13.5px; font-weight: 800; color: #0f172a; margin-bottom: 8px; border-bottom: 1px solid #f1f5f9; padding-bottom: 6px;">2. Modern Memory &amp; Smart Pointers</h3>
                                 <pre style="background: #0f172a; color: #38bdf8; padding: 12px; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 11.5px; line-height: 1.5; overflow-x: auto; margin: 0;">#include &lt;memory&gt;
@@ -396,7 +396,7 @@ auto sPtr = std::make_shared&lt;std::string&gt;("Hi");
 // No delete required! (Automatic RAII)</pre>
                             </div>
 
-                            <!-- CARD 3: STL CONTAINERS -->
+                            
                             <div style="background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 16px;">
                                 <h3 style="font-size: 13.5px; font-weight: 800; color: #0f172a; margin-bottom: 8px; border-bottom: 1px solid #f1f5f9; padding-bottom: 6px;">3. STL Containers</h3>
                                 <pre style="background: #0f172a; color: #38bdf8; padding: 12px; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 11.5px; line-height: 1.5; overflow-x: auto; margin: 0;">std::vector&lt;int&gt; v = {1, 2, 3};
@@ -408,7 +408,7 @@ mp["Alice"] = 95;     // O(1) avg lookup
 std::sort(v.begin(), v.end()); // O(n log n)</pre>
                             </div>
 
-                            <!-- CARD 4: OOP & CLASSES -->
+                            
                             <div style="background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 16px;">
                                 <h3 style="font-size: 13.5px; font-weight: 800; color: #0f172a; margin-bottom: 8px; border-bottom: 1px solid #f1f5f9; padding-bottom: 6px;">4. Classes &amp; OOP</h3>
                                 <pre style="background: #0f172a; color: #38bdf8; padding: 12px; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 11.5px; line-height: 1.5; overflow-x: auto; margin: 0;">class Shape {
@@ -436,7 +436,7 @@ class Circle : public Shape {
 
         </main>
 
-        <!-- FOOTER STATUS BAR -->
+        
         <footer class="footer-status-bar">
             <div class="footer-left">
                 <div class="footer-status-item">

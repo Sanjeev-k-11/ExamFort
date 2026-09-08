@@ -12,13 +12,13 @@
 <body class="assessment-body">
     <div class="examfort-window assessment-window-container">
         
-        <!-- LIVE WATERMARK PATTERN -->
+        
         <div class="security-watermark-overlay" id="watermark-overlay"></div>
 
-        <!-- MAIN VIEWPORT -->
+        
         <main class="assessment-main-content">
             
-            <!-- TOP HEADER (MATCHES SCREENSHOT EXACTLY) -->
+            
             <header class="assessment-top-header">
                 <div class="assessment-header-left">
                     <button class="btn-back-link" id="btn-back-instructions" type="button">
@@ -39,7 +39,7 @@
                     </div>
                 </div>
 
-                <!-- RIGHT STATS CARD -->
+                
                 <div class="assessment-header-right-card">
                     <div class="stat-item">
                         <div class="stat-icon-wrap">
@@ -118,21 +118,21 @@
                 </div>
             </header>
 
-            <!-- SECTION QUICK NAVIGATION TABS BAR (VISIBLE ACROSS ALL MODES) -->
+            
             <div class="assessment-section-tabs-bar" id="assessment-section-tabs-bar">
-                <!-- Dynamically populated via assessment-engine.js -->
+                
             </div>
 
-            <!-- WORKSPACE SPLIT (LEFT: QUESTION CARD, RIGHT: PROGRESS & QUICK JUMP) -->
+            
             <div class="assessment-workspace-grid">
                 
-                <!-- LEFT QUESTION WORKSPACE -->
+                
                 <section class="question-workspace-panel" id="question-workspace-panel">
                     
-                    <!-- 1. MCQ MODE VIEW -->
+                    
                     <div class="question-card-inner" id="mode-mcq-view">
                         
-                        <!-- QUESTION TOP META BAR -->
+                        
                         <div class="q-meta-top-row">
                             <div class="q-meta-left">
                                 <span class="q-number-pill" id="lbl-mcq-qnum">Question 1</span>
@@ -148,19 +148,19 @@
                             </div>
                         </div>
 
-                        <!-- QUESTION PROMPT TEXT -->
+                        
                         <div class="question-prompt-scrollable">
                             <div class="question-text-content" id="lbl-mcq-text">
                                 Loading assessment question...
                             </div>
                         </div>
 
-                        <!-- MCQ OPTIONS CONTAINER (PIXEL-PERFECT MATCH) -->
+                        
                         <div class="mcq-options-list" id="mcq-options-container">
-                            <!-- Dynamically rendered via JS -->
+                            
                         </div>
 
-                        <!-- BOTTOM NAVIGATION BAR -->
+                        
                         <div class="question-card-footer">
                             <button class="btn-nav-outline-prev" id="btn-mcq-prev">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
@@ -173,11 +173,11 @@
                         </div>
                     </div>
 
-                    <!-- 2. CODING MODE VIEW (MATCHES SCREENSHOT 1 EXACTLY) -->
+                    
                     <div class="question-card-inner coding-card-container hidden" id="mode-coding-view">
                         
                         <div class="coding-workspace-grid">
-                            <!-- LEFT HALF: CODING QUESTION DETAILS & EXAMPLES -->
+                            
                             <div class="coding-problem-side" id="coding-problem-side">
                                 <div class="q-meta-top-row">
                                     <div class="q-meta-left">
@@ -199,7 +199,7 @@
                                         If the second largest element does not exist, return -1.
                                     </div>
 
-                                    <!-- DYNAMIC EXAMPLES & CONSTRAINTS CONTAINER -->
+                                    
                                     <div id="coding-examples-container" class="coding-examples-wrapper">
                                         <div class="coding-example-card">
                                             <div class="example-title">Example 1:</div>
@@ -226,18 +226,18 @@
                                 </div>
                             </div>
 
-                            <!-- ↔️ DRAGGABLE WORKSPACE SPLITTER (BARA / CHOTA RESIZER) -->
+                            
                             <div class="coding-workspace-splitter" id="coding-workspace-splitter" title="Drag left/right to resize editor (Double-click to reset)">
                                 <div class="splitter-grip-handle"></div>
                             </div>
 
-                            <!-- RIGHT HALF: REAL VS CODE / ONLINE COMPILER WORKSPACE -->
+                            
                             <div class="coding-editor-side" id="coding-editor-container">
-                                <!-- EDITOR TOOLBAR -->
+                                
                                 <div class="editor-header-bar">
                                     <div class="editor-lang-selector-group">
                                         <span class="editor-lang-label">Language</span>
-                                        <!-- CUSTOM STYLED DROPDOWN (NO NATIVE BLUR GLITCH) -->
+                                        
                                         <div class="custom-select-container" id="dropdown-coding-lang">
                                             <button type="button" class="custom-select-trigger" id="btn-lang-trigger" aria-haspopup="listbox" aria-expanded="false">
                                                 <span class="selected-lang-name" id="lbl-selected-lang">C++20 (G++ 15.2)</span>
@@ -274,12 +274,12 @@
                                     </div>
 
                                     <div class="editor-header-actions">
-                                        <!-- REAL-TIME 5-SECOND AUTO-SAVE INDICATOR -->
+                                        
                                         <div class="editor-autosave-badge" id="lbl-autosave-status" style="font-size:11px; font-weight:700; color:#059669; background:#ecfdf5; border:1px solid #a7f3d0; border-radius:12px; padding:3px 10px; display:inline-flex; align-items:center; gap:5px; transition:opacity 0.3s ease;">
                                             🟢 Auto-saved (5s)
                                         </div>
 
-                                        <!-- FONT SIZE ZOOM CONTROLS (A- / A+) -->
+                                        
                                         <div class="editor-font-zoom-group" title="Adjust Editor Text Size">
                                             <button type="button" class="btn-editor-tool btn-icon-only" id="btn-font-dec" title="Decrease Font Size (A-)">
                                                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
@@ -290,13 +290,13 @@
                                             </button>
                                         </div>
 
-                                        <!-- TOGGLE PROBLEM / EXPAND FULL EDITOR -->
+                                        
                                         <button type="button" class="btn-editor-tool" id="btn-toggle-problem-panel" title="Toggle Problem Panel (Full Editor Width)">
                                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line></svg>
                                             <span id="lbl-toggle-problem">Full Editor</span>
                                         </button>
 
-                                        <!-- TOGGLE EDITOR HEIGHT (COMPACT / EXPANDED) -->
+                                        
                                         <button type="button" class="btn-editor-tool btn-icon-only" id="btn-toggle-editor-height" title="Toggle Editor Height (Bada / Chota Height Preset)">
                                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="8 3 12 7 16 3"></polyline><polyline points="8 21 12 17 16 21"></polyline><line x1="12" y1="7" x2="12" y2="17"></line></svg>
                                         </button>
@@ -311,10 +311,10 @@
                                     </div>
                                 </div>
 
-                                <!-- REAL CODE EDITOR CANVAS WITH SYNTAX HIGHLIGHTING & LINE GUTTER -->
+                                
                                 <div class="vs-code-editor-wrapper" id="vs-code-editor-box">
                                     <div class="vs-code-gutter" id="code-gutter">
-                                        <!-- Dynamically generated line numbers 1..N -->
+                                        
                                     </div>
                                     <div class="vs-code-surface-wrap">
                                         <pre class="vs-code-highlight-layer" id="code-highlight-display" aria-hidden="true"><code id="code-highlight-content"></code></pre>
@@ -322,13 +322,13 @@
                                     </div>
                                 </div>
 
-                                <!-- ↕️ DRAGGABLE EDITOR HEIGHT RESIZER (BARA / CHOTA RESIZE BAR) -->
+                                
                                 <div class="editor-height-resizer" id="editor-height-resizer" title="Drag up/down to adjust Editor Height (Double-click to reset)">
                                     <div class="horizontal-grip-line"></div>
                                     <span class="resizer-tooltip-hint">↕ Drag up/down to resize Code Editor height</span>
                                 </div>
 
-                                <!-- TOGGLES: CUSTOM INPUT & TEST CASES / CONSOLE -->
+                                
                                 <div class="custom-input-toggle-row" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-top:14px; padding-bottom:4px;">
                                     <label class="custom-input-switch-label" for="chk-custom-input-toggle">
                                         <span>Test against custom input</span>
@@ -343,15 +343,15 @@
                                     </label>
                                 </div>
 
-                                <!-- EXPANDABLE CUSTOM INPUT FIELD -->
+                                
                                 <div class="custom-input-box-wrap hidden" id="wrap-custom-input">
                                     <div class="custom-input-header">Custom Stdin / Input:</div>
                                     <textarea id="txt-custom-input" class="custom-stdin-textarea" placeholder="Enter custom test input here (e.g. 6&#10;12 35 1 10 34 1)"></textarea>
                                 </div>
 
-                                <!-- COMPILER TEST CASES & TERMINAL OUTPUT PANEL -->
+                                
                                 <div class="compiler-console-panel" id="console-test-results">
-                                    <!-- ↕️ DRAGGABLE CONSOLE HEIGHT RESIZER -->
+                                    
                                     <div class="console-height-resizer" id="console-height-resizer" title="Drag up/down to resize Test Cases & Terminal Height (Double-click to reset)">
                                         <div class="console-grip-line"></div>
                                     </div>
@@ -369,14 +369,14 @@
                                         </div>
                                     </div>
                                     <div class="console-tab-body" id="console-test-cards">
-                                        <!-- Test case cards rendered here -->
+                                        
                                     </div>
                                     <div class="console-tab-body hidden" id="console-terminal-output">
                                         <pre class="terminal-raw-text" id="lbl-terminal-raw"></pre>
                                     </div>
                                 </div>
 
-                                <!-- CODING BOTTOM ACTIONS -->
+                                
                                 <div class="coding-card-footer">
                                     <button class="btn-nav-outline-prev" id="btn-code-prev">
                                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
@@ -402,7 +402,7 @@
 
                     </div>
 
-                    <!-- 3. ESSAY MODE VIEW -->
+                    
                     <div class="question-card-inner hidden" id="mode-essay-view">
                         <div class="q-meta-top-row">
                             <div class="q-meta-left">
@@ -430,10 +430,10 @@
 
                 </section>
 
-                <!-- RIGHT SIDEBAR (PROGRESS, SECTION SWITCHER, TIP) -->
+                
                 <aside class="assessment-sidebar-panel" id="assessment-sidebar-panel">
                     
-                    <!-- CARD 1: YOUR PROGRESS -->
+                    
                     <div class="sidebar-card progress-card">
                         <div class="sidebar-card-header">
                             <h3 class="sidebar-card-title">Your Progress</h3>
@@ -443,7 +443,7 @@
                             </button>
                         </div>
 
-                        <!-- PROGRESS RING -->
+                        
                         <div class="progress-ring-container" id="progress-ring-container">
                             <div class="circular-progress-wrap">
                                 <svg class="progress-ring-svg" width="130" height="130" viewBox="0 0 130 130">
@@ -457,7 +457,7 @@
                             </div>
                         </div>
 
-                        <!-- STATS LEGEND ROW -->
+                        
                         <div class="progress-legend-row" id="progress-legend-row">
                             <div class="legend-col solved">
                                 <div class="legend-val-row">
@@ -484,11 +484,11 @@
                             </div>
                         </div>
 
-                        <!-- QUESTION TILES PALETTE (TOGGLEABLE) -->
+                        
                         <div class="sidebar-palette-grid hidden" id="palette-tiles-grid"></div>
                     </div>
 
-                    <!-- CARD 2: SECTION SWITCHER / CHANGE SECTION (REPLACED BUGGY QUICK JUMP SELECT) -->
+                    
                     <div class="sidebar-card quick-jump-card" id="card-section-switcher">
                         <h4 class="sidebar-sub-title">Change Section</h4>
                         <div class="custom-select-container section-select-container" id="dropdown-section-switcher">
@@ -528,7 +528,7 @@
                         </div>
                     </div>
 
-                    <!-- CARD 3: TIP BOX -->
+                    
                     <div class="sidebar-card tip-box-card">
                         <div class="tip-header">
                             <span class="tip-bulb-icon">💡</span>
@@ -545,7 +545,7 @@
 
         </main>
 
-        <!-- FOOTER STATUS BAR (MATCHES USER SCREENSHOT EXACTLY) -->
+        
         <footer class="assessment-bottom-footer">
             <div class="footer-left-status">
                 <div class="footer-chip">
@@ -586,7 +586,7 @@
 
     </div>
 
-    <!-- 🛡️ ARE YOU SURE YOU WANT TO CLOSE THIS EXAM MODAL -->
+    
     <div class="exam-modal-backdrop hidden" id="modal-exit-confirm">
         <div class="exam-modal-card">
             <div class="exam-modal-icon-wrap icon-warning">
@@ -621,7 +621,7 @@
         </div>
     </div>
 
-    <!-- 🚀 END TEST & SUBMIT CONFIRMATION MODAL -->
+    
     <div class="exam-modal-backdrop hidden" id="modal-submit-confirm">
         <div class="exam-modal-card">
             <div class="exam-modal-icon-wrap icon-info">
@@ -645,7 +645,7 @@
         </div>
     </div>
 
-    <!-- ⚠️ PROCTORING & EXAM SECURITY VIOLATION WARNING MODAL -->
+    
     <div class="exam-modal-backdrop hidden" id="modal-security-warning">
         <div class="exam-modal-card warning-alert-card">
             <div class="exam-modal-icon-wrap icon-warning-pulse">
@@ -673,7 +673,7 @@
         </div>
     </div>
 
-    <!-- TOAST NOTIFICATIONS -->
+    
     <div class="toast-container" id="toast-container"></div>
 
     <script src="js/config.js"></script>

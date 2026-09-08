@@ -9,9 +9,9 @@
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        background: rgba(16, 185, 129, 0.15);
-        color: #34d399;
-        border: 1px solid rgba(16, 185, 129, 0.4);
+        background: #ecfdf5;
+        color: #059669;
+        border: 1px solid #a7f3d0;
         padding: 4px 12px;
         border-radius: 999px;
         font-size: 12px;
@@ -54,9 +54,9 @@
     }
 
     .telemetry-card {
-        background: rgba(15, 23, 42, 0.6);
-        border: 1px solid var(--border-color);
-        border-left: 4px solid #ef4444;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-left: 4px solid #dc2626;
         border-radius: var(--radius-md);
         padding: 14px 16px;
         display: flex;
@@ -64,40 +64,42 @@
         justify-content: space-between;
         gap: 12px;
         transition: all 0.2s;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.02);
     }
 
     .telemetry-card:hover {
-        background: rgba(30, 41, 59, 0.6);
-        border-color: rgba(255, 255, 255, 0.15);
+        background: #fff5f5;
+        border-color: #fecaca;
     }
 
     .draft-card {
-        background: rgba(15, 23, 42, 0.6);
-        border: 1px solid var(--border-color);
-        border-left: 4px solid #6366f1;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-left: 4px solid #4f46e5;
         border-radius: var(--radius-md);
         padding: 14px 16px;
         cursor: pointer;
         transition: all 0.2s;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.02);
     }
 
     .draft-card:hover {
-        background: rgba(30, 41, 59, 0.8);
-        border-color: var(--border-highlight);
+        background: #f8fafc;
+        border-color: #c7d2fe;
         transform: translateY(-1px);
     }
 
     .draft-card.active-selected {
-        border-color: #6366f1;
-        background: rgba(99, 102, 241, 0.12);
+        border-color: #4f46e5;
+        background: #eef2ff;
     }
 
     .filter-tab-btn {
         padding: 6px 14px;
-        background: rgba(255, 255, 255, 0.04);
-        border: 1px solid var(--border-color);
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
         border-radius: 6px;
-        color: var(--text-secondary);
+        color: #475569;
         font-size: 12px;
         font-weight: 600;
         cursor: pointer;
@@ -105,34 +107,9 @@
     }
 
     .filter-tab-btn:hover, .filter-tab-btn.active {
-        background: rgba(99, 102, 241, 0.2);
-        border-color: #6366f1;
-        color: #fff;
-    }
-
-    .modal-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.75);
-        backdrop-filter: blur(8px);
-        display: none;
-        align-items: center;
-        justify-content: center;
-        z-index: 200;
-        padding: 20px;
-    }
-
-    .modal-box {
-        background: #0f172a;
-        border: 1px solid var(--border-color);
-        border-radius: var(--radius-lg);
-        width: 100%;
-        max-width: 540px;
-        padding: 28px;
-        box-shadow: 0 25px 50px -12px rgba(0,0,0,0.8);
+        background: #4f46e5;
+        border-color: #4f46e5;
+        color: #ffffff;
     }
 </style>
 @endsection
@@ -141,17 +118,17 @@
 <div style="margin-bottom: 24px;">
     <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
         <div style="display: flex; align-items: center; gap: 14px;">
-            <h1 style="font-size: 26px; font-weight: 800; color: #fff;">Live Proctoring Command Radar</h1>
+            <h1 style="font-size: 26px; font-weight: 800; color: #0f172a; letter-spacing: -0.02em;">Live Proctoring Command Radar</h1>
             <span class="radar-pulse-badge">
                 <span class="pulse-dot-live"></span>
                 POLLING ACTIVE (4s)
             </span>
         </div>
 
-        <div style="display: flex; align-items: center; gap: 12px;">
+        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
             <!-- Exam Selector Dropdown -->
             <form action="{{ route('monitoring.index') }}" method="GET" style="display: flex; align-items: center; gap: 8px;">
-                <label style="font-size: 13px; color: var(--text-muted); font-weight: 600;">Active Exam:</label>
+                <label style="font-size: 13px; color: #64748b; font-weight: 600;">Active Exam:</label>
                 <select name="exam_code" onchange="this.form.submit()" class="form-control" style="padding: 8px 12px; width: auto; font-weight: 600;">
                     @foreach($exams as $ex)
                         <option value="{{ $ex->exam_code }}" {{ $selectedExamCode == $ex->exam_code ? 'selected' : '' }}>
@@ -161,7 +138,7 @@
                 </select>
             </form>
 
-            <button onclick="openLogModal()" class="quick-action-btn danger">
+            <button onclick="openLogModal()" class="btn btn-danger">
                 <i data-lucide="shield-alert" style="width: 16px; height: 16px;"></i>
                 <span>Log Incident</span>
             </button>
@@ -170,25 +147,25 @@
 </div>
 
 @if($currentExam)
-    <div style="background: rgba(15, 23, 42, 0.4); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 14px 20px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+    <div class="glass-card" style="padding: 14px 20px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
         <div style="display: flex; align-items: center; gap: 14px;">
-            <div style="width: 40px; height: 40px; border-radius: 8px; background: rgba(99, 102, 241, 0.2); color: #818cf8; display: flex; align-items: center; justify-content: center;">
-                <i data-lucide="award" style="width: 20px; height: 20px;"></i>
+            <div style="width: 44px; height: 44px; border-radius: 10px; background: #eef2ff; color: #4f46e5; display: flex; align-items: center; justify-content: center; border: 1px solid #e0e7ff;">
+                <i data-lucide="award" style="width: 22px; height: 22px;"></i>
             </div>
             <div>
-                <div style="font-size: 15px; font-weight: 700; color: #fff;">{{ $currentExam->title }}</div>
-                <div style="font-size: 12px; color: var(--text-muted);">
-                    Category: <strong style="color: #cbd5e1;">{{ $currentExam->category }}</strong> &bull;
-                    Duration: <strong style="color: #cbd5e1;">{{ $currentExam->duration_minutes }} mins</strong> &bull;
-                    Max Marks: <strong style="color: #cbd5e1;">{{ $currentExam->total_marks }}</strong>
+                <div style="font-size: 15px; font-weight: 700; color: #0f172a;">{{ $currentExam->title }}</div>
+                <div style="font-size: 12px; color: #64748b;">
+                    Category: <strong style="color: #334155;">{{ $currentExam->category }}</strong> &bull;
+                    Duration: <strong style="color: #334155;">{{ $currentExam->duration_minutes }} mins</strong> &bull;
+                    Max Marks: <strong style="color: #334155;">{{ $currentExam->total_marks }}</strong>
                 </div>
             </div>
         </div>
 
         <div style="display: flex; align-items: center; gap: 16px;">
             <span class="status-pill {{ strtolower($currentExam->status) }}">{{ $currentExam->status }}</span>
-            <span style="font-size: 13px; color: var(--text-muted);">
-                Auto-Save Heartbeat: <strong style="color: #34d399;">5-sec sync</strong>
+            <span style="font-size: 13px; color: #64748b;">
+                Auto-Save Heartbeat: <strong style="color: #059669;">5-sec sync</strong>
             </span>
         </div>
     </div>
@@ -201,14 +178,14 @@
         <div class="card-header-flex">
             <div>
                 <div class="card-title">
-                    <i data-lucide="shield-alert" style="color: #ef4444; width: 22px; height: 22px;"></i>
+                    <i data-lucide="shield-alert" style="color: #dc2626; width: 22px; height: 22px;"></i>
                     <span>Live Violation & Threat Stream</span>
                 </div>
-                <p style="color: var(--text-muted); font-size: 12px; margin-top: 2px;">
+                <p style="color: #64748b; font-size: 12px; margin-top: 2px;">
                     AI audio/video telemetry, tab focus losses, face detection triggers
                 </p>
             </div>
-            <span id="violationCountBadge" style="font-size: 12px; font-weight: 700; background: rgba(239, 68, 68, 0.2); color: #f87171; padding: 4px 10px; border-radius: 999px;">
+            <span id="violationCountBadge" style="font-size: 12px; font-weight: 700; background: #fee2e2; color: #dc2626; padding: 4px 10px; border-radius: 999px; border: 1px solid #fecaca;">
                 {{ $violations->count() }} Incidents
             </span>
         </div>
@@ -227,20 +204,20 @@
             @forelse($violations as $v)
                 <div class="telemetry-card" data-type="{{ strtoupper($v->violation_type) }}">
                     <div style="display: flex; gap: 12px; flex: 1;">
-                        <div style="width: 32px; height: 32px; border-radius: 6px; background: rgba(239, 68, 68, 0.2); color: #f87171; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px;">
+                        <div style="width: 34px; height: 34px; border-radius: 8px; background: #fee2e2; color: #dc2626; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px;">
                             <i data-lucide="alert-triangle" style="width: 16px; height: 16px;"></i>
                         </div>
                         <div style="flex: 1;">
                             <div style="display: flex; align-items: center; justify-content: space-between;">
-                                <span style="font-size: 13px; font-weight: 700; color: #fff;">{{ $v->violation_type }}</span>
-                                <span class="mono" style="font-size: 11px; color: var(--text-muted);">
+                                <span style="font-size: 13px; font-weight: 700; color: #dc2626;">{{ $v->violation_type }}</span>
+                                <span class="mono" style="font-size: 11px; color: #64748b;">
                                     {{ \Carbon\Carbon::parse($v->timestamp)->format('H:i:s') }}
                                 </span>
                             </div>
-                            <div style="font-size: 12px; color: #cbd5e1; margin-top: 2px;">
+                            <div style="font-size: 12px; color: #334155; margin-top: 2px;">
                                 <strong>Candidate:</strong> {{ $v->candidate ? $v->candidate->full_name : $v->candidate_id }} ({{ $v->candidate_id }})
                             </div>
-                            <div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px; background: rgba(0,0,0,0.25); padding: 6px 10px; border-radius: 6px; font-family: monospace;">
+                            <div style="font-size: 12px; color: #475569; margin-top: 4px; background: #f8fafc; border: 1px solid #e2e8f0; padding: 6px 10px; border-radius: 6px; font-family: monospace;">
                                 {{ $v->details }}
                             </div>
                         </div>
@@ -248,16 +225,16 @@
                     <form action="{{ route('api.monitoring.dismissViolation', $v->id) }}" method="POST" onsubmit="return confirm('Dismiss this violation log?');">
                         @csrf
                         @method('DELETE')
-                        <button type="submit" class="logout-btn" title="Dismiss incident" style="color: #64748b;">
-                            <i data-lucide="x" style="width: 16px; height: 16px;"></i>
+                        <button type="submit" class="action-btn" title="Dismiss incident" style="color: #64748b;">
+                            <i data-lucide="x" style="width: 14px; height: 14px;"></i>
                         </button>
                     </form>
                 </div>
             @empty
-                <div id="noViolationsState" style="text-align: center; padding: 48px 20px; color: var(--text-muted);">
-                    <i data-lucide="check-circle-2" style="width: 36px; height: 36px; color: #10b981; margin-bottom: 8px;"></i>
-                    <p style="font-size: 14px; font-weight: 600; color: #fff;">No violations detected</p>
-                    <p style="font-size: 12px; margin-top: 4px;">Candidate telemetry is streaming clear with no anomalies.</p>
+                <div id="noViolationsState" style="text-align: center; padding: 48px 20px; color: #64748b;">
+                    <i data-lucide="check-circle-2" style="width: 36px; height: 36px; color: #059669; margin-bottom: 8px;"></i>
+                    <p style="font-size: 15px; font-weight: 700; color: #0f172a;">No violations detected</p>
+                    <p style="font-size: 13px; margin-top: 4px;">Candidate telemetry is streaming clear with no anomalies.</p>
                 </div>
             @endforelse
         </div>
@@ -268,14 +245,14 @@
         <div class="card-header-flex">
             <div>
                 <div class="card-title">
-                    <i data-lucide="cpu" style="color: #6366f1; width: 22px; height: 22px;"></i>
+                    <i data-lucide="cpu" style="color: #4f46e5; width: 22px; height: 22px;"></i>
                     <span>Real-Time Candidate Drafts</span>
                 </div>
-                <p style="color: var(--text-muted); font-size: 12px; margin-top: 2px;">
+                <p style="color: #64748b; font-size: 12px; margin-top: 2px;">
                     5-second auto-save sync & live response inspector
                 </p>
             </div>
-            <span id="draftsCountBadge" style="font-size: 12px; font-weight: 700; background: rgba(99, 102, 241, 0.2); color: #818cf8; padding: 4px 10px; border-radius: 999px;">
+            <span id="draftsCountBadge" style="font-size: 12px; font-weight: 700; background: #eef2ff; color: #4f46e5; padding: 4px 10px; border-radius: 999px; border: 1px solid #c7d2fe;">
                 {{ $drafts->count() }} Live Drafts
             </span>
         </div>
@@ -289,14 +266,14 @@
                 <div class="draft-card" onclick="inspectDraft({{ json_encode($draft) }}, {{ json_encode($draft->candidate) }})">
                     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
                         <div style="display: flex; align-items: center; gap: 10px;">
-                            <div style="width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #6366f1, #3b82f6); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px;">
+                            <div style="width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, #4f46e5, #06b6d4); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px;">
                                 {{ substr($draft->candidate->full_name ?? 'C', 0, 1) }}
                             </div>
                             <div>
-                                <div style="font-size: 13px; font-weight: 700; color: #fff;">
+                                <div style="font-size: 13.5px; font-weight: 700; color: #0f172a;">
                                     {{ $draft->candidate ? $draft->candidate->full_name : $draft->candidate_id }}
                                 </div>
-                                <div class="mono" style="font-size: 11px; color: var(--text-muted);">
+                                <div class="mono" style="font-size: 11px; color: #64748b;">
                                     {{ $draft->candidate_id }}
                                 </div>
                             </div>
@@ -306,21 +283,21 @@
                             <span class="status-pill active" style="font-size: 10px; padding: 2px 8px;">
                                 SYNCED
                             </span>
-                            <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">
+                            <div style="font-size: 10px; color: #64748b; margin-top: 2px;">
                                 {{ \Carbon\Carbon::parse($draft->last_saved_at)->diffForHumans() }}
                             </div>
                         </div>
                     </div>
 
-                    <div style="background: rgba(0, 0, 0, 0.2); padding: 8px 12px; border-radius: 6px; display: flex; align-items: center; justify-content: space-between; font-size: 12px;">
-                        <span style="color: var(--text-muted);">Questions Answered:</span>
-                        <strong style="color: #34d399;">{{ $answeredCount }} Attempted</strong>
+                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 8px 12px; border-radius: 6px; display: flex; align-items: center; justify-content: space-between; font-size: 12px;">
+                        <span style="color: #64748b;">Questions Answered:</span>
+                        <strong style="color: #059669;">{{ $answeredCount }} Attempted</strong>
                     </div>
                 </div>
             @empty
-                <div style="text-align: center; padding: 48px 20px; color: var(--text-muted);">
-                    <i data-lucide="cloud-off" style="width: 36px; height: 36px; margin-bottom: 8px;"></i>
-                    <p style="font-size: 14px; font-weight: 600; color: #fff;">No active draft streams</p>
+                <div style="text-align: center; padding: 48px 20px; color: #64748b;">
+                    <i data-lucide="cloud-off" style="width: 36px; height: 36px; margin-bottom: 8px; color: #94a3b8;"></i>
+                    <p style="font-size: 15px; font-weight: 700; color: #0f172a;">No active draft streams</p>
                     <p style="font-size: 12px; margin-top: 4px;">When students answer questions, drafts auto-sync here every 5 seconds.</p>
                 </div>
             @endforelse
@@ -332,11 +309,11 @@
 <div class="modal-overlay" id="logViolationModal">
     <div class="modal-box">
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
-            <h3 style="font-size: 18px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px;">
-                <i data-lucide="alert-octagon" style="color: #ef4444; width: 20px; height: 20px;"></i>
+            <h3 style="font-size: 18px; font-weight: 700; color: #0f172a; display: flex; align-items: center; gap: 8px;">
+                <i data-lucide="alert-octagon" style="color: #dc2626; width: 20px; height: 20px;"></i>
                 <span>Log Proctoring Incident</span>
             </h3>
-            <button type="button" onclick="closeLogModal()" class="logout-btn">
+            <button type="button" onclick="closeLogModal()" class="action-btn">
                 <i data-lucide="x" style="width: 18px; height: 18px;"></i>
             </button>
         </div>
@@ -374,8 +351,8 @@
             </div>
 
             <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 24px;">
-                <button type="button" onclick="closeLogModal()" class="quick-action-btn secondary">Cancel</button>
-                <button type="submit" class="quick-action-btn danger">Log Violation & Flag</button>
+                <button type="button" onclick="closeLogModal()" class="btn btn-secondary">Cancel</button>
+                <button type="submit" class="btn btn-danger">Log Violation & Flag</button>
             </div>
         </form>
     </div>
@@ -386,21 +363,21 @@
     <div class="modal-box" style="max-width: 680px;">
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
             <div style="display: flex; align-items: center; gap: 10px;">
-                <div style="width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, #6366f1, #3b82f6); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700;">
+                <div style="width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, #4f46e5, #06b6d4); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700;">
                     <span id="inspectModalAvatar">C</span>
                 </div>
                 <div>
-                    <h3 id="inspectModalName" style="font-size: 17px; font-weight: 700; color: #fff;">Candidate Draft Inspector</h3>
-                    <div id="inspectModalSub" style="font-size: 12px; color: var(--text-muted);">Live Heartbeat Answers</div>
+                    <h3 id="inspectModalName" style="font-size: 17px; font-weight: 700; color: #0f172a;">Candidate Draft Inspector</h3>
+                    <div id="inspectModalSub" style="font-size: 12px; color: #64748b;">Live Heartbeat Answers</div>
                 </div>
             </div>
-            <button type="button" onclick="closeInspectModal()" class="logout-btn">
+            <button type="button" onclick="closeInspectModal()" class="action-btn">
                 <i data-lucide="x" style="width: 18px; height: 18px;"></i>
             </button>
         </div>
 
-        <div style="background: rgba(0, 0, 0, 0.3); border: 1px solid var(--border-color); border-radius: 10px; padding: 16px; max-height: 400px; overflow-y: auto;">
-            <div style="font-size: 13px; font-weight: 700; color: #818cf8; margin-bottom: 12px;">
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; max-height: 400px; overflow-y: auto;">
+            <div style="font-size: 13px; font-weight: 700; color: #4f46e5; margin-bottom: 12px;">
                 In-Flight Responses (Synced via 5s Auto-Save):
             </div>
             <div id="inspectModalAnswers" style="display: flex; flex-direction: column; gap: 10px;">
@@ -409,7 +386,7 @@
         </div>
 
         <div style="margin-top: 20px; display: flex; justify-content: flex-end;">
-            <button type="button" onclick="closeInspectModal()" class="quick-action-btn secondary">Close Inspector</button>
+            <button type="button" onclick="closeInspectModal()" class="btn btn-secondary">Close Inspector</button>
         </div>
     </div>
 </div>
@@ -449,13 +426,13 @@
         container.innerHTML = '';
 
         if (!answers || Object.keys(answers).length === 0) {
-            container.innerHTML = '<div style="color: var(--text-muted); font-size: 13px;">No responses saved yet in draft.</div>';
+            container.innerHTML = '<div style="color: #64748b; font-size: 13px;">No responses saved yet in draft.</div>';
         } else {
             for (let qKey in answers) {
                 const ans = answers[qKey];
                 const card = document.createElement('div');
-                card.style.background = 'rgba(255, 255, 255, 0.03)';
-                card.style.border = '1px solid rgba(255, 255, 255, 0.08)';
+                card.style.background = '#ffffff';
+                card.style.border = '1px solid #e2e8f0';
                 card.style.borderRadius = '8px';
                 card.style.padding = '10px 14px';
 
@@ -463,9 +440,9 @@
 
                 card.innerHTML = `
                     <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-                        <strong style="color: #fff; font-size: 13px;">Question Key / Number: ${qKey}</strong>
+                        <strong style="color: #0f172a; font-size: 13px;">Question Key / Number: ${qKey}</strong>
                     </div>
-                    <pre style="color: #38bdf8; font-size: 12px; white-space: pre-wrap; word-break: break-all; margin-top: 4px; font-family: 'JetBrains Mono', monospace;">${formattedAns}</pre>
+                    <pre style="color: #0284c7; font-size: 12px; white-space: pre-wrap; word-break: break-all; margin-top: 4px; font-family: 'JetBrains Mono', monospace; background: #f8fafc; padding: 8px; border-radius: 6px;">${formattedAns}</pre>
                 `;
                 container.appendChild(card);
             }

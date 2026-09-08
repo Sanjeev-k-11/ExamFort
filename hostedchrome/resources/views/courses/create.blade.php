@@ -6,11 +6,12 @@
 @section('content')
 <div style="max-width: 860px; margin: 0 auto;">
     <div style="margin-bottom: 24px;">
-        <a href="{{ route('courses.index') }}" style="color: #818cf8; text-decoration: none; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; margin-bottom: 8px;">
+        <a href="{{ route('courses.index') }}" style="color: #4f46e5; text-decoration: none; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; margin-bottom: 8px;">
             <i data-lucide="arrow-left" style="width: 14px; height: 14px;"></i>
             <span>Back to Courses</span>
         </a>
-        <h1 style="font-size: 26px; font-weight: 800; color: #fff;">Create New Course</h1>
+        <h1 style="font-size: 26px; font-weight: 800; color: #0f172a; letter-spacing: -0.02em;">Create New Course</h1>
+        <p style="color: #64748b; font-size: 14px; margin-top: 4px;">Author a structured learning track with lesson modules and sandboxes</p>
     </div>
 
     <div class="glass-card">
@@ -55,9 +56,9 @@
                 </div>
             </div>
 
-            <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 32px; padding-top: 20px; border-top: 1px solid var(--border-color);">
-                <a href="{{ route('courses.index') }}" class="quick-action-btn secondary">Cancel</a>
-                <button type="submit" class="quick-action-btn">
+            <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 32px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
+                <a href="{{ route('courses.index') }}" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary">
                     <i data-lucide="check" style="width: 16px; height: 16px;"></i>
                     <span>Create Course</span>
                 </button>

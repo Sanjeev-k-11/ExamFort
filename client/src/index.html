@@ -5,12 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ExamFort - Secure Exam Environment</title>
     
-    <!-- Google Fonts -->
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
     
-    <!-- 100% SELF-CONTAINED MASTER STYLESHEET -->
+    
     <style>
         :root {
             --bg-page: #f8fafc;
@@ -1164,7 +1164,7 @@
 </head>
 <body>
 
-    <!-- ── 1. TOP APP BAR ── -->
+    
     <header class="app-topbar">
         <div class="brand-group">
             <div class="brand-icon-box">
@@ -1188,18 +1188,16 @@
         </div>
     </header>
 
-    <!-- ── 2. MAIN SCROLLABLE VIEW ── -->
+    
     <main class="main-stage">
 
-        <!-- ════════════════════════════════════════════════════════
-             STAGE 1: SYSTEM CHECK / DETECTION STAGE (DEFAULT)
-             ════════════════════════════════════════════════════════ -->
+        
         <div id="screen-system-check" class="stage-wrapper">
 
-            <!-- Top Flow Section -->
+            
             <div style="display: flex; flex-direction: column; gap: 14px;">
                 
-                <!-- Hero Header -->
+                
                 <div class="hero-header">
                     <div class="hero-pulse-ring">
                         <div class="hero-badge-inner">
@@ -1221,7 +1219,7 @@
                     </div>
                 </div>
 
-                <!-- Progress Bar Row -->
+                
                 <div class="progress-section">
                     <div class="progress-label-row">
                         <div class="progress-label-left">
@@ -1237,7 +1235,7 @@
                     </div>
                 </div>
 
-                <!-- Current Action Card -->
+                
                 <div class="card-white action-card">
                     <div class="action-card-left">
                         <div class="action-icon-circle">
@@ -1254,7 +1252,7 @@
                     <div class="anim-spin-dashed" id="scan-spinner"></div>
                 </div>
 
-                <!-- Detected Applications Card (DYNAMIC - ZERO DUMMY DATA) -->
+                
                 <div id="card-detected-apps" class="detected-apps-card hidden">
                     <div class="detected-header">
                         <div class="detected-header-left">
@@ -1292,7 +1290,7 @@
                         <span id="txt-detected-count">0 application(s) detected. Please terminate them to proceed.</span>
                     </div>
 
-                    <!-- Manual Close Helper Box -->
+                    
                     <div id="box-manual-close-suggestion" style="margin-top: 12px; padding: 12px 16px; background: #fffbeb; border: 1.5px solid #fde68a; border-radius: 10px; font-size: 12px; color: #92400e; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
                         <div style="display: flex; align-items: flex-start; gap: 10px; flex: 1; min-width: 260px;">
                             <span style="font-size: 18px;">💡</span>
@@ -1307,7 +1305,7 @@
                     </div>
                 </div>
 
-                <!-- System Checklist (6 Rows) -->
+                
                 <div class="checklist-card">
                     
                     <div class="checklist-row">
@@ -1392,7 +1390,7 @@
 
             </div>
 
-            <!-- Bottom Docked Section (6 Status Cards + Action Button) -->
+            
             <div class="bottom-dock-section">
                 
                 <div class="status-cards-grid">
@@ -1468,15 +1466,13 @@
 
         </div>
 
-        <!-- ════════════════════════════════════════════════════════
-             STAGE 2: AUTH STAGE (WELCOME BACK & ENTER ACCESS DETAILS)
-             ════════════════════════════════════════════════════════ -->
+        
         <div id="screen-auth-stage" class="auth-grid-layout hidden">
             
-            <!-- Left Column: Hero Brand & Status -->
+            
             <div class="auth-left-hero">
                 
-                <!-- Orbital Ring Floating Shield -->
+                
                 <div class="orbital-hero-box">
                     <div class="orbital-ring">
                         <div class="orbital-dot top"></div>
@@ -1500,7 +1496,7 @@
                     We ensure a secure, fair and trustworthy examination experience for everyone.
                 </p>
 
-                <!-- System Status Box (Exact Reference Design) -->
+                
                 <div class="system-status-box">
                     <div class="system-status-header">
                         <span class="system-status-title">System Status</span>
@@ -1581,10 +1577,10 @@
 
             </div>
 
-            <!-- Right Column: Card Views -->
+            
             <div style="width: 100%;">
                 
-                <!-- CARD 2A: WELCOME BACK (SIGN IN SCREEN) -->
+                
                 <div id="card-view-signin" class="auth-form-card">
                     <div class="form-header-box">
                         <div class="form-header-icon">
@@ -1649,7 +1645,7 @@
                     </form>
                 </div>
 
-                <!-- CARD 2B: ENTER EXAM ACCESS DETAILS -->
+                
                 <div id="card-view-access-code" class="auth-form-card hidden">
                     <div class="form-header-box">
                         <div class="form-header-icon">
@@ -1712,7 +1708,7 @@
 
     </main>
 
-    <!-- ── 4. ALWAYS-BOTTOM PERSISTENT SECURITY FOOTER ── -->
+    
     <footer class="window-footer">
         <div class="footer-left">
             <div class="footer-shield-circle">
@@ -1773,7 +1769,7 @@
         </div>
     </footer>
 
-    <!-- ── 5. CONFIRM EXIT MODAL POPUP ── -->
+    
     <div id="modal-confirm-exit" class="modal-overlay hidden">
         <div class="modal-box">
             
@@ -1802,7 +1798,7 @@
         </div>
     </div>
 
-    <!-- Toast Notification Container -->
+    
     <div id="toast-container" style="position: fixed; bottom: 80px; right: 24px; display: flex; flex-direction: column; gap: 10px; z-index: 9999;"></div>
 
     <script src="js/config.js"></script>

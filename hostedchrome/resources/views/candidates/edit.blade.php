@@ -6,11 +6,11 @@
 @section('content')
 <div style="max-width: 860px; margin: 0 auto;">
     <div style="margin-bottom: 24px;">
-        <a href="{{ route('candidates.show', $user->id) }}" style="color: #818cf8; text-decoration: none; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; margin-bottom: 8px;">
+        <a href="{{ route('candidates.show', $user->id) }}" style="color: #4f46e5; text-decoration: none; font-size: 13px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; margin-bottom: 8px;">
             <i data-lucide="arrow-left" style="width: 14px; height: 14px;"></i>
             <span>Back to Student Profile</span>
         </a>
-        <h1 style="font-size: 26px; font-weight: 800; color: #fff;">Edit Student Profile & Credentials</h1>
+        <h1 style="font-size: 26px; font-weight: 900; color: #0f172a; letter-spacing: -0.5px;">Edit Student Profile & Credentials</h1>
         <p style="color: var(--text-secondary); font-size: 14px; margin-top: 4px;">
             Update student academic records, stream, exam PIN, or reset login password.
         </p>
@@ -29,7 +29,7 @@
 
                 <div class="form-group">
                     <label class="form-label">Student Roll / Registration ID *</label>
-                    <input type="text" name="student_id" class="form-control" value="{{ old('student_id', $user->student_id) }}" required>
+                    <input type="text" name="student_id" class="form-control mono" value="{{ old('student_id', $user->student_id) }}" required>
                 </div>
             </div>
 

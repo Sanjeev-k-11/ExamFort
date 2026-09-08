@@ -1,21 +1,22 @@
 @extends('layouts.admin')
 
-@section('title', 'Edit Question: ' . $question->question_id)
-@section('breadcrumb', 'Question Bank > Edit ' . $question->question_id)
+@section('title', 'Edit Question #' . ($question->question_number ?? $question->id))
+@section('breadcrumb', 'Question Bank > Edit Question')
 
 @section('styles')
 <style>
     .tc-card {
-        background: rgba(15, 23, 42, 0.7);
-        border: 1px solid var(--border-color);
-        border-radius: var(--radius-sm);
+        background: rgba(248, 250, 252, 0.9);
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
         padding: 14px;
         margin-bottom: 12px;
         position: relative;
-        transition: border-color 0.2s;
+        transition: all 0.2s;
     }
     .tc-card:hover {
-        border-color: rgba(99, 102, 241, 0.4);
+        border-color: #818cf8;
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.06);
     }
     .tc-header {
         display: flex;
@@ -26,44 +27,47 @@
     .tc-badge {
         font-size: 11px;
         font-weight: 700;
-        padding: 2px 8px;
-        border-radius: 4px;
+        padding: 3px 8px;
+        border-radius: 6px;
     }
     .tc-badge.pub {
-        background: rgba(16, 185, 129, 0.15);
-        color: #34d399;
+        background: #ecfdf5;
+        color: #059669;
+        border: 1px solid #a7f3d0;
     }
     .tc-badge.hid {
-        background: rgba(245, 158, 11, 0.15);
-        color: #fbbf24;
+        background: #fffbeb;
+        color: #d97706;
+        border: 1px solid #fde68a;
     }
     .tc-badge.rubric {
-        background: rgba(99, 102, 241, 0.15);
-        color: #818cf8;
+        background: #eef2ff;
+        color: #4f46e5;
+        border: 1px solid #c7d2fe;
     }
     .btn-icon-del {
-        background: none;
+        background: #fee2e2;
         border: none;
-        color: #f87171;
+        color: #dc2626;
         cursor: pointer;
-        padding: 4px;
-        border-radius: 4px;
-        transition: background 0.15s;
+        padding: 5px;
+        border-radius: 6px;
+        transition: all 0.15s;
     }
     .btn-icon-del:hover {
-        background: rgba(239, 68, 68, 0.15);
+        background: #fecaca;
     }
 </style>
 @endsection
 
 @section('content')
 <div style="margin-bottom: 24px;">
-    <a href="{{ route('questions.index') }}" style="color: #818cf8; text-decoration: none; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; margin-bottom: 8px;">
+    <a href="{{ route('questions.index') }}" style="color: #4f46e5; text-decoration: none; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; margin-bottom: 8px;">
         <i data-lucide="arrow-left" style="width: 14px; height: 14px;"></i>
         <span>Back to Question Bank</span>
     </a>
-    <h1 style="font-size: 26px; font-weight: 800; color: #fff;">Edit Assessment Item</h1>
-    <p style="color: var(--text-secondary); font-size: 14px; margin-top: 4px;">
+    <h1 style="font-size: 26px; font-weight: 800; color: #0f172a; letter-spacing: -0.02em;">Edit Assessment Item</h1>
+    <p style="color: #64748b; font-size: 14px; margin-top: 4px;">
         Update question payload, evaluation parameters, test cases, and rubrics.
     </p>
 </div>
@@ -76,29 +80,29 @@
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
             <div class="form-group">
                 <label class="form-label">Exam Code</label>
-                <input type="text" class="form-control mono" value="{{ $question->exam_code }}" readonly style="opacity: 0.7;">
+                <input type="text" class="form-control mono" value="{{ $question->exam_code }}" readonly style="background: #f1f5f9; color: #64748b;">
             </div>
 
             <div class="form-group">
-                <label class="form-label">Question ID</label>
-                <input type="text" class="form-control mono" value="{{ $question->question_id }}" readonly style="opacity: 0.7;">
+                <label class="form-label">Question Number *</label>
+                <input type="number" name="question_number" class="form-control mono" value="{{ old('question_number', $question->question_number ?? 1) }}" required>
             </div>
         </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
+        <div style="display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 20px;">
+            <div class="form-group">
+                <label class="form-label">Question / Problem Title *</label>
+                <input type="text" name="title" class="form-control" value="{{ old('title', $question->title ?? ('Question #' . ($question->question_number ?? 1))) }}" required>
+            </div>
+
             <div class="form-group">
                 <label class="form-label">Question Type</label>
-                <input type="text" class="form-control" value="{{ $question->type }}" readonly style="opacity: 0.7;">
+                <input type="text" class="form-control" value="{{ $question->type }}" readonly style="background: #f1f5f9; color: #64748b;">
             </div>
 
             <div class="form-group">
                 <label class="form-label">Max Score (Marks) *</label>
-                <input type="number" step="0.5" name="max_marks" class="form-control" value="{{ old('max_marks', $question->max_marks) }}" required>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Sort Order</label>
-                <input type="number" name="sort_order" class="form-control" value="{{ old('sort_order', $question->sort_order) }}">
+                <input type="number" step="0.5" name="max_marks" id="max_marks_input" class="form-control" value="{{ old('max_marks', $question->max_marks) }}" required>
             </div>
         </div>
 
@@ -109,14 +113,34 @@
 
         @if($question->type === 'MCQ')
             @php
-                $opts = is_array($question->options) ? $question->options : json_decode($question->options, true) ?? [];
-                $optMap = [];
-                foreach($opts as $o) {
-                    $optMap[$o['key']] = $o['text'];
+                $rawOpts = $question->options;
+                if (is_string($rawOpts)) {
+                    $decoded = json_decode($rawOpts, true);
+                    $rawOpts = is_array($decoded) ? $decoded : [];
+                } elseif (!is_array($rawOpts)) {
+                    $rawOpts = [];
+                }
+
+                $optMap = ['A' => '', 'B' => '', 'C' => '', 'D' => ''];
+                $keys = ['A', 'B', 'C', 'D'];
+                $idx = 0;
+                foreach ($rawOpts as $k => $val) {
+                    if (is_array($val)) {
+                        $optKey = $val['key'] ?? ($keys[$idx] ?? chr(65 + $idx));
+                        $optText = $val['text'] ?? $val['value'] ?? '';
+                        $optMap[$optKey] = $optText;
+                    } elseif (is_string($val)) {
+                        if (isset($optMap[$k])) {
+                            $optMap[$k] = $val;
+                        } elseif (isset($keys[$idx])) {
+                            $optMap[$keys[$idx]] = $val;
+                        }
+                    }
+                    $idx++;
                 }
             @endphp
-            <div style="background: rgba(0, 0, 0, 0.25); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 20px; margin-top: 24px;">
-                <h4 style="font-size: 15px; font-weight: 700; color: #818cf8; margin-bottom: 16px;">
+            <div style="background: rgba(248, 250, 252, 0.9); border: 1px solid #e2e8f0; border-radius: var(--radius-md); padding: 20px; margin-top: 24px;">
+                <h4 style="font-size: 15px; font-weight: 700; color: #4f46e5; margin-bottom: 16px;">
                     Multiple Choice Options
                 </h4>
 
@@ -142,34 +166,53 @@
                 <div class="form-group" style="max-width: 240px; margin-top: 6px;">
                     <label class="form-label">Correct Answer Key *</label>
                     <select name="correct_answer" class="form-control">
-                        <option value="A" {{ $question->correct_answer === 'A' ? 'selected' : '' }}>Option A</option>
-                        <option value="B" {{ $question->correct_answer === 'B' ? 'selected' : '' }}>Option B</option>
-                        <option value="C" {{ $question->correct_answer === 'C' ? 'selected' : '' }}>Option C</option>
-                        <option value="D" {{ $question->correct_answer === 'D' ? 'selected' : '' }}>Option D</option>
+                        <option value="A" {{ ($question->correct_answer ?? 'A') === 'A' ? 'selected' : '' }}>Option A</option>
+                        <option value="B" {{ ($question->correct_answer ?? '') === 'B' ? 'selected' : '' }}>Option B</option>
+                        <option value="C" {{ ($question->correct_answer ?? '') === 'C' ? 'selected' : '' }}>Option C</option>
+                        <option value="D" {{ ($question->correct_answer ?? '') === 'D' ? 'selected' : '' }}>Option D</option>
                     </select>
                 </div>
             </div>
         @elseif($question->type === 'CODING')
             @php
-                $starters = is_array($question->starter_code_json) ? $question->starter_code_json : json_decode($question->starter_code_json, true) ?? [];
+                $starters = $question->coding_starter_code ?? $question->starter_code_json ?? [];
+                if (is_string($starters)) {
+                    $starters = json_decode($starters, true) ?? [];
+                }
             @endphp
-            <div style="background: rgba(0, 0, 0, 0.25); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 22px; margin-top: 24px;">
-                <h4 style="font-size: 16px; font-weight: 700; color: #34d399; margin-bottom: 16px;">
+            <div style="background: rgba(248, 250, 252, 0.9); border: 1px solid #e2e8f0; border-radius: var(--radius-md); padding: 22px; margin-top: 24px;">
+                <h4 style="font-size: 16px; font-weight: 700; color: #059669; margin-bottom: 16px;">
                     Coding Challenge Specification
                 </h4>
+
+                <div class="form-group">
+                    <label class="form-label">Constraints</label>
+                    <input type="text" name="constraints" class="form-control mono" value="{{ old('constraints', $question->constraints) }}" placeholder="e.g. 1 <= N <= 10^5">
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div class="form-group">
+                        <label class="form-label">Sample Input (STDIN)</label>
+                        <textarea name="sample_input" class="form-control mono" rows="3">{{ old('sample_input', $question->sample_input) }}</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Sample Output (STDOUT)</label>
+                        <textarea name="sample_output" class="form-control mono" rows="3">{{ old('sample_output', $question->sample_output) }}</textarea>
+                    </div>
+                </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;">
                     <div class="form-group">
                         <label class="form-label">Entry Function Name</label>
-                        <input type="text" name="entry_function" class="form-control mono" value="{{ old('entry_function', $question->entry_function) }}">
+                        <input type="text" name="entry_function" class="form-control mono" value="{{ old('entry_function', $question->entry_function ?? 'solve') }}">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Public Cases Marks</label>
-                        <input type="number" step="0.5" name="public_weightage_marks" class="form-control" value="{{ old('public_weightage_marks', $question->public_weightage_marks) }}">
+                        <input type="number" step="0.5" name="public_weightage_marks" class="form-control" value="{{ old('public_weightage_marks', $question->public_weightage_marks ?? 10) }}">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Hidden Edge Cases Marks</label>
-                        <input type="number" step="0.5" name="hidden_weightage_marks" class="form-control" value="{{ old('hidden_weightage_marks', $question->hidden_weightage_marks) }}">
+                        <input type="number" step="0.5" name="hidden_weightage_marks" class="form-control" value="{{ old('hidden_weightage_marks', $question->hidden_weightage_marks ?? 40) }}">
                     </div>
                 </div>
 
@@ -186,15 +229,15 @@
                 </div>
 
                 <!-- VISUAL PUBLIC TEST CASES BUILDER -->
-                <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border-color);">
+                <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
                     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
                         <div>
-                            <h5 style="font-size: 14px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 6px;">
-                                <i data-lucide="eye" style="width: 16px; height: 16px; color: #34d399;"></i>
+                            <h5 style="font-size: 14px; font-weight: 700; color: #0f172a; display: flex; align-items: center; gap: 6px;">
+                                <i data-lucide="eye" style="width: 16px; height: 16px; color: #059669;"></i>
                                 <span>Public Test Cases</span>
                             </h5>
                         </div>
-                        <button type="button" onclick="addPublicTestCase()" class="quick-action-btn secondary" style="font-size: 12px; padding: 6px 12px;">
+                        <button type="button" onclick="addPublicTestCase()" class="btn btn-secondary" style="font-size: 12px; padding: 6px 12px;">
                             <i data-lucide="plus" style="width: 14px; height: 14px;"></i>
                             <span>Add Public Test Case</span>
                         </button>
@@ -203,15 +246,15 @@
                 </div>
 
                 <!-- VISUAL HIDDEN TEST CASES BUILDER -->
-                <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border-color);">
+                <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
                     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
                         <div>
-                            <h5 style="font-size: 14px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 6px;">
-                                <i data-lucide="eye-off" style="width: 16px; height: 16px; color: #fbbf24;"></i>
+                            <h5 style="font-size: 14px; font-weight: 700; color: #0f172a; display: flex; align-items: center; gap: 6px;">
+                                <i data-lucide="eye-off" style="width: 16px; height: 16px; color: #d97706;"></i>
                                 <span>Hidden Edge Test Cases</span>
                             </h5>
                         </div>
-                        <button type="button" onclick="addHiddenTestCase()" class="quick-action-btn secondary" style="font-size: 12px; padding: 6px 12px;">
+                        <button type="button" onclick="addHiddenTestCase()" class="btn btn-secondary" style="font-size: 12px; padding: 6px 12px;">
                             <i data-lucide="plus" style="width: 14px; height: 14px;"></i>
                             <span>Add Hidden Test Case</span>
                         </button>
@@ -223,15 +266,15 @@
                 <textarea name="hidden_test_cases_json" id="hidden_test_cases_json" style="display:none;"></textarea>
             </div>
         @elseif($question->type === 'PARAGRAPH')
-            <div style="background: rgba(0, 0, 0, 0.25); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 22px; margin-top: 24px;">
+            <div style="background: rgba(248, 250, 252, 0.9); border: 1px solid #e2e8f0; border-radius: var(--radius-md); padding: 22px; margin-top: 24px;">
                 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
                     <div>
-                        <h4 style="font-size: 16px; font-weight: 700; color: #fbbf24; display: flex; align-items: center; gap: 8px;">
+                        <h4 style="font-size: 16px; font-weight: 700; color: #d97706; display: flex; align-items: center; gap: 8px;">
                             <i data-lucide="file-text" style="width: 18px; height: 18px;"></i>
                             <span>Descriptive Answer Evaluation Rubrics</span>
                         </h4>
                     </div>
-                    <button type="button" onclick="addRubricConcept()" class="quick-action-btn secondary" style="font-size: 12px; padding: 6px 12px;">
+                    <button type="button" onclick="addRubricConcept()" class="btn btn-secondary" style="font-size: 12px; padding: 6px 12px;">
                         <i data-lucide="plus" style="width: 14px; height: 14px;"></i>
                         <span>Add Evaluation Concept</span>
                     </button>
@@ -242,9 +285,9 @@
             </div>
         @endif
 
-        <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 32px; padding-top: 20px; border-top: 1px solid var(--border-color);">
-            <a href="{{ route('questions.index') }}" class="quick-action-btn secondary">Cancel</a>
-            <button type="submit" class="quick-action-btn">
+        <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 32px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
+            <a href="{{ route('questions.index') }}" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn btn-primary">
                 <i data-lucide="save" style="width: 16px; height: 16px;"></i>
                 <span>Save Changes</span>
             </button>
@@ -255,13 +298,24 @@
 
 @section('scripts')
 <script>
-    let publicTestCases = {!! json_encode(is_array($question->public_test_cases) ? $question->public_test_cases : (json_decode($question->public_test_cases, true) ?? [])) !!};
-    let hiddenTestCases = {!! json_encode(is_array($question->hidden_test_cases) ? $question->hidden_test_cases : (json_decode($question->hidden_test_cases, true) ?? [])) !!};
-    
     @php
-        $rawRubric = is_array($question->rubric_json) ? $question->rubric_json : (json_decode($question->rubric_json, true) ?? []);
-        $rawConcepts = $rawRubric['concepts'] ?? [];
+        $pubCases = $question->public_test_cases ?? [];
+        if (is_string($pubCases)) { $pubCases = json_decode($pubCases, true) ?? []; }
+        if (!is_array($pubCases)) { $pubCases = []; }
+
+        $hidCases = $question->hidden_test_cases ?? [];
+        if (is_string($hidCases)) { $hidCases = json_decode($hidCases, true) ?? []; }
+        if (!is_array($hidCases)) { $hidCases = []; }
+
+        $rawRubric = $question->rubric_json ?? [];
+        if (is_string($rawRubric)) { $rawRubric = json_decode($rawRubric, true) ?? []; }
+        if (!is_array($rawRubric)) { $rawRubric = []; }
+        $rawConcepts = is_array($rawRubric['concepts'] ?? null) ? $rawRubric['concepts'] : [];
     @endphp
+
+    let publicTestCases = {!! json_encode($pubCases) !!};
+    let hiddenTestCases = {!! json_encode($hidCases) !!};
+    
     let rubricConcepts = {!! json_encode(array_map(function($c) {
         return [
             'id' => $c['id'] ?? 'c1',
@@ -305,7 +359,7 @@
             container.appendChild(div);
         });
 
-        lucide.createIcons();
+        if (window.lucide) { lucide.createIcons(); }
     }
 
     function addPublicTestCase() {
@@ -356,7 +410,7 @@
             container.appendChild(div);
         });
 
-        lucide.createIcons();
+        if (window.lucide) { lucide.createIcons(); }
     }
 
     function addHiddenTestCase() {
@@ -413,7 +467,7 @@
             container.appendChild(div);
         });
 
-        lucide.createIcons();
+        if (window.lucide) { lucide.createIcons(); }
     }
 
     function addRubricConcept() {
@@ -441,8 +495,10 @@
 
         const rubricField = document.getElementById('rubric_json_raw');
         if (rubricField) {
+            const maxMarksInput = document.getElementById('max_marks_input');
+            const marksVal = maxMarksInput ? parseFloat(maxMarksInput.value) || 10 : 10;
             const rubricObj = {
-                max_marks: {{ $question->max_marks }},
+                max_marks: marksVal,
                 concepts: rubricConcepts.map(c => ({
                     id: c.id,
                     name: c.name,

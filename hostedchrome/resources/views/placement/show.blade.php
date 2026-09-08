@@ -8,7 +8,7 @@
         background: transparent;
         border: none;
         padding: 12px 20px;
-        color: var(--text-secondary);
+        color: #64748b;
         font-size: 13.5px;
         font-weight: 700;
         cursor: pointer;
@@ -20,19 +20,19 @@
         text-decoration: none;
     }
     .tab-btn:hover {
-        color: #fff;
+        color: #0f172a;
     }
     .tab-btn.active {
-        color: #818cf8;
-        border-bottom-color: #818cf8;
-        background: rgba(99, 102, 241, 0.08);
+        color: #4f46e5;
+        border-bottom-color: #4f46e5;
+        background: #eef2ff;
         border-radius: var(--radius-sm) var(--radius-sm) 0 0;
     }
     .code-badge-box {
         font-family: 'JetBrains Mono', monospace;
-        background: rgba(16, 185, 129, 0.15);
-        color: #34d399;
-        border: 1px solid rgba(16, 185, 129, 0.3);
+        background: #ecfdf5;
+        color: #059669;
+        border: 1px solid #a7f3d0;
         padding: 4px 10px;
         border-radius: 6px;
         font-size: 13.5px;
@@ -49,26 +49,26 @@
 <div class="space-y-6">
 
     <!-- Top Breadcrumb & Actions Row -->
-    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; margin-bottom: 24px;">
         <div>
-            <a href="{{ route('placement-exams.index') }}" style="display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: #818cf8; text-decoration: none; margin-bottom: 8px; font-weight: 600;">
+            <a href="{{ route('placement-exams.index') }}" style="display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: #4f46e5; text-decoration: none; margin-bottom: 8px; font-weight: 600;">
                 <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i>
                 <span>Back to Placement Drives</span>
             </a>
             <div style="display: flex; align-items: center; gap: 12px;">
-                <div style="width: 46px; height: 46px; border-radius: 12px; background: rgba(99, 102, 241, 0.15); border: 1px solid rgba(99, 102, 241, 0.3); display: flex; align-items: center; justify-content: center; font-size: 22px;">
+                <div style="width: 48px; height: 48px; border-radius: 14px; background: #eef2ff; border: 1px solid #c7d2fe; display: flex; align-items: center; justify-content: center; font-size: 22px;">
                     🏢
                 </div>
                 <div>
-                    <h1 style="font-size: 22px; font-weight: 800; color: #fff; margin-bottom: 2px;">
+                    <h1 style="font-size: 24px; font-weight: 800; color: #0f172a; margin-bottom: 2px; letter-spacing: -0.02em;">
                         {{ $placementExam->company_name }} &bull; {{ $placementExam->job_role }}
                     </h1>
-                    <div style="display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--text-secondary);">
-                        <span>Exam Code: <strong class="mono" style="color: #38bdf8;">{{ $placementExam->exam_code }}</strong></span>
+                    <div style="display: flex; align-items: center; gap: 10px; font-size: 12.5px; color: #64748b;">
+                        <span>Exam Code: <strong class="mono" style="color: #4f46e5;">{{ $placementExam->exam_code }}</strong></span>
                         <span>&bull;</span>
-                        <span>Package: <strong style="color: #34d399;">{{ $placementExam->package_lpa }}</strong></span>
+                        <span>Package: <strong style="color: #059669;">{{ $placementExam->package_lpa }}</strong></span>
                         <span>&bull;</span>
-                        <span>Drive Date: <strong style="color: #fff;">{{ $placementExam->exam_date }} ({{ $placementExam->start_time }} - {{ $placementExam->end_time }})</strong></span>
+                        <span>Drive Date: <strong style="color: #0f172a;">{{ $placementExam->exam_date }} ({{ $placementExam->start_time }} - {{ $placementExam->end_time }})</strong></span>
                     </div>
                 </div>
             </div>
@@ -76,13 +76,13 @@
 
         <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
             <!-- Download Excel/CSV Button -->
-            <a href="{{ route('placement-exams.exportCsv', $placementExam->id) }}" class="btn" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; font-weight: 800; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);">
+            <a href="{{ route('placement-exams.exportCsv', $placementExam->id) }}" class="btn btn-success" style="font-weight: 700; display: inline-flex; align-items: center; gap: 8px;">
                 <i data-lucide="file-spreadsheet" style="width: 18px; height: 18px;"></i>
                 <span>Download Access Codes (Excel/CSV)</span>
             </a>
 
             @if($canCreateQuestions)
-                <button type="button" class="btn btn-primary" onclick="openAiModal()" style="display: inline-flex; align-items: center; gap: 8px; font-weight: 800; background: linear-gradient(135deg, #6366f1, #06b6d4);">
+                <button type="button" class="btn btn-primary" onclick="openAiModal()" style="display: inline-flex; align-items: center; gap: 8px; font-weight: 800; background: linear-gradient(135deg, #4f46e5, #06b6d4);">
                     <i data-lucide="sparkles" style="width: 18px; height: 18px;"></i>
                     <span>AI Question Generator</span>
                 </button>
@@ -97,58 +97,50 @@
     </div>
 
     <!-- Quick Stats Grid -->
-    <div class="metrics-grid">
-        <div class="metric-card">
-            <div style="display: flex; align-items: center; justify-content: space-between;">
-                <div>
-                    <div class="metric-value" style="color: #38bdf8;">{{ $placementExam->candidates->count() }}</div>
-                    <div class="metric-label">Candidates Enrolled</div>
-                </div>
-                <div style="width: 40px; height: 40px; border-radius: 10px; background: rgba(56, 189, 248, 0.15); color: #38bdf8; display: flex; align-items: center; justify-content: center;">
-                    <i data-lucide="users" style="width: 20px; height: 20px;"></i>
-                </div>
+    <div class="metrics-grid" style="margin-bottom: 24px;">
+        <div class="metric-card" style="--accent-gradient: linear-gradient(90deg, #0284c7, #6366f1); --accent-color: #0284c7;">
+            <div class="metric-icon-box" style="color: #0284c7; background: #eff6ff;">
+                <i data-lucide="users" style="width: 24px; height: 24px;"></i>
+            </div>
+            <div class="metric-info">
+                <div class="metric-value">{{ $placementExam->candidates->count() }}</div>
+                <div class="metric-label">Candidates Enrolled</div>
             </div>
         </div>
 
-        <div class="metric-card">
-            <div style="display: flex; align-items: center; justify-content: space-between;">
-                <div>
-                    <div class="metric-value" style="color: #818cf8;">{{ $placementExam->questions->count() }}</div>
-                    <div class="metric-label">Questions in Bank</div>
-                </div>
-                <div style="width: 40px; height: 40px; border-radius: 10px; background: rgba(99, 102, 241, 0.15); color: #818cf8; display: flex; align-items: center; justify-content: center;">
-                    <i data-lucide="help-circle" style="width: 20px; height: 20px;"></i>
-                </div>
+        <div class="metric-card" style="--accent-gradient: linear-gradient(90deg, #6366f1, #3b82f6); --accent-color: #4f46e5;">
+            <div class="metric-icon-box" style="color: #4f46e5; background: #eef2ff;">
+                <i data-lucide="help-circle" style="width: 24px; height: 24px;"></i>
+            </div>
+            <div class="metric-info">
+                <div class="metric-value">{{ $placementExam->questions->count() }}</div>
+                <div class="metric-label">Questions in Bank</div>
             </div>
         </div>
 
-        <div class="metric-card">
-            <div style="display: flex; align-items: center; justify-content: space-between;">
-                <div>
-                    <div class="metric-value" style="color: #34d399;">{{ $placementExam->assignedTeachers->count() }}</div>
-                    <div class="metric-label">Delegated Faculty</div>
-                </div>
-                <div style="width: 40px; height: 40px; border-radius: 10px; background: rgba(16, 185, 129, 0.15); color: #34d399; display: flex; align-items: center; justify-content: center;">
-                    <i data-lucide="user-check" style="width: 20px; height: 20px;"></i>
-                </div>
+        <div class="metric-card" style="--accent-gradient: linear-gradient(90deg, #10b981, #06b6d4); --accent-color: #059669;">
+            <div class="metric-icon-box" style="color: #059669; background: #ecfdf5;">
+                <i data-lucide="user-check" style="width: 24px; height: 24px;"></i>
+            </div>
+            <div class="metric-info">
+                <div class="metric-value">{{ $placementExam->assignedTeachers->count() }}</div>
+                <div class="metric-label">Delegated Faculty</div>
             </div>
         </div>
 
-        <div class="metric-card">
-            <div style="display: flex; align-items: center; justify-content: space-between;">
-                <div>
-                    <div class="metric-value" style="color: #fbbf24;">&ge; {{ $placementExam->min_cgpa }}</div>
-                    <div class="metric-label">Min. CGPA Cutoff</div>
-                </div>
-                <div style="width: 40px; height: 40px; border-radius: 10px; background: rgba(245, 158, 11, 0.15); color: #fbbf24; display: flex; align-items: center; justify-content: center;">
-                    <i data-lucide="graduation-cap" style="width: 20px; height: 20px;"></i>
-                </div>
+        <div class="metric-card" style="--accent-gradient: linear-gradient(90deg, #f59e0b, #ec4899); --accent-color: #d97706;">
+            <div class="metric-icon-box" style="color: #d97706; background: #fffbeb;">
+                <i data-lucide="graduation-cap" style="width: 24px; height: 24px;"></i>
+            </div>
+            <div class="metric-info">
+                <div class="metric-value">&ge; {{ $placementExam->min_cgpa }}</div>
+                <div class="metric-label">Min. CGPA Cutoff</div>
             </div>
         </div>
     </div>
 
     <!-- Main Tabs Navigation Bar -->
-    <div style="background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--radius-lg) var(--radius-lg) 0 0; padding: 0 16px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border-color); overflow-x: auto;">
+    <div style="background: rgba(255, 255, 255, 0.95); border: 1px solid var(--border-color); border-radius: var(--radius-lg) var(--radius-lg) 0 0; padding: 0 16px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border-color); overflow-x: auto;">
         <a href="{{ route('placement-exams.show', [$placementExam->id, 'tab' => 'candidates']) }}" class="tab-btn {{ $activeTab === 'candidates' ? 'active' : '' }}">
             <i data-lucide="key" style="width: 16px; height: 16px;"></i>
             <span>Candidates &amp; Access Codes ({{ $placementExam->candidates->count() }})</span>
@@ -165,7 +157,7 @@
         </a>
 
         <a href="{{ route('placement-exams.show', [$placementExam->id, 'tab' => 'results']) }}" class="tab-btn {{ $activeTab === 'results' ? 'active' : '' }}">
-            <i data-lucide="award" style="width: 16px; height: 16px; color: #fbbf24;"></i>
+            <i data-lucide="award" style="width: 16px; height: 16px; color: #d97706;"></i>
             <span>Results &amp; Merit List</span>
         </a>
 
@@ -176,7 +168,7 @@
     </div>
 
     <!-- Tab Contents Container -->
-    <div style="background: var(--bg-secondary); border: 1px solid var(--border-color); border-top: none; border-radius: 0 0 var(--radius-lg) var(--radius-lg); padding: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.2);">
+    <div class="glass-card" style="border-top: none; border-radius: 0 0 var(--radius-lg) var(--radius-lg); padding: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.04);">
 
         <!-- ========================================== -->
         <!-- TAB 1: CANDIDATES ROSTER & SECRET CODES    -->
