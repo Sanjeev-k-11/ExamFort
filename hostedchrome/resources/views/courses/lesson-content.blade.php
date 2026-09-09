@@ -859,12 +859,12 @@
                         <!-- RIGHT PANEL: CODE EDITOR & TEST RUNNER -->
                         <div class="code-editor-panel">
                             <div class="editor-top-toolbar">
-                                <select class="editor-lang-select" id="sel-code-lang" onchange="handleLangChange()">
-                                    <option value="cpp">C++ (GCC 15+ / C++20)</option>
-                                    <option value="py">Python 3</option>
+                                <select class="editor-lang-select" id="sel-practice-lang" onchange="handlePracticeLangChange()">
+                                    <option value="cpp">C++20 (G++ 15.2)</option>
+                                    <option value="py">Python 3 (3.14)</option>
                                     <option value="java">Java 17 (OpenJDK)</option>
                                     <option value="js">JavaScript (Node.js 24)</option>
-                                    <option value="c">C (GCC 15+ / C17)</option>
+                                    <option value="c">C (GCC 15.2)</option>
                                 </select>
                                 <span style="font-size: 11.5px; color: #a5b4fc; font-weight: 700;">⚡ Live Sandbox Compiler</span>
                             </div>

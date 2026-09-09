@@ -37,7 +37,7 @@ class AssessmentEngine {
 
         this.supportedLanguages = {
             cpp: 'C++20 (G++ 15.2)',
-            c: 'C17 (GCC 15.2)',
+            c: 'C (GCC 15.2)',
             java: 'Java 17 (OpenJDK)',
             python: 'Python 3 (3.14)',
             javascript: 'JavaScript (Node.js 24)'
