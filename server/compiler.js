@@ -217,15 +217,19 @@ class EnterpriseMultiLanguageCompiler {
             case 'cpp':
             case 'c++': {
                 const srcPath = path.join(workDir, 'main.cpp');
-                const binPath = path.join(workDir, 'main.exe');
+                const binName = process.platform === 'win32' ? 'main.exe' : 'main.out';
+                const binPath = path.join(workDir, binName);
                 fs.writeFileSync(srcPath, code, 'utf8');
                 try {
-                    // Maximum optimization -O3, -std=c++20, 512MB stack expansion for deep recursion & DP
-                    execSync(`g++ "${srcPath}" -O3 -std=c++20 -Wall -static-libgcc -static-libstdc++ -static -Wl,--stack,536870912 -o "${binPath}"`, {
+                    // Fast, reliable C++20 compilation for both Linux (Render/Docker) and Windows
+                    execSync(`g++ "${srcPath}" -O3 -std=c++20 -Wall -o "${binPath}"`, {
                         cwd: workDir,
                         timeout: 10000,
                         stdio: 'pipe'
                     });
+                    if (process.platform !== 'win32') {
+                        try { fs.chmodSync(binPath, 0o755); } catch (_) {}
+                    }
                     return { success: true, target: binPath, timeMs: Date.now() - start };
                 } catch (err) {
                     const errText = (err.stderr || err.stdout || err.message).toString();
@@ -234,14 +238,18 @@ class EnterpriseMultiLanguageCompiler {
             }
             case 'c': {
                 const srcPath = path.join(workDir, 'main.c');
-                const binPath = path.join(workDir, 'main.exe');
+                const binName = process.platform === 'win32' ? 'main.exe' : 'main.out';
+                const binPath = path.join(workDir, binName);
                 fs.writeFileSync(srcPath, code, 'utf8');
                 try {
-                    execSync(`gcc "${srcPath}" -O3 -std=c17 -Wall -static -lm -Wl,--stack,536870912 -o "${binPath}"`, {
+                    execSync(`gcc "${srcPath}" -O3 -std=c17 -Wall -lm -o "${binPath}"`, {
                         cwd: workDir,
                         timeout: 10000,
                         stdio: 'pipe'
                     });
+                    if (process.platform !== 'win32') {
+                        try { fs.chmodSync(binPath, 0o755); } catch (_) {}
+                    }
                     return { success: true, target: binPath, timeMs: Date.now() - start };
                 } catch (err) {
                     const errText = (err.stderr || err.stdout || err.message).toString();
