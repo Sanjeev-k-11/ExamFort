@@ -137,7 +137,7 @@ class HierarchySeeder extends Seeder
                 'average_score' => 72,
                 'best_score' => 95,
                 'current_streak_days' => 7,
-                'password' => '123456',
+                'password' => 'password123',
                 'role' => 'CANDIDATE',
                 'access_code' => '123456',
                 'avatar_url' => 'https://res.cloudinary.com/dpkgmrpcx/image/upload/v1788429254/sanjeev_xagdte.jpg',
