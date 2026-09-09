@@ -107,12 +107,12 @@ async function seed() {
 
         // ---------------- CANDIDATES ----------------
         [
-            'CAND123456', '2201CS01', 'Aarav Kumar', 'aarav@nitp.ac.in', '+91 91234 56789',
+            'CAND123456', '2201CS01', 'Ankit Kumar', 'ankit.kumar@gmail.com', '+91 98765 43210',
             '12 Jan 2003', 'Bihar, India', 'National Institute of Technology (NIT Patna)',
             'B.Tech', 'Computer Science & Engineering', '2022 - 2026',
             'Final year CSE undergraduate passionate about full-stack engineering, distributed systems, and competitive programming.',
             'Secure SDE role in Tier-1 Technology Firm', 'Rank 1 in College Hackathon 2025; Solved 450+ LeetCode problems', 'Data Structures, AI, Cloud Architecture',
-            85, 12, 5, 3, 72, 95, 7, 'password123', 'CANDIDATE', '123456', null, 'ACTIVE', 'ORG_NITP',
+            85, 12, 5, 3, 72, 95, 7, 'password123', 'CANDIDATE', '123456', 'https://res.cloudinary.com/dpkgmrpcx/image/upload/v1788429254/sanjeev_xagdte.jpg', 'ACTIVE', 'ORG_NITP',
             'NITP_PRIN_01', 'TEACH_001', 'Student Candidate', 'Computer Science & Engineering', 0, 0,
             0, 0, 0, 0, 0, 0
         ],

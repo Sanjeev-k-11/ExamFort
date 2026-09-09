@@ -141,38 +141,55 @@ class EnterpriseMultiLanguageCompiler {
             const results = [];
             let allPassed = true;
             let totalRuntime = 0;
-            let combinedStdout = `[${lang.toUpperCase()} Engine: Compiled Successfully in ${compileResult.timeMs}ms]\n`;
-
-            for (let i = 0; i < testCases.length; i++) {
-                const tc = testCases[i];
-                const { stdin, display } = this.formatTestCaseInput(tc);
-                const expectedVal = tc.expected !== undefined ? tc.expected : tc.expected_output;
-                const expectedStr = this.formatExpected(expectedVal);
-
+            if (testCases.length === 0) {
                 const tStart = Date.now();
-                const runRes = await this.executeCompiledArtifact(lang, workDir, compileResult.target, stdin, tStart);
+                const runRes = await this.executeCompiledArtifact(lang, workDir, compileResult.target, '', tStart);
                 const tElapsed = Date.now() - tStart;
                 totalRuntime += tElapsed;
 
-                const actualTrimmed = (runRes.stdout || '').trim();
-                const isPassed = runRes.success && this.compareOutputs(actualTrimmed, expectedVal);
-
-                if (!isPassed) allPassed = false;
-
-                combinedStdout += `--- Test Case ${i + 1} [${isPassed ? 'PASSED ✓' : 'FAILED ✕'}] (${tElapsed}ms) ---\n`;
-                if (runRes.stdout) combinedStdout += `Stdout: ${runRes.stdout}\n`;
-                if (runRes.stderr) combinedStdout += `Stderr: ${runRes.stderr}\n`;
-
+                combinedStdout += `\n[Program Execution Output]\n${runRes.stdout || runRes.stderr || '(Process executed with 0 output)'}\n`;
                 results.push({
-                    testIndex: i + 1,
-                    input: display,
-                    expected: expectedStr,
-                    actual: runRes.success ? (actualTrimmed || '(No Output)') : (runRes.error || runRes.stderr || 'Runtime Error'),
-                    passed: isPassed,
+                    testIndex: 1,
+                    input: '(Standard Input / Main)',
+                    expected: 'Execution without errors',
+                    actual: runRes.stdout ? runRes.stdout.trim() : (runRes.stderr || 'Execution Success'),
+                    passed: runRes.success,
                     runtime: `${tElapsed} ms`,
-                    memory: `${runRes.memoryMB || (12 + Math.floor(Math.random() * 5)).toFixed(1)} MB`,
-                    isHidden: Boolean(tc.isHidden)
+                    memory: `${runRes.memoryMB || '14.2'} MB`,
+                    isHidden: false
                 });
+            } else {
+                for (let i = 0; i < testCases.length; i++) {
+                    const tc = testCases[i];
+                    const { stdin, display } = this.formatTestCaseInput(tc);
+                    const expectedVal = tc.expected !== undefined ? tc.expected : tc.expected_output;
+                    const expectedStr = this.formatExpected(expectedVal);
+
+                    const tStart = Date.now();
+                    const runRes = await this.executeCompiledArtifact(lang, workDir, compileResult.target, stdin, tStart);
+                    const tElapsed = Date.now() - tStart;
+                    totalRuntime += tElapsed;
+
+                    const actualTrimmed = (runRes.stdout || '').trim();
+                    const isPassed = runRes.success && this.compareOutputs(actualTrimmed, expectedVal);
+
+                    if (!isPassed) allPassed = false;
+
+                    combinedStdout += `--- Test Case ${i + 1} [${isPassed ? 'PASSED ✓' : 'FAILED ✕'}] (${tElapsed}ms) ---\n`;
+                    if (runRes.stdout) combinedStdout += `Stdout: ${runRes.stdout}\n`;
+                    if (runRes.stderr) combinedStdout += `Stderr: ${runRes.stderr}\n`;
+
+                    results.push({
+                        testIndex: i + 1,
+                        input: display,
+                        expected: expectedStr,
+                        actual: runRes.success ? (actualTrimmed || '(No Output)') : (runRes.error || runRes.stderr || 'Runtime Error'),
+                        passed: isPassed,
+                        runtime: `${tElapsed} ms`,
+                        memory: `${runRes.memoryMB || (12 + Math.floor(Math.random() * 5)).toFixed(1)} MB`,
+                        isHidden: Boolean(tc.isHidden)
+                    });
+                }
             }
 
             combinedStdout += `\n========================================\nSummary: ${results.filter(r => r.passed).length}/${results.length} Test Cases Passed in ${totalRuntime}ms total.`;

@@ -110,5 +110,43 @@ class HierarchySeeder extends Seeder
                 'max_exams_allowed' => 50,
             ]
         );
+
+        // 6. Student Candidate: Ankit Kumar (CAND123456)
+        User::updateOrCreate(
+            ['id' => 'CAND123456'],
+            [
+                'student_id' => '2201CS01',
+                'full_name' => 'Ankit Kumar',
+                'email' => 'ankit.kumar@gmail.com',
+                'phone' => '+91 98765 43210',
+                'org_id' => 'ORG_NITP',
+                'dob' => '12 Jan 2003',
+                'location' => 'Bihar, India',
+                'college_name' => 'National Institute of Technology (NIT Patna)',
+                'course' => 'B.Tech',
+                'stream' => 'Computer Science & Engineering',
+                'batch_years' => '2022 - 2026',
+                'bio' => 'Final year CSE undergraduate passionate about full-stack engineering, distributed systems, and competitive programming.',
+                'goal' => 'Secure SDE role in Tier-1 Technology Firm',
+                'achievements' => 'Rank 1 in College Hackathon 2025; Solved 450+ LeetCode problems',
+                'interests' => 'Data Structures, AI, Cloud Architecture',
+                'profile_completion_pct' => 85,
+                'exams_enrolled' => 12,
+                'exams_completed' => 5,
+                'upcoming_exams_count' => 3,
+                'average_score' => 72,
+                'best_score' => 95,
+                'current_streak_days' => 7,
+                'password' => '123456',
+                'role' => 'CANDIDATE',
+                'access_code' => '123456',
+                'avatar_url' => 'https://res.cloudinary.com/dpkgmrpcx/image/upload/v1788429254/sanjeev_xagdte.jpg',
+                'status' => 'ACTIVE',
+                'created_by_principal_id' => 'PRIN001',
+                'created_by_teacher_id' => 'TEACH001',
+                'designation' => 'Student Candidate',
+                'department' => 'Computer Science & Engineering',
+            ]
+        );
     }
 }

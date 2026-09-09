@@ -35,7 +35,7 @@ return new class extends Migration
             $table->boolean('is_code_only')->default(true); // Hidden from normal catalog, unlocks only via 6-digit code
             $table->boolean('is_results_published')->default(false);
             $table->string('created_by_principal_id', 50)->nullable();
-            $table->unsignedBigInteger('org_id')->nullable();
+            $table->string('org_id', 100)->nullable();
             $table->string('college_name', 255)->nullable();
             $table->timestamps();
 

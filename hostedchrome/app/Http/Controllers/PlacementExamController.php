@@ -77,10 +77,22 @@ class PlacementExamController extends Controller
         $placementExams = $query->paginate(12);
 
         // Summary metrics
-        $totalDrives = PlacementExam::count();
-        $activeDrives = PlacementExam::where('status', 'ACTIVE')->count();
-        $totalEnrolled = PlacementExamCandidate::count();
-        $completedDrives = PlacementExam::where('status', 'COMPLETED')->count();
+        if ($isPrincipalOrAdmin && $user && $user->org_id) {
+            $baseMetricQuery = PlacementExam::where(function ($q) use ($user) {
+                $q->where('org_id', $user->org_id)->orWhereNull('org_id');
+            });
+            $totalDrives = (clone $baseMetricQuery)->count();
+            $activeDrives = (clone $baseMetricQuery)->where('status', 'ACTIVE')->count();
+            $completedDrives = (clone $baseMetricQuery)->where('status', 'COMPLETED')->count();
+            $totalEnrolled = PlacementExamCandidate::whereHas('placementExam', function ($pq) use ($user) {
+                $pq->where('org_id', $user->org_id)->orWhereNull('org_id');
+            })->count();
+        } else {
+            $totalDrives = PlacementExam::count();
+            $activeDrives = PlacementExam::where('status', 'ACTIVE')->count();
+            $completedDrives = PlacementExam::where('status', 'COMPLETED')->count();
+            $totalEnrolled = PlacementExamCandidate::count();
+        }
 
         return view('placement.index', compact(
             'placementExams', 'totalDrives', 'activeDrives', 'totalEnrolled', 'completedDrives',

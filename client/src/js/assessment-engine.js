@@ -2205,8 +2205,10 @@ class AssessmentEngine {
                 body: JSON.stringify({
                     code,
                     questionNumber: q.question_number,
-                    examCode: this.examCode,
+                    questionId: q.id,
+                    examCode: this.examCode || q.exam_code,
                     language: this.selectedLanguage,
+                    testCases: q.public_test_cases || q.test_cases || [],
                     customInput: customInputChecked ? customInputText : undefined
                 })
             });

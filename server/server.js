@@ -30,10 +30,10 @@ if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && proce
     });
     console.log(`☁️ [Cloudinary] Initialized with Cloud Name: "${process.env.CLOUDINARY_CLOUD_NAME}"`);
 } else {
-    console.log('ℹ️ [Cloudinary] Credentials not set in .env — using high-performance MySQL photo storage.');
+    console.log('ℹ️ [Cloudinary] Credentials not set in .env — using high-performance database photo storage.');
 }
 
-// In-Memory Telemetry & Violation Store (Easily swappable with MySQL / PostgreSQL)
+// In-Memory Telemetry & Violation Store (Easily swappable with database / PostgreSQL)
 const activeSessions = new Map();
 const recordedViolations = [];
 
@@ -172,7 +172,7 @@ app.get('/download', (req, res) => {
     `);
 });
 
-// 2. Real Candidate Authentication from MySQL Database
+// 2. Real Candidate Authentication from database Database
 app.post('/api/auth/login', async (req, res) => {
     const { userId, password, agreement } = req.body;
     
@@ -180,7 +180,7 @@ app.post('/api/auth/login', async (req, res) => {
         return res.status(400).json({ success: false, message: 'User ID and Password are required.' });
     }
 
-    console.log(`[Auth] MySQL login attempt: ${userId}`);
+    console.log(`[Auth] database login attempt: ${userId}`);
 
     const result = await db.validateCredentials(userId, password);
 
@@ -204,11 +204,11 @@ app.post('/api/auth/login', async (req, res) => {
             accessCode: user.accessCode,
             status: user.status
         },
-        message: 'Authentication successful from MySQL.'
+        message: 'Authentication successful from database.'
     });
 });
 
-// 3. Real Exam Access Code Verification from MySQL Database
+// 3. Real Exam Access Code Verification from database Database
 const handleVerifyCode = async (req, res) => {
     const fullName = req.body.fullName || req.body.name;
     const accessCode = req.body.accessCode || req.body.code;
@@ -217,7 +217,7 @@ const handleVerifyCode = async (req, res) => {
         return res.status(400).json({ success: false, message: 'Please enter a valid candidate name and access code.' });
     }
 
-    console.log(`[Access Code] Verifying access code in MySQL: ${accessCode} for candidate: ${fullName}`);
+    console.log(`[Access Code] Verifying access code in database: ${accessCode} for candidate: ${fullName}`);
 
     const result = await db.validateAccessCode(accessCode, fullName);
 
@@ -243,7 +243,7 @@ const handleVerifyCode = async (req, res) => {
             examTitle: exam ? exam.title : null,
             status: 'ACCESS_GRANTED'
         },
-        message: 'Exam access code verified successfully from MySQL.'
+        message: 'Exam access code verified successfully from database.'
     });
 };
 
@@ -263,7 +263,7 @@ app.post('/api/system/verify', (req, res) => {
     });
 });
 
-// 4B. User Profile - GET, PUT, PATCH (100% Pure MySQL)
+// 4B. User Profile - GET, PUT, PATCH (100% Pure database)
 app.get('/api/user/profile/:id', async (req, res) => {
     const result = await db.getUserProfile(req.params.id);
     return res.status(result.success ? 200 : 404).json(result);
@@ -318,7 +318,7 @@ function analyzeImageQuality(base64Str) {
     }
 }
 
-// 4B2. Live Face Verification & Biometric Profile Photo Storage (Cloudinary + MySQL)
+// 4B2. Live Face Verification & Biometric Profile Photo Storage (Cloudinary + database)
 app.post('/api/user/face-verify', async (req, res) => {
     try {
         const { candidateId, imageBase64, examCode } = req.body;
@@ -340,7 +340,7 @@ app.post('/api/user/face-verify', async (req, res) => {
             });
         }
 
-        // 2. Fetch candidate profile from MySQL to compare with registered profile photo
+        // 2. Fetch candidate profile from database to compare with registered profile photo
         const profileRes = await db.getUserProfile(candidateId);
         const existingProfile = profileRes?.profile || profileRes;
         const existingAvatar = existingProfile?.avatar_url;
@@ -406,7 +406,7 @@ app.post('/api/user/face-verify', async (req, res) => {
         }
 
         let finalImageUrl = imageBase64;
-        let storageProvider = 'MYSQL_BASE64';
+        let storageProvider = 'database_BASE64';
 
         // Upload to Cloudinary if credentials are configured
         if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET) {
@@ -423,11 +423,11 @@ app.post('/api/user/face-verify', async (req, res) => {
                     console.log(`☁️ [Cloudinary] Stored verified photo: ${finalImageUrl}`);
                 }
             } catch (cErr) {
-                console.warn('⚠️ [Cloudinary Upload Warning]:', cErr.message, '— falling back to MySQL storage.');
+                console.warn('⚠️ [Cloudinary Upload Warning]:', cErr.message, '— falling back to database storage.');
             }
         }
 
-        // Persist verified photo into MySQL users table (avatar_url)
+        // Persist verified photo into database users table (avatar_url)
         const saveRes = await db.saveVerifiedFace(candidateId, finalImageUrl);
 
         return res.status(200).json({
@@ -456,13 +456,13 @@ app.post('/api/admin/exam/configure-verification', async (req, res) => {
     return res.status(result.success ? 200 : 500).json(result);
 });
 
-// 4C. User Activities (100% Pure MySQL)
+// 4C. User Activities (100% Pure database)
 app.get('/api/user/activities/:id', async (req, res) => {
     const result = await db.getStudentActivities(req.params.id);
     return res.status(200).json(result);
 });
 
-// 4D. Support Tickets - POST (create), GET (list), DELETE, PATCH (100% Pure MySQL)
+// 4D. Support Tickets - POST (create), GET (list), DELETE, PATCH (100% Pure database)
 app.post('/api/support/ticket', async (req, res) => {
     const result = await db.createSupportTicket(req.body);
     return res.status(result.success ? 200 : 500).json(result);
@@ -484,7 +484,7 @@ app.patch('/api/support/ticket/:ticketId', async (req, res) => {
     return res.status(result.success ? 200 : 400).json(result);
 });
 
-// 4E. Retrieve Evaluation Submission Results for Candidate (100% Pure MySQL for completed.html)
+// 4E. Retrieve Evaluation Submission Results for Candidate (100% Pure database for completed.html)
 app.get('/api/exam/submission/:candidateId/:examCode', async (req, res) => {
     const { candidateId, examCode } = req.params;
     const result = await db.getCandidateSubmission(candidateId, examCode || 'NAT-2026-EXAM');
@@ -515,7 +515,7 @@ app.get('/api/user/exams/:candidateId', async (req, res) => {
     return res.status(200).json(result);
 });
 
-// 4G. Courses & Lessons Management (100% Pure MySQL)
+// 4G. Courses & Lessons Management (100% Pure database)
 app.get('/api/courses', async (req, res) => {
     const result = await db.getAllCourses();
     return res.status(200).json(result);
@@ -524,7 +524,7 @@ app.get('/api/courses', async (req, res) => {
 app.get('/api/courses/:courseId', async (req, res) => {
     const result = await db.getCourseDetails(req.params.courseId);
     if (!result || !result.course) {
-        return res.status(404).json({ success: false, message: 'Course not found in MySQL.' });
+        return res.status(404).json({ success: false, message: 'Course not found in database.' });
     }
     return res.status(200).json({
         success: true,
@@ -553,14 +553,14 @@ app.post('/api/courses/practice/submit-mcq', async (req, res) => {
     return res.status(result.success ? 200 : 400).json(result);
 });
 
-// Real-Time 5-Second Continuous Auto-Save Draft Endpoint (MySQL-backed)
+// Real-Time 5-Second Continuous Auto-Save Draft Endpoint (database-backed)
 app.post('/api/courses/practice/auto-save-draft', async (req, res) => {
     const { candidateId, courseId, lessonNum, problemNumber, language, code, mcqAnswers } = req.body;
     const result = await db.savePracticeDraft(candidateId, courseId, lessonNum, problemNumber, language, code, mcqAnswers);
     return res.status(result.success ? 200 : 500).json(result);
 });
 
-// Final Coding Submission Endpoint (Scores + full test verdicts recorded in MySQL)
+// Final Coding Submission Endpoint (Scores + full test verdicts recorded in database)
 app.post('/api/courses/practice/submit-coding', async (req, res) => {
     const { candidateId, courseId, lessonNum, problemNumber, language, code, results, allPassed } = req.body;
     const result = await db.submitCodingPractice(candidateId, courseId, lessonNum, problemNumber, language, code, results, allPassed);
@@ -587,7 +587,7 @@ app.post('/api/courses/practice/run-code', async (req, res) => {
         const lnum = lessonNum || '1.1';
         const langLower = (language || 'cpp').toLowerCase();
 
-        // 1. Fetch coding problem & test cases from MySQL (Supports multi-problem challenges per lesson)
+        // 1. Fetch coding problem & test cases from database (Supports multi-problem challenges per lesson)
         let query = 'SELECT * FROM course_topic_coding WHERE course_id = ? AND lesson_num = ?';
         let params = [cid, lnum];
         if (problemId) {
@@ -634,7 +634,7 @@ app.post('/api/courses/practice/run-code', async (req, res) => {
         // 3. Evaluate against test cases suite
         const suiteResult = await compiler.evaluateSuite(langLower, code, testCases);
 
-        // 4. Save practice history asynchronously to MySQL (Stores full code + test case results!)
+        // 4. Save practice history asynchronously to database (Stores full code + test case results!)
         if (suiteResult.results && suiteResult.results.length > 0) {
             const passedCount = suiteResult.results.filter(r => r.passed).length;
             const totalCount = suiteResult.results.length;
@@ -684,7 +684,7 @@ app.post('/api/courses/practice/run-code', async (req, res) => {
     }
 });
 
-// 4I. Admin Content Upload & Management API (100% MySQL Backed)
+// 4I. Admin Content Upload & Management API (100% database Backed)
 app.post('/api/admin/courses/save', async (req, res) => {
     const result = await db.adminSaveCourse(req.body);
     return res.status(result.success ? 200 : 400).json(result);
@@ -710,12 +710,12 @@ app.post('/api/admin/courses/coding/save', async (req, res) => {
     return res.status(result.success ? 200 : 400).json(result);
 });
 
-// 5. Fetch Live Exam Details from MySQL
+// 5. Fetch Live Exam Details from database
 app.get('/api/exam/details/:examCode', async (req, res) => {
     const examCode = req.params.examCode || 'NAT-2026-EXAM';
     const exam = await db.getExamDetails(examCode);
     if (!exam) {
-        return res.status(404).json({ success: false, message: 'Exam not found in MySQL.' });
+        return res.status(404).json({ success: false, message: 'Exam not found in database.' });
     }
     return res.status(200).json({ success: true, exam });
 });
@@ -769,7 +769,7 @@ app.get('/api/exam/questions/:examCode', async (req, res) => {
     });
 });
 
-// 6. Submit Complete Exam to MySQL Database (Evaluated in Sandbox & Saved Securely)
+// 6. Submit Complete Exam to database Database (Evaluated in Sandbox & Saved Securely)
 app.post('/api/exam/submit', async (req, res) => {
     const { candidateId, examCode, answers } = req.body;
 
@@ -801,7 +801,7 @@ app.get('/api/exam/check-attempt/:candidateId/:examCode', async (req, res) => {
     return res.status(200).json(result);
 });
 
-// 6C. Get Exam Instructions Directly From MySQL
+// 6C. Get Exam Instructions Directly From database
 app.get('/api/exam/instructions/:examCode', async (req, res) => {
     const { examCode } = req.params;
     const result = await db.getExamInstructions(examCode || 'NAT-2026-EXAM');
@@ -832,20 +832,20 @@ app.post('/api/admin/exam/reschedule', async (req, res) => {
     return res.status(result.success ? 200 : 500).json(result);
 });
 
-// 6E. Fetch All Courses From MySQL
+// 6E. Fetch All Courses From database
 app.get('/api/courses', async (req, res) => {
     const result = await db.getAllCourses();
     return res.status(200).json(result);
 });
 
-// 6F. Fetch Specific Course Details & Lessons From MySQL
+// 6F. Fetch Specific Course Details & Lessons From database
 app.get('/api/courses/:courseId', async (req, res) => {
     const { courseId } = req.params;
     const result = await db.getCourseDetails(courseId || 'course-cpp');
     return res.status(result.success ? 200 : 404).json(result);
 });
 
-// 6G. Update & Store Lesson Progress in MySQL
+// 6G. Update & Store Lesson Progress in database
 app.post('/api/courses/lesson/complete', async (req, res) => {
     const { courseId, lessonNum, isCompleted } = req.body;
     if (!courseId || !lessonNum) {
@@ -855,7 +855,7 @@ app.post('/api/courses/lesson/complete', async (req, res) => {
     return res.status(result.success ? 200 : 500).json(result);
 });
 
-// 7. 5-Second Real-Time Auto-Save Draft to MySQL
+// 7. 5-Second Real-Time Auto-Save Draft to database
 app.post('/api/exam/save-draft', async (req, res) => {
     const { candidateId, examCode, answers } = req.body;
     if (!candidateId) return res.status(400).json({ success: false, message: 'Missing candidateId' });
@@ -873,35 +873,63 @@ app.get('/api/exam/get-draft/:candidateId/:examCode', async (req, res) => {
 
 // 9. Multi-Language Live Code Runner / Compiler (C, C++, Java, Python, JavaScript)
 app.post('/api/exam/run-code', async (req, res) => {
-    const { code, questionNumber, examCode, language = 'javascript', customInput } = req.body;
+    const { code, questionNumber, questionId, examCode, language = 'javascript', customInput, testCases: clientTestCases } = req.body;
     const compiler = require('./compiler');
     const judge = require('./judge');
 
     try {
-        if (!db.pool) return res.status(500).json({ success: false, error: 'MySQL database is offline.' });
-
-        let [rows] = await db.pool.query(
-            'SELECT * FROM questions WHERE exam_code = ? AND question_number = ? LIMIT 1',
-            [examCode || 'NAT-2026-EXAM', questionNumber]
-        );
-
-        if (rows.length === 0) {
-            [rows] = await db.pool.query(
-                'SELECT * FROM questions WHERE question_number = ? LIMIT 1',
-                [questionNumber]
-            );
-        }
-
-        if (rows.length === 0) {
-            return res.status(404).json({ success: false, error: 'Question not found in MySQL.' });
-        }
-
-        const q = rows[0];
+        let allCases = [];
         const langLower = (language || 'javascript').toLowerCase();
-        const publicCases = judge.parseJsonField(q.public_test_cases, []).map(tc => ({ ...tc, isHidden: false }));
-        const hiddenCases = judge.parseJsonField(q.hidden_test_cases, []).map(tc => ({ ...tc, isHidden: true }));
-        const allCases = [...publicCases, ...hiddenCases];
 
+        // 1. Try to find question from Database if database is online
+        if (db && db.pool) {
+            try {
+                let rows = [];
+                if (questionId) {
+                    [rows] = await db.pool.query(
+                        'SELECT * FROM questions WHERE id = ? LIMIT 1',
+                        [questionId]
+                    );
+                }
+
+                if (rows.length === 0 && examCode && (questionNumber !== undefined && questionNumber !== null)) {
+                    [rows] = await db.pool.query(
+                        'SELECT * FROM questions WHERE exam_code = ? AND question_number = ? LIMIT 1',
+                        [examCode, questionNumber]
+                    );
+                }
+
+                if (rows.length === 0 && examCode) {
+                    [rows] = await db.pool.query(
+                        'SELECT * FROM questions WHERE exam_code = ? AND (question_number = ? OR id = ?) LIMIT 1',
+                        [examCode, questionNumber || 0, questionNumber || 0]
+                    );
+                }
+
+                if (rows.length === 0 && (questionNumber !== undefined && questionNumber !== null)) {
+                    [rows] = await db.pool.query(
+                        'SELECT * FROM questions WHERE question_number = ? LIMIT 1',
+                        [questionNumber]
+                    );
+                }
+
+                if (rows.length > 0) {
+                    const q = rows[0];
+                    const publicCases = judge.parseJsonField(q.public_test_cases, []).map(tc => ({ ...tc, isHidden: false }));
+                    const hiddenCases = judge.parseJsonField(q.hidden_test_cases, []).map(tc => ({ ...tc, isHidden: true }));
+                    allCases = [...publicCases, ...hiddenCases];
+                }
+            } catch (dbErr) {
+                console.warn('⚠️ DB query notice in run-code:', dbErr.message);
+            }
+        }
+
+        // 2. Fallback to client-provided test cases
+        if (allCases.length === 0 && Array.isArray(clientTestCases) && clientTestCases.length > 0) {
+            allCases = clientTestCases.map(tc => ({ ...tc, isHidden: tc.isHidden || false }));
+        }
+
+        // 3. Compile & Execute Code Sandbox
         const suiteResult = await compiler.evaluateSuite(langLower, code, allCases, customInput);
 
         return res.status(200).json({
@@ -918,7 +946,7 @@ app.post('/api/exam/run-code', async (req, res) => {
             results: suiteResult.results || [],
             totalCases: suiteResult.results ? suiteResult.results.length : 0,
             totalPassed: suiteResult.results ? suiteResult.results.filter(r => r.passed).length : 0,
-            notice: suiteResult.allPassed ? `All ${suiteResult.results.length} Test Cases Passed! 🚀` : 'Execution finished. Check test cases output.'
+            notice: suiteResult.allPassed ? `All ${suiteResult.results ? suiteResult.results.length : 0} Test Cases Passed! 🚀` : 'Execution finished. Check test cases output.'
         });
     } catch (err) {
         console.error('❌ Exam Compiler Error:', err);
@@ -938,12 +966,12 @@ app.post('/api/exam/run-code', async (req, res) => {
     }
 });
 
-// 12. Log Violation Endpoint into MySQL Database
+// 12. Log Violation Endpoint into database Database
 app.post('/api/violations/log', async (req, res) => {
     const violation = req.body;
     const logged = await db.logViolation(violation);
-    console.warn(`[MySQL Violation Logged] ${violation.type}: ${violation.details}`);
-    return res.status(200).json({ success: true, message: 'Violation logged into MySQL', id: logged?.id });
+    console.warn(`[database Violation Logged] ${violation.type}: ${violation.details}`);
+    return res.status(200).json({ success: true, message: 'Violation logged into database', id: logged?.id });
 });
 
 // 13. Get Active Violations (For Invigilator Dashboard)

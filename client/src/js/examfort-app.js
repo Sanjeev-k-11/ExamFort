@@ -861,7 +861,13 @@ class ExamFortApp {
             const res = await fetch(`${this.backendUrl}/api/exam/run-code`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ code, questionNumber: q.question_number })
+                body: JSON.stringify({
+                    code,
+                    questionNumber: q?.question_number,
+                    questionId: q?.id,
+                    examCode: this.examCode || q?.exam_code,
+                    testCases: q?.public_test_cases || q?.test_cases || []
+                })
             });
 
             const data = await res.json();
