@@ -45,12 +45,28 @@ class AssessmentEngine {
 
         const candId = this.getCandidateId();
         const warnKey = `exam_warnings_${candId}_${this.examCode}`;
-        const savedWarnings = parseInt(localStorage.getItem(warnKey) || sessionStorage.getItem(warnKey) || '0', 10);
+        const fallbackWarnKey = `exam_warnings_${this.examCode}`;
+        const savedWarnings = parseInt(
+            localStorage.getItem(warnKey) || 
+            sessionStorage.getItem(warnKey) || 
+            localStorage.getItem(fallbackWarnKey) || 
+            sessionStorage.getItem(fallbackWarnKey) || 
+            '0', 
+            10
+        );
         this.warningCount = isNaN(savedWarnings) ? 0 : savedWarnings;
         this.maxWarnings = 10;
 
         const secLockKey = `exam_section_lock_${candId}_${this.examCode}`;
-        const savedSecIndex = parseInt(localStorage.getItem(secLockKey) || sessionStorage.getItem(secLockKey) || '0', 10);
+        const fallbackSecKey = `exam_section_lock_${this.examCode}`;
+        const savedSecIndex = parseInt(
+            localStorage.getItem(secLockKey) || 
+            sessionStorage.getItem(secLockKey) || 
+            localStorage.getItem(fallbackSecKey) || 
+            sessionStorage.getItem(fallbackSecKey) || 
+            '0', 
+            10
+        );
         this.maxActiveSectionIndex = isNaN(savedSecIndex) ? 0 : savedSecIndex;
         this.pendingSectionTransition = null;
 
@@ -86,6 +102,9 @@ class AssessmentEngine {
                 headerBadge.textContent = `${this.warningCount} / ${this.maxWarnings}`;
                 if (this.warningCount >= 7) headerBadge.style.color = '#ef4444';
             }
+
+            // Immediately start timer from persistent target end time so refresh has zero flicker
+            this.startTimer();
         } catch (uiErr) {
             console.error('UI setup warning:', uiErr);
         }
@@ -181,7 +200,8 @@ class AssessmentEngine {
 
     async checkExistingSubmission() {
         const urlParams = new URLSearchParams(window.location.search);
-        let isReattemptMode = urlParams.get('reattempt') === '1' || 
+        let isReattemptParam = urlParams.get('reattempt') === '1';
+        let isReattemptMode = isReattemptParam || 
                               sessionStorage.getItem(`is_reattempt_${this.examCode}`) === 'true' ||
                               sessionStorage.getItem('is_reattempt') === 'true';
 
@@ -190,10 +210,18 @@ class AssessmentEngine {
         const autoSubKey = `exam_auto_submitted_${candId}_${this.examCode}`;
         const timeExpiredKey = `exam_time_expired_${candId}_${this.examCode}`;
         const endKey = `exam_end_time_${candId}_${this.examCode}`;
+        const fallbackEndKey = `exam_end_time_${this.examCode}`;
         const warnKey = `exam_warnings_${candId}_${this.examCode}`;
+        const fallbackWarnKey = `exam_warnings_${this.examCode}`;
         const secLockKey = `exam_section_lock_${candId}_${this.examCode}`;
+        const fallbackSecKey = `exam_section_lock_${this.examCode}`;
 
-        // Check local markers first
+        // If this is an active exam that is currently in progress (targetEndTime is in future),
+        // refreshing the page MUST NOT wipe the timer or warnings!
+        const existingEndTime = parseInt(localStorage.getItem(endKey) || sessionStorage.getItem(endKey) || localStorage.getItem(fallbackEndKey) || '0', 10);
+        const isExamCurrentlyActive = existingEndTime > Date.now();
+
+        // Check local markers
         const isLocallySubmitted = localStorage.getItem(localKey) === 'true' || 
                                    sessionStorage.getItem(localKey) === 'true' ||
                                    localStorage.getItem(autoSubKey) === 'true' ||
@@ -209,7 +237,6 @@ class AssessmentEngine {
             if (data && data.hasSubmitted) {
                 isServerSubmitted = true;
                 if (data.isReattemptAuthorized) {
-                    // Admin has officially authorized a reattempt!
                     isReattemptAuthorized = true;
                     isReattemptMode = true;
                     adminReattemptReason = data.reattemptReason || '';
@@ -221,7 +248,8 @@ class AssessmentEngine {
             }
         } catch (_) {}
 
-        if (isReattemptAuthorized || isReattemptMode) {
+        // Reset flags ONLY if a fresh reattempt is being started (not when candidate is refreshing an active test)
+        if ((isReattemptAuthorized || isReattemptMode) && !isExamCurrentlyActive) {
             console.log('🔄 [Assessment Engine] Authorized Reattempt session initialized. Resetting submission flags.');
             localStorage.removeItem(localKey);
             sessionStorage.removeItem(localKey);
@@ -233,17 +261,34 @@ class AssessmentEngine {
             sessionStorage.removeItem(timeExpiredKey);
             sessionStorage.removeItem(`is_reattempt_${this.examCode}`);
             sessionStorage.removeItem('is_reattempt');
-            if (urlParams.get('reattempt') === '1' || isReattemptAuthorized) {
-                localStorage.removeItem(endKey);
-                sessionStorage.removeItem(endKey);
-                localStorage.removeItem(warnKey);
-                sessionStorage.removeItem(warnKey);
-                localStorage.removeItem(secLockKey);
-                sessionStorage.removeItem(secLockKey);
-                this.warningCount = 0;
-                this.maxActiveSectionIndex = 0;
+
+            localStorage.removeItem(endKey);
+            sessionStorage.removeItem(endKey);
+            localStorage.removeItem(fallbackEndKey);
+            sessionStorage.removeItem(fallbackEndKey);
+            localStorage.removeItem(warnKey);
+            sessionStorage.removeItem(warnKey);
+            localStorage.removeItem(fallbackWarnKey);
+            sessionStorage.removeItem(fallbackWarnKey);
+            localStorage.removeItem(secLockKey);
+            sessionStorage.removeItem(secLockKey);
+            localStorage.removeItem(fallbackSecKey);
+            sessionStorage.removeItem(fallbackSecKey);
+            this.warningCount = 0;
+            this.maxActiveSectionIndex = 0;
+
+            // Strip reattempt parameter from URL so subsequent page refreshes do not re-trigger wipe
+            if (window.history && window.history.replaceState) {
+                const cleanUrl = window.location.pathname + (this.examCode ? `?code=${encodeURIComponent(this.examCode)}` : '');
+                window.history.replaceState(null, document.title, cleanUrl);
             }
             return false;
+        }
+
+        // If reattempt was active and candidate refreshed, strip the URL param cleanly without wiping
+        if (isReattemptParam && window.history && window.history.replaceState) {
+            const cleanUrl = window.location.pathname + (this.examCode ? `?code=${encodeURIComponent(this.examCode)}` : '');
+            window.history.replaceState(null, document.title, cleanUrl);
         }
 
         if (isServerSubmitted || isLocallySubmitted) {
@@ -750,9 +795,12 @@ class AssessmentEngine {
         this.warningCount++;
         const candId = this.getCandidateId();
         const warnKey = `exam_warnings_${candId}_${this.examCode}`;
+        const fallbackWarnKey = `exam_warnings_${this.examCode}`;
         try {
             localStorage.setItem(warnKey, this.warningCount.toString());
             sessionStorage.setItem(warnKey, this.warningCount.toString());
+            localStorage.setItem(fallbackWarnKey, this.warningCount.toString());
+            sessionStorage.setItem(fallbackWarnKey, this.warningCount.toString());
         } catch (_) {}
 
         console.warn(`[Proctoring] Strike ${this.warningCount}/${this.maxWarnings}: ${type} - ${details}`);
@@ -1655,8 +1703,13 @@ class AssessmentEngine {
         this.maxActiveSectionIndex = Math.max(this.maxActiveSectionIndex, targetSecIdx);
         const candId = this.getCandidateId();
         const secLockKey = `exam_section_lock_${candId}_${this.examCode}`;
-        localStorage.setItem(secLockKey, this.maxActiveSectionIndex.toString());
-        sessionStorage.setItem(secLockKey, this.maxActiveSectionIndex.toString());
+        const fallbackSecKey = `exam_section_lock_${this.examCode}`;
+        try {
+            localStorage.setItem(secLockKey, this.maxActiveSectionIndex.toString());
+            sessionStorage.setItem(secLockKey, this.maxActiveSectionIndex.toString());
+            localStorage.setItem(fallbackSecKey, this.maxActiveSectionIndex.toString());
+            sessionStorage.setItem(fallbackSecKey, this.maxActiveSectionIndex.toString());
+        } catch (_) {}
 
         this.currentIndex = targetQIdx;
         this.renderDynamicSectionSwitcher();
@@ -1850,7 +1903,14 @@ class AssessmentEngine {
         if (marksEl) marksEl.textContent = details.total_marks || '120';
         if (qCountEl) qCountEl.textContent = `${this.questions.length || 13} / ${this.questions.length || 13}`;
 
-        this.timerSeconds = (details.duration_minutes || 120) * 60;
+        const candId = this.getCandidateId();
+        const endKey = `exam_end_time_${candId}_${this.examCode}`;
+        const fallbackEndKey = `exam_end_time_${this.examCode}`;
+        const existingEnd = parseInt(localStorage.getItem(endKey) || sessionStorage.getItem(endKey) || localStorage.getItem(fallbackEndKey) || '0', 10);
+        if (!existingEnd || isNaN(existingEnd)) {
+            this.timerSeconds = (details.duration_minutes || 120) * 60;
+            this.startTimer();
+        }
     }
 
     async loadQuestions() {
@@ -3262,8 +3322,16 @@ class AssessmentEngine {
         const timerLbl = document.getElementById('lbl-exam-timer');
         const candId = this.getCandidateId();
         const endKey = `exam_end_time_${candId}_${this.examCode}`;
+        const fallbackEndKey = `exam_end_time_${this.examCode}`;
 
-        let targetEndTime = parseInt(localStorage.getItem(endKey) || sessionStorage.getItem(endKey) || '0', 10);
+        let targetEndTime = parseInt(
+            localStorage.getItem(endKey) || 
+            sessionStorage.getItem(endKey) || 
+            localStorage.getItem(fallbackEndKey) || 
+            sessionStorage.getItem(fallbackEndKey) || 
+            '0', 
+            10
+        );
         const now = Date.now();
 
         // 1. If targetEndTime already expired, trigger time expiration immediately
@@ -3276,8 +3344,12 @@ class AssessmentEngine {
         // 2. If targetEndTime does not exist or is invalid, initialize it once
         if (!targetEndTime || isNaN(targetEndTime)) {
             targetEndTime = now + (this.timerSeconds * 1000);
-            localStorage.setItem(endKey, targetEndTime.toString());
-            sessionStorage.setItem(endKey, targetEndTime.toString());
+            try {
+                localStorage.setItem(endKey, targetEndTime.toString());
+                sessionStorage.setItem(endKey, targetEndTime.toString());
+                localStorage.setItem(fallbackEndKey, targetEndTime.toString());
+                sessionStorage.setItem(fallbackEndKey, targetEndTime.toString());
+            } catch (_) {}
         }
 
         const tick = () => {
