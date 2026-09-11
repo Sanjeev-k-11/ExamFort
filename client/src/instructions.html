@@ -652,12 +652,30 @@
                 return;
             }
 
-            if (!chk.checked) {
-                alert('Please read and agree to all instructions before proceeding.');
-                return;
+            proceedToAssessment();
+        }
+
+        function proceedToAssessment() {
+            const isReattemptMode = sessionStorage.getItem(`is_reattempt_${targetExamCode}`) === 'true' || urlParams.get('reattempt') === '1';
+
+            if (isReattemptMode) {
+                // Clear old attempt locks and timers so reattempt runs freshly
+                localStorage.removeItem(`exam_end_time_${cid}_${targetExamCode}`);
+                localStorage.removeItem(`exam_submitted_${cid}_${targetExamCode}`);
+                localStorage.removeItem(`exam_submitted_${targetExamCode}`);
+                localStorage.removeItem(`exam_time_expired_${cid}_${targetExamCode}`);
+                sessionStorage.removeItem(`exam_time_expired_${cid}_${targetExamCode}`);
+                sessionStorage.removeItem(`exam_submitted_${cid}_${targetExamCode}`);
+                sessionStorage.removeItem(`exam_submitted_${targetExamCode}`);
+                sessionStorage.removeItem(`exam_draft_${cid}_${targetExamCode}`);
+                localStorage.removeItem(`exam_draft_${cid}_${targetExamCode}`);
             }
 
-            proceedToAssessment();
+            sessionStorage.setItem('exam_start_mode', 'assessment');
+            localStorage.setItem('exam_start_mode', 'assessment');
+
+            const reattemptParam = isReattemptMode ? '&reattempt=1' : '';
+            window.location.href = `assessment.html?code=${encodeURIComponent(targetExamCode)}${reattemptParam}`;
         }
 
         document.getElementById('btn-footer-exit')?.addEventListener('click', exitApplication);

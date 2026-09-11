@@ -108,26 +108,33 @@ class AssessmentEngine {
 
     async checkExistingSubmission() {
         const urlParams = new URLSearchParams(window.location.search);
-        const isReattemptMode = urlParams.get('reattempt') === '1' || 
-                                sessionStorage.getItem(`is_reattempt_${this.examCode}`) === 'true' ||
-                                sessionStorage.getItem('is_reattempt') === 'true';
-
-        if (isReattemptMode) {
-            console.log('🔄 [Assessment Engine] Authorized Reattempt session active. Bypassing past submission locks.');
-            return false;
-        }
+        let isReattemptMode = urlParams.get('reattempt') === '1' || 
+                              sessionStorage.getItem(`is_reattempt_${this.examCode}`) === 'true' ||
+                              sessionStorage.getItem('is_reattempt') === 'true';
 
         const candId = this.candidate?.id || this.candidate?.student_id || 'CAND123456';
         const localKey = `exam_submitted_${candId}_${this.examCode}`;
         const timeExpiredKey = `exam_time_expired_${candId}_${this.examCode}`;
+        const endKey = `exam_end_time_${candId}_${this.examCode}`;
 
         try {
             const res = await fetch(`${this.backendUrl}/api/exam/check-attempt/${candId}/${this.examCode}`);
             const data = await res.json();
             if (data && data.hasSubmitted) {
-                localStorage.setItem(localKey, 'true');
-                sessionStorage.setItem(localKey, 'true');
-                return true;
+                if (data.isReattemptAuthorized) {
+                    // Admin has officially authorized a reattempt!
+                    isReattemptMode = true;
+                    sessionStorage.setItem(`is_reattempt_${this.examCode}`, 'true');
+                    sessionStorage.setItem('is_reattempt', 'true');
+                    if (data.reattemptReason) {
+                        sessionStorage.setItem(`reattempt_reason_${this.examCode}`, data.reattemptReason);
+                        sessionStorage.setItem('reattempt_reason', data.reattemptReason);
+                    }
+                } else if (!isReattemptMode) {
+                    localStorage.setItem(localKey, 'true');
+                    sessionStorage.setItem(localKey, 'true');
+                    return true;
+                }
             } else {
                 localStorage.removeItem(localKey);
                 sessionStorage.removeItem(localKey);
@@ -136,9 +143,21 @@ class AssessmentEngine {
                 localStorage.removeItem(timeExpiredKey);
                 return false;
             }
-        } catch (_) {
-            return localStorage.getItem(localKey) === 'true' || sessionStorage.getItem(localKey) === 'true';
+        } catch (_) {}
+
+        if (isReattemptMode) {
+            console.log('🔄 [Assessment Engine] Authorized Reattempt session active. Resetting locks and timer.');
+            localStorage.removeItem(localKey);
+            sessionStorage.removeItem(localKey);
+            localStorage.removeItem(`exam_submitted_${this.examCode}`);
+            sessionStorage.removeItem(`exam_submitted_${this.examCode}`);
+            localStorage.removeItem(timeExpiredKey);
+            sessionStorage.removeItem(timeExpiredKey);
+            localStorage.removeItem(endKey);
+            return false;
         }
+
+        return localStorage.getItem(localKey) === 'true' || sessionStorage.getItem(localKey) === 'true';
     }
 
     parseExamDateTimeRange(dateStr, timeStr) {
@@ -2799,11 +2818,16 @@ class AssessmentEngine {
         const candId = this.candidate?.id || this.candidate?.student_id || 'CAND123456';
         const endKey = `exam_end_time_${candId}_${this.examCode}`;
 
+        const urlParams = new URLSearchParams(window.location.search);
+        const isReattempt = urlParams.get('reattempt') === '1' || 
+                            sessionStorage.getItem(`is_reattempt_${this.examCode}`) === 'true' ||
+                            sessionStorage.getItem('is_reattempt') === 'true';
+
         let targetEndTime = parseInt(localStorage.getItem(endKey) || '0', 10);
         const now = Date.now();
 
-        // If target end time is unset, invalid, or older than 24h, initialize it
-        if (!targetEndTime || isNaN(targetEndTime) || targetEndTime < (now - 24 * 3600 * 1000)) {
+        // If in reattempt mode, or target end time is unset, invalid, or already expired (targetEndTime <= now), initialize fresh duration
+        if (isReattempt || !targetEndTime || isNaN(targetEndTime) || targetEndTime <= now) {
             targetEndTime = now + (this.timerSeconds * 1000);
             localStorage.setItem(endKey, targetEndTime.toString());
         }
