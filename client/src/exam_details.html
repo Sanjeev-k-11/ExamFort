@@ -604,9 +604,10 @@
                 if (ex && ex.title) {
                     loadedExamObj = ex;
 
-                    // If candidate has personalized rescheduled window, apply it
-                    const displayDate = (cand && cand.scheduled_date) ? cand.scheduled_date : ex.exam_date;
-                    const displayTime = (cand && cand.scheduled_start_time && cand.scheduled_end_time)
+                    // If candidate has personalized rescheduled window, apply it ONLY to the specific matching exam
+                    const isMatchingExam = Boolean(cand && cand.examCode && cand.examCode === targetExamCode);
+                    const displayDate = (isMatchingExam && cand.scheduled_date) ? cand.scheduled_date : ex.exam_date;
+                    const displayTime = (isMatchingExam && cand.scheduled_start_time && cand.scheduled_end_time)
                         ? `${cand.scheduled_start_time} - ${cand.scheduled_end_time}`
                         : ex.exam_time;
 

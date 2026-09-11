@@ -227,6 +227,25 @@
                             }).join('');
                         }
                     }
+                    // Check authorization and set button accordingly
+                    const reattemptBtn = document.getElementById('btn-completed-reattempt-link');
+                    if (reattemptBtn) {
+                        if (data.isReattemptAuthorized) {
+                            reattemptBtn.innerHTML = `
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+                                <span>REATTEMPT EXAM (AUTHORIZED)</span>
+                            `;
+                            reattemptBtn.href = `instructions.html?code=${encodeURIComponent(examCode)}&reattempt=1`;
+                            reattemptBtn.style.background = 'linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)';
+                        } else {
+                            reattemptBtn.innerHTML = `
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                                <span>VIEW EXAM DETAILS</span>
+                            `;
+                            reattemptBtn.href = `exam_details.html?code=${encodeURIComponent(examCode)}`;
+                            reattemptBtn.style.background = '#475569';
+                        }
+                    }
                 }
             })
             .catch(() => {});
@@ -244,9 +263,9 @@
         if (actionsContainer) {
             actionsContainer.innerHTML = `
                 <div style="display: flex; flex-direction: column; gap: 10px; width: 100%;">
-                    <a href="exam_details.html?code=${encodeURIComponent(examCode)}" class="btn-primary-dashboard" style="text-align: center; text-decoration: none; background: #6366f1; justify-content: center;">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
-                        <span>REATTEMPT / EXAM DETAILS</span>
+                    <a id="btn-completed-reattempt-link" href="exam_details.html?code=${encodeURIComponent(examCode)}" class="btn-primary-dashboard" style="text-align: center; text-decoration: none; background: #475569; justify-content: center;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                        <span>VIEW EXAM DETAILS</span>
                     </a>
                     <div style="display: flex; gap: 10px;">
                         <button class="btn-secondary-action-pill" id="btn-primary-action" style="flex: 1; justify-content: center; border: 1.5px solid #cbd5e1; font-weight: 700;">

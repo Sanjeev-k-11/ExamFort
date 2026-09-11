@@ -699,6 +699,49 @@ class MySQLDatabaseService {
             const subMap = new Map();
             submissions.forEach(s => subMap.set(s.exam_code, s));
 
+            // Fetch active authorizations for candidate
+            const authMap = new Map();
+            try {
+                const [authRows] = await this.pool.query(
+                    `SELECT exam_code, reattempt_reason, authorized_by, created_at 
+                     FROM exam_reattempt_authorizations 
+                     WHERE (candidate_id = ? 
+                        OR candidate_id = (SELECT student_id FROM users WHERE student_id = ? OR CAST(id AS VARCHAR) = ? LIMIT 1)
+                        OR candidate_id = (SELECT CAST(id AS VARCHAR) FROM users WHERE student_id = ? OR CAST(id AS VARCHAR) = ? LIMIT 1)
+                        OR candidate_id = 'ALL')
+                       AND status = 'ACTIVE'
+                     ORDER BY id DESC`,
+                    [candidateId, candidateId, candidateId, candidateId, candidateId]
+                );
+                if (authRows && authRows.length > 0) {
+                    authRows.forEach(a => {
+                        if (!authMap.has(a.exam_code)) {
+                            authMap.set(a.exam_code, a);
+                        }
+                    });
+                }
+            } catch (_) {}
+
+            // Fetch personalized rescheduled date/time strictly per exam for this candidate
+            const schedMap = new Map();
+            try {
+                const [candSchedRows] = await this.pool.query(
+                    `SELECT exam_code, scheduled_date, scheduled_start_time, scheduled_end_time 
+                     FROM placement_exam_candidates 
+                     WHERE (student_id = ? 
+                        OR student_id = (SELECT student_id FROM users WHERE id = ? OR student_id = ? LIMIT 1)
+                        OR student_id = (SELECT CAST(id AS VARCHAR) FROM users WHERE id = ? OR student_id = ? LIMIT 1))`,
+                    [candidateId, candidateId, candidateId, candidateId, candidateId]
+                );
+                if (candSchedRows && candSchedRows.length > 0) {
+                    candSchedRows.forEach(c => {
+                        if (c.exam_code) {
+                            schedMap.set(c.exam_code, c);
+                        }
+                    });
+                }
+            } catch (_) {}
+
             const [activities] = await this.pool.query(
                 `SELECT * FROM student_activities 
                  WHERE (student_id = ? OR student_id = (SELECT student_id FROM users WHERE id = ? LIMIT 1))
@@ -709,6 +752,15 @@ class MySQLDatabaseService {
             const formatted = exams.map(ex => {
                 const sub = subMap.get(ex.exam_code);
                 const hasSub = !!sub;
+                const auth = authMap.get(ex.exam_code) || authMap.get('ALL');
+                const isReattemptAuth = !!auth;
+
+                // Match personalized schedule strictly by exam_code
+                const personalSched = schedMap.get(ex.exam_code);
+                const examDate = (personalSched && personalSched.scheduled_date) ? personalSched.scheduled_date : ex.exam_date;
+                const examTime = (personalSched && personalSched.scheduled_start_time && personalSched.scheduled_end_time)
+                    ? `${personalSched.scheduled_start_time} - ${personalSched.scheduled_end_time}`
+                    : (ex.exam_time || '10:00 AM - 12:00 PM');
 
                 let icon = '📝';
                 const cat = (ex.category || '').toLowerCase();
@@ -727,11 +779,13 @@ class MySQLDatabaseService {
                     duration_minutes: ex.duration_minutes || 120,
                     total_marks: ex.total_marks || 120,
                     total_questions: ex.total_questions || 13,
-                    exam_date: ex.exam_date,
-                    exam_time: ex.exam_time || '10:00 AM - 12:00 PM',
+                    exam_date: examDate,
+                    exam_time: examTime,
                     status: ex.status,
                     is_results_published: Boolean(ex.is_results_published),
                     is_submitted: hasSub,
+                    is_reattempt_authorized: isReattemptAuth,
+                    reattempt_reason: isReattemptAuth ? auth.reattempt_reason : null,
                     submission: hasSub ? {
                         id: sub.id,
                         total_score: sub.total_score,
