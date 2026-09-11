@@ -1058,6 +1058,10 @@ class ExamFortApp {
 
         this.showToast('Submitting assessment...', 'info');
 
+        const reattemptReason = sessionStorage.getItem('reattempt_reason_' + this.candidate.examCode)
+            || sessionStorage.getItem('reattempt_reason')
+            || null;
+
         try {
             const res = await fetch(`${this.backendUrl}/api/exam/submit`, {
                 method: 'POST',
@@ -1065,7 +1069,8 @@ class ExamFortApp {
                 body: JSON.stringify({
                     candidateId: this.candidate.id,
                     examCode: this.candidate.examCode,
-                    answers: this.answers
+                    answers: this.answers,
+                    reattemptReason: reattemptReason
                 })
             });
 

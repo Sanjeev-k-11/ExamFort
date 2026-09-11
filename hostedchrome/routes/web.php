@@ -69,6 +69,7 @@ Route::middleware(['admin.proctor'])->group(function () {
 
     // Examination Lifecycle & Question Bank
     Route::resource('exams', ExamController::class);
+    Route::post('/exams/{exam_code}/reschedule', [ExamController::class, 'reschedule'])->name('exams.reschedule');
     Route::post('/exams/{exam_code}/toggle-status', [ExamController::class, 'toggleStatus'])->name('exams.toggleStatus');
     Route::post('/exams/{exam_code}/toggle-publish', [ExamController::class, 'togglePublishResults'])->name('exams.togglePublish');
 

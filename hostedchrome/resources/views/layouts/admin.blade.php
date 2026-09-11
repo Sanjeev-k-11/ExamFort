@@ -861,7 +861,12 @@
                 </span>
             </div>
 
-            <div style="display: flex; align-items: center; gap: 16px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <button type="button" class="quick-action-btn secondary" onclick="const icon=this.querySelector('i'); if(icon) icon.style.transform='rotate(360deg)'; this.style.opacity='0.7'; setTimeout(()=>window.location.reload(), 300);" title="Refresh Page Data" style="font-size: 12px; padding: 6px 12px; border-radius: 999px; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                    <i data-lucide="refresh-cw" style="width: 13px; height: 13px; color: #4f46e5; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);"></i>
+                    <span>Refresh</span>
+                </button>
+                <div style="height: 18px; width: 1px; background: var(--border-color);"></div>
                 <div style="font-size: 12px; color: #64748b; display: flex; align-items: center; gap: 6px; font-weight: 600;">
                     <span style="width: 8px; height: 8px; border-radius: 50%; background: #10b981; display: inline-block; box-shadow: 0 0 6px rgba(16, 185, 129, 0.6);"></span>
                     <span>100% MySQL Pure Engine</span>

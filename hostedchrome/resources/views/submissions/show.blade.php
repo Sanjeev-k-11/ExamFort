@@ -4,6 +4,11 @@
 @section('breadcrumb', 'Submission Paper Evaluation')
 
 @section('content')
+@php
+    $attNum = $submission->attempt_number ?: 1;
+    $isReattempt = $attNum > 1;
+@endphp
+
 <div style="margin-bottom: 24px;">
     <a href="{{ route('submissions.index', ['exam_code' => $submission->exam_code]) }}" style="color: #4f46e5; text-decoration: none; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; margin-bottom: 8px;">
         <i data-lucide="arrow-left" style="width: 14px; height: 14px;"></i>
@@ -11,10 +16,19 @@
     </a>
     <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
         <div>
-            <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
                 <span class="mono" style="font-size: 13px; font-weight: 700; color: #4f46e5; background: #eef2ff; padding: 3px 8px; border-radius: 6px; border: 1px solid #e0e7ff;">
                     {{ $submission->exam_code }}
                 </span>
+                @if($isReattempt)
+                    <span style="font-size: 12px; font-weight: 800; color: #b45309; background: #fef3c7; border: 1px solid #fde68a; padding: 3px 10px; border-radius: 6px;">
+                        🔄 Reattempt #{{ $attNum }}
+                    </span>
+                @else
+                    <span style="font-size: 12px; font-weight: 700; color: #059669; background: #ecfdf5; border: 1px solid #a7f3d0; padding: 3px 10px; border-radius: 6px;">
+                        ✓ 1st Attempt
+                    </span>
+                @endif
                 <span style="font-size: 13px; color: #64748b;">
                     Submitted: {{ \Carbon\Carbon::parse($submission->submission_timestamp)->format('d M Y, H:i:s') }}
                 </span>
@@ -34,6 +48,74 @@
         </div>
     </div>
 </div>
+
+<!-- Reattempt Reason Notice Box (If reattempted) -->
+@if($isReattempt && !empty($submission->reattempt_reason))
+    <div style="background: #fffbeb; border: 1.5px solid #fde68a; border-radius: 12px; padding: 16px 20px; margin-bottom: 24px; display: flex; align-items: flex-start; gap: 14px;">
+        <div style="font-size: 24px; line-height: 1;">📝</div>
+        <div>
+            <div style="font-weight: 800; color: #92400e; font-size: 14px;">Candidate Stated Reason for Reattempt:</div>
+            <p style="margin: 4px 0 0 0; color: #78350f; font-size: 13.5px; line-height: 1.5;">
+                "{{ $submission->reattempt_reason }}"
+            </p>
+        </div>
+    </div>
+@endif
+
+<!-- Cross-Attempt Comparison Card (If student made multiple attempts) -->
+@if(isset($allAttempts) && count($allAttempts) > 1)
+    <div class="glass-card" style="margin-bottom: 24px; background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); border-left: 4px solid #4f46e5;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 18px;">📊</span>
+                <strong style="font-size: 15px; color: #0f172a;">Cross-Attempt Score Comparison ({{ count($allAttempts) }} Attempts Recorded)</strong>
+            </div>
+            <span style="font-size: 12px; color: #64748b;">Candidate ID: <span class="mono" style="font-weight: 700; color: #4f46e5;">{{ $submission->candidate_id }}</span></span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+            @foreach($allAttempts as $idx => $atm)
+                @php
+                    $isCurrent = $atm->id == $submission->id;
+                    $atmNumber = $atm->attempt_number ?: ($idx + 1);
+                    $firstScore = $allAttempts[0]->total_score;
+                    $diff = $atm->total_score - $firstScore;
+                @endphp
+                <div style="background: {{ $isCurrent ? '#eef2ff' : '#ffffff' }}; border: 1.5px solid {{ $isCurrent ? '#6366f1' : '#e2e8f0' }}; border-radius: 10px; padding: 12px 14px; position: relative;">
+                    @if($isCurrent)
+                        <span style="position: absolute; right: 10px; top: 10px; font-size: 10px; font-weight: 800; color: #4f46e5; background: #e0e7ff; padding: 1px 6px; border-radius: 4px;">CURRENT VIEWING</span>
+                    @endif
+                    <div style="font-size: 12px; font-weight: 700; color: #334155;">
+                        {{ $atmNumber == 1 ? '1st Attempt' : 'Reattempt #' . $atmNumber }}
+                    </div>
+                    <div style="font-size: 20px; font-weight: 800; color: #0f172a; margin-top: 4px; font-family: 'Outfit', sans-serif;">
+                        {{ number_format($atm->total_score, 1) }} pts
+                    </div>
+                    <div style="font-size: 11px; color: #64748b; margin-top: 2px;">
+                        MCQ: {{ number_format($atm->mcq_score, 1) }} | Code: {{ number_format($atm->coding_public_score + $atm->coding_hidden_score, 1) }}
+                    </div>
+                    @if($atmNumber > 1)
+                        <div style="margin-top: 6px;">
+                            @if($diff > 0)
+                                <span style="font-size: 11px; font-weight: 800; color: #15803d; background: #dcfce7; padding: 1px 6px; border-radius: 4px;">▲ +{{ number_format($diff, 1) }} pts gain</span>
+                            @elseif($diff < 0)
+                                <span style="font-size: 11px; font-weight: 800; color: #b91c1c; background: #fee2e2; padding: 1px 6px; border-radius: 4px;">▼ {{ number_format($diff, 1) }} pts</span>
+                            @endif
+                        </div>
+                    @endif
+                    <div style="margin-top: 8px; font-size: 10.5px; color: #94a3b8;">
+                        {{ \Carbon\Carbon::parse($atm->submission_timestamp)->format('d M Y, H:i') }}
+                    </div>
+                    @if(!$isCurrent)
+                        <div style="margin-top: 8px;">
+                            <a href="{{ route('submissions.show', $atm->id) }}" style="font-size: 11px; font-weight: 700; color: #4f46e5; text-decoration: none;">Inspect this Attempt &rarr;</a>
+                        </div>
+                    @endif
+                </div>
+            @endforeach
+        </div>
+    </div>
+@endif
 
 <!-- Score Breakdown & Manual Override Form -->
 <div class="glass-card" style="margin-bottom: 32px; background: rgba(255, 255, 255, 0.95);">

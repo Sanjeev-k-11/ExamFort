@@ -813,14 +813,15 @@ app.get('/api/exam/questions/:examCode', async (req, res) => {
 
 // 6. Submit Complete Exam to database Database (Evaluated in Sandbox & Saved Securely)
 app.post('/api/exam/submit', async (req, res) => {
-    const { candidateId, examCode, answers } = req.body;
+    const { candidateId, examCode, answers, reattemptReason, submissionReason } = req.body;
 
     if (!candidateId || !answers) {
         return res.status(400).json({ success: false, message: 'Candidate ID and answers are required.' });
     }
 
-    console.log(`[Exam Submission] Submitting answers for candidate: ${candidateId}`);
-    const result = await db.submitExam(candidateId, examCode || 'NAT-2026-EXAM', answers);
+    const reason = reattemptReason || submissionReason || null;
+    console.log(`[Exam Submission] Submitting answers for candidate: ${candidateId} (Reattempt Reason: ${reason || 'None'})`);
+    const result = await db.submitExam(candidateId, examCode || 'NAT-2026-EXAM', answers, reason);
 
     if (!result.success) {
         return res.status(500).json({ success: false, message: result.message });
@@ -830,16 +831,25 @@ app.post('/api/exam/submit', async (req, res) => {
     return res.status(200).json({
         success: true,
         submissionId: result.submissionId,
+        attemptNumber: result.attemptNumber || 1,
+        reattemptReason: result.reattemptReason || null,
         alreadySubmitted: !!result.alreadySubmitted,
         isResultsPublished: false,
         message: 'Assessment submitted successfully and stored securely. Marks will be declared once published by instructor/admin.'
     });
 });
 
-// 6B. Check If Candidate Has Already Attempted / Submitted Exam (Single Attempt Enforcement)
+// 6B. Check If Candidate Has Already Attempted / Submitted Exam (Attempt History & Comparisons)
 app.get('/api/exam/check-attempt/:candidateId/:examCode', async (req, res) => {
     const { candidateId, examCode } = req.params;
     const result = await db.checkCandidateAttempt(candidateId, examCode || 'NAT-2026-EXAM');
+    return res.status(200).json(result);
+});
+
+// 6B-2. Fetch All Attempts & Score History for Candidate
+app.get('/api/exam/attempts/:candidateId/:examCode', async (req, res) => {
+    const { candidateId, examCode } = req.params;
+    const result = await db.getAllCandidateAttempts(candidateId, examCode || 'NAT-2026-EXAM');
     return res.status(200).json(result);
 });
 
@@ -850,23 +860,28 @@ app.get('/api/exam/instructions/:examCode', async (req, res) => {
     return res.status(200).json(result);
 });
 
-// 6D. Admin: Reschedule Exam & Reset Attempts
+// 6D. Admin: Reschedule Exam (All Students or Selective / Individual Students)
 app.post('/api/admin/exam/reschedule', async (req, res) => {
-    const { examCode, examDate, examTime, durationMinutes, resetSubmissions, candidateId } = req.body;
+    const { examCode, examDate, examTime, durationMinutes, resetSubmissions, candidateId, candidateIds, allowReattempt, reason } = req.body;
     const result = await db.rescheduleExam(examCode || 'NAT-2026-EXAM', {
         examDate,
         examTime,
         durationMinutes,
         resetSubmissions: !!resetSubmissions,
-        candidateId
+        candidateId,
+        candidateIds,
+        allowReattempt: !!allowReattempt,
+        reason
     });
 
     if (result.success) {
-        // Broadcast reschedule notification to any connected candidate clients
+        // Broadcast reschedule notification to connected candidate clients
         io.emit('exam-rescheduled', {
             examCode: examCode || 'NAT-2026-EXAM',
             examDate,
             examTime,
+            isSelective: result.isSelective,
+            targetCandidateIds: candidateIds || (candidateId ? [candidateId] : []),
             message: result.message
         });
     }

@@ -105,6 +105,7 @@ class MySQLDatabaseService {
             console.log(`🐘 [PostgreSQL] Successfully connected to PostgreSQL / Supabase database "${DB_CONFIG.database}" on ${DB_CONFIG.host}:${DB_CONFIG.port}`);
             this.isInitialized = true;
             this.dbType = 'POSTGRESQL';
+            await this.ensureSchemaUpgrades();
         } catch (err) {
             console.error('❌ [PostgreSQL Connection Error]:', err.message);
             console.warn('⚠️ Falling back to check MySQL connection...');
@@ -167,9 +168,97 @@ class MySQLDatabaseService {
             console.log(`🐬 [MySQL] Successfully connected to MySQL database "${DB_CONFIG.database}" on ${DB_CONFIG.host}:${DB_CONFIG.port}`);
             this.isInitialized = true;
             this.dbType = 'MYSQL';
+            await this.ensureSchemaUpgrades();
         } catch (err) {
             console.error('❌ [Database Connection Error]:', err.message);
         }
+    }
+
+    async ensureSchemaUpgrades() {
+        if (!this.pool) return;
+        try {
+            if (this.dbType === 'POSTGRESQL') {
+                await this.pool.query('ALTER TABLE submissions ADD COLUMN IF NOT EXISTS attempt_number INT DEFAULT 1').catch(() => {});
+                await this.pool.query('ALTER TABLE submissions ADD COLUMN IF NOT EXISTS reattempt_reason TEXT DEFAULT NULL').catch(() => {});
+            } else {
+                try {
+                    await this.pool.query('ALTER TABLE `submissions` ADD COLUMN `attempt_number` INT DEFAULT 1');
+                } catch (_) {}
+                try {
+                    await this.pool.query('ALTER TABLE `submissions` ADD COLUMN `reattempt_reason` TEXT DEFAULT NULL');
+                } catch (_) {}
+            }
+
+            // Ensure Courses & Lessons Tables Exist
+            try {
+                if (this.dbType === 'POSTGRESQL') {
+                    await this.pool.query(`
+                        CREATE TABLE IF NOT EXISTS courses (
+                            id SERIAL PRIMARY KEY,
+                            course_id VARCHAR(50) NOT NULL UNIQUE,
+                            title VARCHAR(255) NOT NULL,
+                            description TEXT NOT NULL,
+                            icon VARCHAR(50) DEFAULT '💻',
+                            color VARCHAR(50) DEFAULT '#4f46e5',
+                            lessons_count INT DEFAULT 18,
+                            duration_text VARCHAR(50) DEFAULT '6h 20m',
+                            level VARCHAR(50) DEFAULT 'Intermediate',
+                            progress_percent INT DEFAULT 42,
+                            completed_lessons INT DEFAULT 8,
+                            language VARCHAR(50) DEFAULT 'English',
+                            certificate VARCHAR(50) DEFAULT 'Yes',
+                            last_updated VARCHAR(50) DEFAULT 'May 2026',
+                            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                        );
+                        CREATE TABLE IF NOT EXISTS course_lessons (
+                            id SERIAL PRIMARY KEY,
+                            course_id VARCHAR(50) NOT NULL,
+                            module_num INT NOT NULL,
+                            module_title VARCHAR(255) NOT NULL,
+                            lesson_num VARCHAR(20) NOT NULL,
+                            lesson_title VARCHAR(255) NOT NULL,
+                            duration_text VARCHAR(50) NOT NULL,
+                            is_completed SMALLINT DEFAULT 0,
+                            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                        );
+                        CREATE TABLE IF NOT EXISTS student_activities (
+                            id SERIAL PRIMARY KEY,
+                            student_id VARCHAR(50) NOT NULL,
+                            title VARCHAR(255) NOT NULL,
+                            activity_title VARCHAR(255) NOT NULL,
+                            description TEXT NOT NULL,
+                            score_info VARCHAR(50) DEFAULT 'Score: 85%',
+                            score INT DEFAULT 85,
+                            status VARCHAR(50) DEFAULT 'Passed',
+                            badge VARCHAR(50) DEFAULT '🏆 Passed',
+                            time_text VARCHAR(50) DEFAULT 'Today, 09:15 AM',
+                            icon VARCHAR(50) DEFAULT '✓',
+                            type VARCHAR(50) DEFAULT 'EXAM',
+                            activity_type VARCHAR(50) DEFAULT 'EXAM',
+                            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                        );
+                    `).catch(() => {});
+                }
+
+                // Check and auto-seed courses if empty
+                const [cRows] = await this.pool.query('SELECT count(*) as cnt FROM courses').catch(() => [[]]);
+                const cCount = parseInt(cRows[0]?.cnt || 0, 10);
+                if (cCount === 0) {
+                    const courses = [
+                        ['course-cpp', 'Programming in C++', 'Master C++ programming from basics to advanced concepts with hands-on examples.', '</>', '#6366f1', 18, '6h 20m', 'Intermediate', 42, 8, 'English', 'Yes', 'May 2026'],
+                        ['course-aptitude', 'Aptitude Fundamentals', 'Learn the basics of quantitative aptitude, number system, percentages, and ratios.', '🧠', '#ec4899', 12, '3h 45m', 'Beginner', 65, 8, 'English', 'Yes', 'May 2026'],
+                        ['course-dsa', 'Data Structures & Algorithms', 'Learn essential data structures and algorithms for problem solving and coding interviews.', '💾', '#f59e0b', 20, '8h 15m', 'Advanced', 25, 5, 'English', 'Yes', 'May 2026'],
+                        ['course-reasoning', 'Logical Reasoning', 'Improve your logical thinking skills with practice questions and detailed explanations.', '💡', '#8b5cf6', 10, '2h 30m', 'Beginner', 80, 8, 'English', 'Yes', 'May 2026']
+                    ];
+                    for (const c of courses) {
+                        await this.pool.query(
+                            'INSERT INTO courses (course_id, title, description, icon, color, lessons_count, duration_text, level, progress_percent, completed_lessons, language, certificate, last_updated) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                            c
+                        ).catch(() => {});
+                    }
+                }
+            } catch (_) {}
+        } catch (_) {}
     }
 
     // ==========================================
@@ -630,28 +719,29 @@ class MySQLDatabaseService {
     }
 
     // ==========================================
-    // 3. EXAM EVALUATION & SUBMISSIONS
+    // 3. EXAM EVALUATION & ATTEMPTS RECORDING
     // ==========================================
-
-    async submitExam(candidateId, examCode, answers) {
+    async submitExam(candidateId, examCode, answers, reattemptReason) {
         if (!this.pool) return { success: false, message: 'MySQL offline.' };
 
         try {
             const code = examCode || 'NAT-2026-EXAM';
 
-            // Check duplicate submission
+            // Check existing submissions count for this candidate and exam
             const [existing] = await this.pool.query(
-                'SELECT id, submission_timestamp FROM submissions WHERE candidate_id = ? AND exam_code = ? LIMIT 1',
-                [candidateId, code]
+                `SELECT id, attempt_number, total_score, submission_timestamp 
+                 FROM submissions 
+                 WHERE (candidate_id = ? 
+                    OR candidate_id = (SELECT student_id FROM users WHERE student_id = ? OR CAST(id AS VARCHAR) = ? LIMIT 1)
+                    OR candidate_id = (SELECT CAST(id AS VARCHAR) FROM users WHERE student_id = ? OR CAST(id AS VARCHAR) = ? LIMIT 1))
+                   AND exam_code = ? 
+                 ORDER BY submission_timestamp ASC`,
+                [candidateId, candidateId, candidateId, candidateId, candidateId, code]
             );
-            if (existing && existing.length > 0) {
-                return {
-                    success: true,
-                    alreadySubmitted: true,
-                    submissionId: existing[0].id,
-                    message: 'Assessment already submitted.'
-                };
-            }
+
+            const attemptCount = (existing && existing.length) ? existing.length : 0;
+            const currentAttemptNumber = attemptCount + 1;
+            const finalReattemptReason = currentAttemptNumber > 1 ? (reattemptReason || 'Reattempt initiated by candidate') : null;
 
             // 1. Evaluate MCQs directly against MySQL/Postgres questions table
             const [mcqs] = await this.pool.query(
@@ -714,12 +804,12 @@ class MySQLDatabaseService {
             const answersJson = JSON.stringify(answers || {});
             const reportJson = JSON.stringify(evalReport);
 
-            // 4. Save to database submissions table
+            // 4. Save to database submissions table with attempt_number and reattempt_reason
             const [insRes] = await this.pool.query(
                 `INSERT INTO submissions 
-                 (candidate_id, exam_code, answers_json, mcq_score, coding_public_score, coding_hidden_score, essay_score, total_score, evaluation_report) 
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-                [candidateId, code, answersJson, mcqScore, totalCodingPublicScore, totalCodingHiddenScore, totalEssayScore, totalScore, reportJson]
+                 (candidate_id, exam_code, answers_json, mcq_score, coding_public_score, coding_hidden_score, essay_score, total_score, attempt_number, reattempt_reason, evaluation_report) 
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                [candidateId, code, answersJson, mcqScore, totalCodingPublicScore, totalCodingHiddenScore, totalEssayScore, totalScore, currentAttemptNumber, finalReattemptReason, reportJson]
             );
 
             // Clear candidate draft
@@ -727,16 +817,25 @@ class MySQLDatabaseService {
 
             // Record student activity in database
             try {
+                const actTitle = currentAttemptNumber > 1 
+                    ? `Reattempted Exam: ${code} (Attempt #${currentAttemptNumber})` 
+                    : `Completed Exam: ${code}`;
+                const actDesc = currentAttemptNumber > 1 
+                    ? `Scored ${totalScore} pts (Reason: ${finalReattemptReason})` 
+                    : `Scored ${totalScore} points`;
+
                 await this.pool.query(
                     `INSERT INTO student_activities (student_id, title, activity_title, description, score_info, score, status, badge, activity_type, type)
                      VALUES (?, ?, ?, ?, ?, ?, 'Completed', '🏆 Submitted', 'EXAM', 'EXAM')`,
-                    [candidateId, `Completed Exam: ${code}`, `Completed Exam: ${code}`, `Scored ${totalScore} points`, `Score: ${totalScore}`, totalScore]
+                    [candidateId, actTitle, actTitle, actDesc, `Score: ${totalScore}`, totalScore]
                 );
             } catch (_) {}
 
             return {
                 success: true,
                 submissionId: insRes.insertId,
+                attemptNumber: currentAttemptNumber,
+                reattemptReason: finalReattemptReason,
                 mcqScore,
                 codingPublicScore: totalCodingPublicScore,
                 codingHiddenScore: totalCodingHiddenScore,
@@ -753,47 +852,78 @@ class MySQLDatabaseService {
     async checkCandidateAttempt(candidateId, examCode) {
         if (!this.pool) return { success: true, hasSubmitted: false };
         try {
+            const code = examCode || 'NAT-2026-EXAM';
             const [rows] = await this.pool.query(
-                `SELECT s.id, s.submission_timestamp, s.total_score, s.mcq_score, s.coding_public_score, s.coding_hidden_score 
+                `SELECT s.id, s.attempt_number, s.reattempt_reason, s.submission_timestamp, s.total_score, s.mcq_score, s.coding_public_score, s.coding_hidden_score, s.essay_score 
                  FROM submissions s 
                  WHERE (s.candidate_id = ? 
                     OR s.candidate_id = (SELECT student_id FROM users WHERE student_id = ? OR CAST(id AS VARCHAR) = ? LIMIT 1)
                     OR s.candidate_id = (SELECT CAST(id AS VARCHAR) FROM users WHERE student_id = ? OR CAST(id AS VARCHAR) = ? LIMIT 1))
                    AND s.exam_code = ? 
-                 ORDER BY s.submission_timestamp DESC LIMIT 1`,
-                [candidateId, candidateId, candidateId, candidateId, candidateId, examCode || 'NAT-2026-EXAM']
+                 ORDER BY s.submission_timestamp ASC`,
+                [candidateId, candidateId, candidateId, candidateId, candidateId, code]
             );
 
             if (rows && rows.length > 0) {
+                const attempts = rows.map((r, idx) => ({
+                    id: r.id,
+                    attemptNumber: r.attempt_number || (idx + 1),
+                    reattemptReason: r.reattempt_reason,
+                    totalScore: parseFloat(r.total_score || 0),
+                    mcqScore: parseFloat(r.mcq_score || 0),
+                    codingPublicScore: parseFloat(r.coding_public_score || 0),
+                    codingHiddenScore: parseFloat(r.coding_hidden_score || 0),
+                    essayScore: parseFloat(r.essay_score || 0),
+                    submittedAt: r.submission_timestamp
+                }));
+
+                const firstAttempt = attempts[0];
+                const latestAttempt = attempts[attempts.length - 1];
+                const scoreDiff = attempts.length > 1 ? (latestAttempt.totalScore - firstAttempt.totalScore) : 0;
+
                 return {
                     success: true,
                     hasSubmitted: true,
-                    submissionId: rows[0].id,
-                    submittedAt: rows[0].submission_timestamp,
-                    totalScore: rows[0].total_score
+                    attemptCount: attempts.length,
+                    attempts,
+                    firstAttempt,
+                    latestAttempt,
+                    scoreDiff,
+                    submissionId: latestAttempt.id,
+                    submittedAt: latestAttempt.submittedAt,
+                    totalScore: latestAttempt.totalScore
                 };
             }
-            return { success: true, hasSubmitted: false };
+            return { success: true, hasSubmitted: false, attemptCount: 0, attempts: [] };
         } catch (err) {
             console.error('❌ Error checking candidate attempt:', err.message);
-            return { success: true, hasSubmitted: false };
+            return { success: true, hasSubmitted: false, attemptCount: 0, attempts: [] };
         }
     }
 
-    async getCandidateSubmission(candidateId, examCode) {
+    async getCandidateSubmission(candidateId, examCode, attemptId) {
         if (!this.pool) return { success: false, message: 'MySQL offline' };
         try {
-            const [rows] = await this.pool.query(
-                `SELECT s.*, e.title as exam_title, e.total_marks as max_exam_marks, e.total_questions 
-                 FROM submissions s 
-                 LEFT JOIN exams e ON s.exam_code = e.exam_code
-                 WHERE (s.candidate_id = ? 
-                    OR s.candidate_id = (SELECT student_id FROM users WHERE id = ? OR student_id = ? LIMIT 1)
-                    OR s.candidate_id = (SELECT id FROM users WHERE id = ? OR student_id = ? LIMIT 1))
-                   AND s.exam_code = ? 
-                 ORDER BY s.submission_timestamp DESC LIMIT 1`,
-                [candidateId, candidateId, candidateId, candidateId, candidateId, examCode || 'NAT-2026-EXAM']
-            );
+            const code = examCode || 'NAT-2026-EXAM';
+            let query = `
+                SELECT s.*, e.title as exam_title, e.total_marks as max_exam_marks, e.total_questions 
+                FROM submissions s 
+                LEFT JOIN exams e ON s.exam_code = e.exam_code
+                WHERE (s.candidate_id = ? 
+                   OR s.candidate_id = (SELECT student_id FROM users WHERE id = ? OR student_id = ? LIMIT 1)
+                   OR s.candidate_id = (SELECT id FROM users WHERE id = ? OR student_id = ? LIMIT 1))
+                  AND s.exam_code = ?
+            `;
+            const params = [candidateId, candidateId, candidateId, candidateId, candidateId, code];
+
+            if (attemptId) {
+                query += ' AND s.id = ?';
+                params.push(attemptId);
+            } else {
+                query += ' ORDER BY s.submission_timestamp DESC LIMIT 1';
+            }
+
+            const [rows] = await this.pool.query(query, params);
 
             if (rows.length > 0) {
                 const sub = rows[0];
@@ -804,6 +934,8 @@ class MySQLDatabaseService {
                         candidateId: sub.candidate_id,
                         examCode: sub.exam_code,
                         examTitle: sub.exam_title,
+                        attemptNumber: sub.attempt_number || 1,
+                        reattemptReason: sub.reattempt_reason,
                         totalScore: sub.total_score,
                         mcqScore: sub.mcq_score,
                         codingPublicScore: sub.coding_public_score,
@@ -823,6 +955,44 @@ class MySQLDatabaseService {
         }
     }
 
+    async getAllCandidateAttempts(candidateId, examCode) {
+        if (!this.pool) return { success: false, attempts: [] };
+        try {
+            const code = examCode || 'NAT-2026-EXAM';
+            const [rows] = await this.pool.query(
+                `SELECT s.*, e.title as exam_title, e.total_marks as max_exam_marks 
+                 FROM submissions s 
+                 LEFT JOIN exams e ON s.exam_code = e.exam_code 
+                 WHERE (s.candidate_id = ? 
+                    OR s.candidate_id = (SELECT student_id FROM users WHERE id = ? OR student_id = ? LIMIT 1)
+                    OR s.candidate_id = (SELECT id FROM users WHERE id = ? OR student_id = ? LIMIT 1))
+                   AND s.exam_code = ? 
+                 ORDER BY s.submission_timestamp ASC`,
+                [candidateId, candidateId, candidateId, candidateId, candidateId, code]
+            );
+
+            return {
+                success: true,
+                attempts: rows.map((r, idx) => ({
+                    id: r.id,
+                    attemptNumber: r.attempt_number || (idx + 1),
+                    reattemptReason: r.reattempt_reason,
+                    totalScore: parseFloat(r.total_score || 0),
+                    mcqScore: parseFloat(r.mcq_score || 0),
+                    codingPublicScore: parseFloat(r.coding_public_score || 0),
+                    codingHiddenScore: parseFloat(r.coding_hidden_score || 0),
+                    essayScore: parseFloat(r.essay_score || 0),
+                    submittedAt: r.submission_timestamp,
+                    examTitle: r.exam_title,
+                    maxMarks: r.max_exam_marks
+                }))
+            };
+        } catch (err) {
+            console.error('❌ Error fetching all candidate attempts:', err.message);
+            return { success: false, attempts: [] };
+        }
+    }
+
     async getExamInstructions(examCode) {
         if (!this.pool) return { success: true, instructions: [] };
         try {
@@ -837,10 +1007,52 @@ class MySQLDatabaseService {
         }
     }
 
-    async rescheduleExam(examCode, { examDate, examTime, durationMinutes, resetSubmissions, candidateId }) {
+    async rescheduleExam(examCode, { examDate, examTime, durationMinutes, resetSubmissions, candidateId, candidateIds, allowReattempt, reason }) {
         if (!this.pool) return { success: false, message: 'MySQL offline.' };
         try {
             const code = examCode || 'NAT-2026-EXAM';
+            const targetCandidateIds = candidateIds && Array.isArray(candidateIds) && candidateIds.length > 0 
+                ? candidateIds 
+                : (candidateId ? [candidateId] : []);
+
+            // 1. Reschedule Selected Candidates Only
+            if (targetCandidateIds.length > 0) {
+                for (const cId of targetCandidateIds) {
+                    // Update placement_exam_candidates if applicable
+                    try {
+                        const pUpdates = [];
+                        const pParams = [];
+                        if (examDate) { pUpdates.push('scheduled_date = ?'); pParams.push(examDate); }
+                        if (examTime) { pUpdates.push('scheduled_start_time = ?'); pParams.push(examTime); }
+                        pUpdates.push("attempt_status = 'PENDING'");
+                        pParams.push(cId, code);
+
+                        await this.pool.query(
+                            `UPDATE placement_exam_candidates SET ${pUpdates.join(', ')} WHERE (student_id = ? OR CAST(id AS VARCHAR) = ?) AND exam_code = ?`,
+                            pParams
+                        );
+                    } catch (_) {}
+
+                    // Clear drafts or reset submission if requested
+                    await this.pool.query('DELETE FROM candidate_drafts WHERE exam_code = ? AND candidate_id = ?', [code, cId]).catch(() => {});
+
+                    if (resetSubmissions) {
+                        await this.pool.query(
+                            `DELETE FROM submissions WHERE exam_code = ? AND (candidate_id = ? OR candidate_id = (SELECT student_id FROM users WHERE id = ? OR student_id = ? LIMIT 1))`,
+                            [code, cId, cId, cId]
+                        ).catch(() => {});
+                    }
+                }
+
+                return {
+                    success: true,
+                    isSelective: true,
+                    targetCandidatesCount: targetCandidateIds.length,
+                    message: `Successfully rescheduled examination for ${targetCandidateIds.length} selected candidate(s) on ${examDate || 'scheduled date'} (${examTime || 'time slot'}).`
+                };
+            }
+
+            // 2. Reschedule Entire Exam for All Enrolled Students
             const updates = ['status = "ACTIVE"'];
             const params = [];
 
@@ -861,22 +1073,15 @@ class MySQLDatabaseService {
             await this.pool.query(`UPDATE exams SET ${updates.join(', ')} WHERE exam_code = ?`, params);
 
             if (resetSubmissions) {
-                if (candidateId) {
-                    await this.pool.query(
-                        `DELETE FROM submissions WHERE exam_code = ? AND (candidate_id = ? OR candidate_id = (SELECT student_id FROM users WHERE id = ? OR student_id = ? LIMIT 1))`,
-                        [code, candidateId, candidateId, candidateId]
-                    );
-                    await this.pool.query('DELETE FROM candidate_drafts WHERE exam_code = ? AND candidate_id = ?', [code, candidateId]);
-                } else {
-                    await this.pool.query('DELETE FROM submissions WHERE exam_code = ?', [code]);
-                    await this.pool.query('DELETE FROM candidate_drafts WHERE exam_code = ?', [code]);
-                }
+                await this.pool.query('DELETE FROM submissions WHERE exam_code = ?', [code]);
+                await this.pool.query('DELETE FROM candidate_drafts WHERE exam_code = ?', [code]);
             }
 
             const [rows] = await this.pool.query('SELECT * FROM exams WHERE exam_code = ? LIMIT 1', [code]);
             return {
                 success: true,
-                message: `Exam ${code} has been successfully rescheduled in MySQL.`,
+                isSelective: false,
+                message: `Exam ${code} has been successfully rescheduled for all candidates to ${examDate || rows[0]?.exam_date} (${examTime || rows[0]?.exam_time}).`,
                 exam: rows[0]
             };
         } catch (err) {
@@ -1090,13 +1295,23 @@ class MySQLDatabaseService {
     // ==========================================
 
     async getAllCourses() {
-        if (!this.pool) return { success: false, courses: [] };
+        const fallbackCourses = [
+            { course_id: 'course-cpp', title: 'Programming in C++', description: 'Master C++ programming from basics to advanced concepts with hands-on examples.', icon: '</>', color: '#6366f1', lessons_count: 18, duration_text: '6h 20m', level: 'Intermediate', progress_percent: 42, completed_lessons: 8, language: 'English', certificate: 'Yes', last_updated: 'May 2026' },
+            { course_id: 'course-aptitude', title: 'Aptitude Fundamentals', description: 'Learn the basics of quantitative aptitude, number system, percentages, and ratios.', icon: '🧠', color: '#ec4899', lessons_count: 12, duration_text: '3h 45m', level: 'Beginner', progress_percent: 65, completed_lessons: 8, language: 'English', certificate: 'Yes', last_updated: 'May 2026' },
+            { course_id: 'course-dsa', title: 'Data Structures & Algorithms', description: 'Learn essential data structures and algorithms for problem solving and coding interviews.', icon: '💾', color: '#f59e0b', lessons_count: 20, duration_text: '8h 15m', level: 'Advanced', progress_percent: 25, completed_lessons: 5, language: 'English', certificate: 'Yes', last_updated: 'May 2026' },
+            { course_id: 'course-reasoning', title: 'Logical Reasoning', description: 'Improve your logical thinking skills with practice questions and detailed explanations.', icon: '💡', color: '#8b5cf6', lessons_count: 10, duration_text: '2h 30m', level: 'Beginner', progress_percent: 80, completed_lessons: 8, language: 'English', certificate: 'Yes', last_updated: 'May 2026' }
+        ];
+
+        if (!this.pool) return { success: true, courses: fallbackCourses };
         try {
             const [rows] = await this.pool.query('SELECT * FROM courses ORDER BY id ASC');
-            return { success: true, courses: rows };
+            if (rows && rows.length > 0) {
+                return { success: true, courses: rows };
+            }
+            return { success: true, courses: fallbackCourses };
         } catch (err) {
-            console.error('❌ Error fetching courses from MySQL:', err.message);
-            return { success: false, courses: [] };
+            console.error('❌ Error fetching courses from database:', err.message);
+            return { success: true, courses: fallbackCourses };
         }
     }
 

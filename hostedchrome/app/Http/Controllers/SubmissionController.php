@@ -13,12 +13,21 @@ class SubmissionController extends Controller
     {
         $examCode = $request->query('exam_code');
         $search = $request->query('search');
+        $attemptType = $request->query('attempt_type');
         $exams = Exam::orderBy('created_at', 'desc')->get();
 
         $query = Submission::with(['candidate', 'exam']);
 
         if ($examCode) {
             $query->where('exam_code', $examCode);
+        }
+
+        if ($attemptType === 'initial') {
+            $query->where(function ($q) {
+                $q->whereNull('attempt_number')->orWhere('attempt_number', 1);
+            });
+        } elseif ($attemptType === 'reattempt') {
+            $query->where('attempt_number', '>', 1);
         }
 
         if ($search) {
@@ -31,7 +40,7 @@ class SubmissionController extends Controller
 
         $submissions = $query->orderBy('submission_timestamp', 'desc')->paginate(15);
 
-        return view('submissions.index', compact('submissions', 'exams', 'examCode', 'search'));
+        return view('submissions.index', compact('submissions', 'exams', 'examCode', 'search', 'attemptType'));
     }
 
     public function show($id)
@@ -39,6 +48,17 @@ class SubmissionController extends Controller
         $submission = Submission::with(['candidate', 'exam.questions'])->findOrFail($id);
         $exam = $submission->exam;
         $questions = $exam ? $exam->questions->keyBy('question_number') : collect();
+
+        // Fetch all attempts by this student for this exam to show comparisons
+        $allAttempts = Submission::where('exam_code', $submission->exam_code)
+            ->where(function ($q) use ($submission) {
+                $q->where('candidate_id', $submission->candidate_id);
+                if ($submission->candidate && $submission->candidate->student_id) {
+                    $q->orWhere('candidate_id', $submission->candidate->student_id);
+                }
+            })
+            ->orderBy('submission_timestamp', 'asc')
+            ->get();
 
         // Parse answers_json if string or array
         $answers = is_array($submission->answers_json)
@@ -50,7 +70,7 @@ class SubmissionController extends Controller
             ? $submission->evaluation_report
             : (json_decode($submission->evaluation_report, true) ?? []);
 
-        return view('submissions.show', compact('submission', 'exam', 'questions', 'answers', 'evaluation'));
+        return view('submissions.show', compact('submission', 'exam', 'questions', 'answers', 'evaluation', 'allAttempts'));
     }
 
     public function updateScores(Request $request, $id)

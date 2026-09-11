@@ -295,6 +295,8 @@ CREATE TABLE IF NOT EXISTS `submissions` (
     `coding_hidden_score` DECIMAL(5,2) DEFAULT 0.00,
     `essay_score` DECIMAL(5,2) DEFAULT 0.00,
     `total_score` DECIMAL(5,2) DEFAULT 0.00,
+    `attempt_number` INT DEFAULT 1,
+    `reattempt_reason` TEXT DEFAULT NULL,
     `evaluation_report` JSON DEFAULT NULL,
     `submission_timestamp` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     INDEX `idx_sub_cand_exam` (`candidate_id`, `exam_code`)

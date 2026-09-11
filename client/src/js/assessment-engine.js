@@ -209,7 +209,12 @@ class AssessmentEngine {
             const tEnd = toTime24(endPart, 23, 59);
 
             const start = new Date(year, month, day, tStart.hour, tStart.minute, 0);
-            const end = new Date(year, month, day, tEnd.hour, tEnd.minute, 59);
+            let end = new Date(year, month, day, tEnd.hour, tEnd.minute, 59);
+
+            // Handle overnight time ranges (e.g. 03:00 PM to 12:59 AM next day)
+            if (end < start) {
+                end.setDate(end.getDate() + 1);
+            }
 
             return {
                 start: isNaN(start.getTime()) ? null : start,
@@ -237,13 +242,15 @@ class AssessmentEngine {
             const now = new Date();
             const { start, end, startTime, endTime } = this.parseExamDateTimeRange(this.examDetails.exam_date, this.examDetails.exam_time);
             
+            const statusUpper = (this.examDetails.status || '').toUpperCase();
+
             if (start && now < start) {
                 alert(`🔒 Examination Not Started Yet\n\nThis exam is scheduled for ${this.examDetails.exam_date} (${startTime} - ${endTime}).\nYou cannot start or access questions before the scheduled start time.`);
                 window.location.replace(`exam_details.html?code=${encodeURIComponent(this.examCode)}`);
                 return false;
             }
 
-            if (end && now > end) {
+            if (statusUpper === 'COMPLETED' || (end && now > end)) {
                 alert(`⌛ Exam Window Ended\n\nThe scheduled time window for this exam (${this.examDetails.exam_date} up to ${endTime}) has passed.\nYou can no longer attempt this exam.`);
                 window.location.replace(`exam_details.html?code=${encodeURIComponent(this.examCode)}`);
                 return false;
@@ -2893,6 +2900,10 @@ class AssessmentEngine {
 
         this.showToast(submitMsg, 'info');
 
+        const reattemptReason = sessionStorage.getItem('reattempt_reason_' + this.examCode)
+            || sessionStorage.getItem('reattempt_reason')
+            || null;
+
         try {
             const res = await fetch(`${this.backendUrl}/api/exam/submit`, {
                 method: 'POST',
@@ -2902,7 +2913,8 @@ class AssessmentEngine {
                     examCode: this.examCode,
                     answers: this.answers,
                     autoSubmitted: isAutoSubmit,
-                    submissionReason: reason
+                    submissionReason: reason,
+                    reattemptReason: reattemptReason
                 })
             });
 
@@ -2910,10 +2922,14 @@ class AssessmentEngine {
             sessionStorage.setItem('exam_submission_result', JSON.stringify({
                 success: true,
                 submissionId: data?.submissionId,
+                attemptNumber: data?.attemptNumber || 1,
+                reattemptReason: reattemptReason,
                 submittedAt: new Date().toISOString(),
                 isResultsPublished: false,
                 reason: reason
             }));
+            // Clear single-use reattempt keys once submitted
+            sessionStorage.removeItem('is_reattempt_' + this.examCode);
             window.location.replace('completed.html');
         } catch (_) {
             window.location.replace('completed.html');

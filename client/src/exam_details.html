@@ -344,6 +344,19 @@
                             <span>Proceed to Instructions</span>
                             <span>→</span>
                         </a>
+
+                        <!-- Multi-Attempt Scorecard & Reattempt Trigger -->
+                        <div id="container-attempt-history" style="display: none; margin-top: 14px; background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 14px;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                                <span style="font-size: 12px; font-weight: 700; color: #475569;">Your Attempt History:</span>
+                                <span id="lbl-attempt-badge-count" style="font-size: 11px; font-weight: 800; color: #4f46e5; background: #eef2ff; padding: 2px 8px; border-radius: 6px;">1 Attempt</span>
+                            </div>
+                            <div id="list-attempt-scores" style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px;"></div>
+                            <button type="button" id="btn-reattempt-exam" class="btn-proceed-instructions" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white; border: none; margin-top: 4px; box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);" onclick="openReattemptModal()">
+                                <span>🔄 Reattempt Examination</span>
+                                <span>→</span>
+                            </button>
+                        </div>
                     </div>
 
                     
@@ -521,7 +534,12 @@
                 const tEnd = toTime24(endPart, 23, 59);
 
                 const start = new Date(year, month, day, tStart.hour, tStart.minute, 0);
-                const end = new Date(year, month, day, tEnd.hour, tEnd.minute, 59);
+                let end = new Date(year, month, day, tEnd.hour, tEnd.minute, 59);
+
+                // Handle overnight time ranges (e.g. 03:00 PM to 12:59 AM next day)
+                if (end < start) {
+                    end.setDate(end.getDate() + 1);
+                }
 
                 return {
                     start: isNaN(start.getTime()) ? null : start,
@@ -627,45 +645,83 @@
         }
         loadExamDetails();
 
-        // Check Single Attempt & Time Status in MySQL
+        let candidateAttemptData = null;
+
+        // Check Multi-Attempt & Time Status in MySQL
         async function checkSingleAttempt() {
             const subKey = `exam_submitted_${cid}_${targetExamCode}`;
-            const isSubLocally = localStorage.getItem(subKey) === 'true' || sessionStorage.getItem(subKey) === 'true';
+            let hasSubmitted = false;
 
-            let hasSubmitted = isSubLocally;
             try {
                 const res = await fetch(`${baseUrl}/api/exam/check-attempt/${cid}/${targetExamCode}`);
                 const d = await res.json();
                 if (d && d.hasSubmitted) {
                     hasSubmitted = true;
+                    candidateAttemptData = d;
                     localStorage.setItem(subKey, 'true');
                     sessionStorage.setItem(subKey, 'true');
                 }
-            } catch (_) {}
+            } catch (_) {
+                hasSubmitted = localStorage.getItem(subKey) === 'true' || sessionStorage.getItem(subKey) === 'true';
+            }
 
             const badge = document.getElementById('lbl-badge-status');
             const btnProceed = document.getElementById('btn-proceed-exam');
+            const containerHistory = document.getElementById('container-attempt-history');
+            const listScores = document.getElementById('list-attempt-scores');
+            const lblAttemptCount = document.getElementById('lbl-attempt-badge-count');
 
             const now = new Date();
             const { start, end, startTime } = loadedExamObj 
                 ? parseExamDateTimeRange(loadedExamObj.exam_date, loadedExamObj.exam_time)
                 : { start: null, end: null, startTime: '10:00 AM' };
 
+            const statusUpper = (loadedExamObj?.status || '').toUpperCase();
             const isFuture = start ? (now < start) : false;
-            const isExpired = end ? (now > end) : false;
+            const isExpired = (statusUpper === 'COMPLETED') || (end ? (now > end) : false);
 
             if (hasSubmitted) {
                 if (badge) {
                     badge.className = 'exam-badge-completed';
-                    badge.textContent = 'Completed ✓';
+                    badge.textContent = candidateAttemptData && candidateAttemptData.attemptCount > 1 
+                        ? `Attempted (${candidateAttemptData.attemptCount}x) ✓`
+                        : 'Completed ✓';
                 }
                 if (btnProceed) {
                     btnProceed.className = 'btn-proceed-instructions btn-proceed-completed';
-                    btnProceed.innerHTML = '<span>Already Submitted (View Summary)</span> <span>✓</span>';
+                    btnProceed.innerHTML = '<span>View Submission Summary</span> <span>✓</span>';
                     btnProceed.href = 'completed.html';
                     btnProceed.style.filter = 'none';
-                    btnProceed.style.opacity = '0.9';
+                    btnProceed.style.opacity = '0.95';
                     btnProceed.style.pointerEvents = 'auto';
+                }
+
+                // Render attempt history & show Reattempt Button
+                if (containerHistory && listScores) {
+                    containerHistory.style.display = 'block';
+                    const attempts = candidateAttemptData?.attempts || [];
+                    if (lblAttemptCount) {
+                        lblAttemptCount.textContent = `${attempts.length || 1} Attempt${(attempts.length || 1) > 1 ? 's' : ''}`;
+                    }
+
+                    if (attempts.length > 0) {
+                        listScores.innerHTML = attempts.map(atm => `
+                            <div style="display: flex; justify-content: space-between; align-items: center; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 7px 10px; font-size: 12px;">
+                                <div>
+                                    <strong style="color: #0f172a;">${atm.attemptNumber == 1 ? '1st Attempt' : 'Reattempt #' + atm.attemptNumber}</strong>
+                                    ${atm.reattemptReason ? `<span style="font-size: 10.5px; color: #b45309; display: block;">Reason: ${atm.reattemptReason.substring(0, 30)}...</span>` : ''}
+                                </div>
+                                <div style="text-align: right;">
+                                    <strong style="color: #059669; font-size: 13px;">${atm.totalScore} pts</strong>
+                                    <span style="font-size: 10px; color: #94a3b8; display: block;">${new Date(atm.submittedAt).toLocaleDateString('en-GB', {day:'2-digit', month:'short'})}</span>
+                                </div>
+                            </div>
+                        `).join('');
+                    } else {
+                        listScores.innerHTML = `
+                            <div style="font-size: 12px; color: #64748b;">Assessment previously submitted. You may reattempt if required.</div>
+                        `;
+                    }
                 }
             } else if (isFuture) {
                 if (badge) {
@@ -714,6 +770,45 @@
             }
         }
 
+        // Reattempt Modal Handlers
+        function openReattemptModal() {
+            const m = document.getElementById('reattemptModal');
+            if (m) m.style.display = 'flex';
+        }
+
+        function closeReattemptModal() {
+            const m = document.getElementById('reattemptModal');
+            if (m) m.style.display = 'none';
+        }
+
+        function setReattemptPreset(text) {
+            const txt = document.getElementById('txt-reattempt-reason');
+            if (txt) txt.value = text;
+        }
+
+        function confirmAndStartReattempt() {
+            const reasonInput = document.getElementById('txt-reattempt-reason');
+            const reason = reasonInput ? reasonInput.value.trim() : '';
+
+            if (!reason) {
+                alert('Please state your reason for reattempting this examination before proceeding.');
+                if (reasonInput) reasonInput.focus();
+                return;
+            }
+
+            // Save reattempt context in sessionStorage
+            sessionStorage.setItem('is_reattempt_' + targetExamCode, 'true');
+            sessionStorage.setItem('reattempt_reason_' + targetExamCode, reason);
+            sessionStorage.setItem('reattempt_reason', reason);
+
+            // Remove submitted lock for this reattempt session
+            const subKey = `exam_submitted_${cid}_${targetExamCode}`;
+            sessionStorage.removeItem(subKey);
+
+            // Navigate to instructions
+            window.location.href = `instructions.html?code=${encodeURIComponent(targetExamCode)}&reattempt=1`;
+        }
+
         // ── LOGOUT CANDIDATE SECURELY ──
         function logoutCandidate(e) {
             if (e) e.preventDefault();
@@ -731,5 +826,84 @@
 
         document.getElementById('btn-footer-exit')?.addEventListener('click', exitApplication);
     </script>
+
+    <!-- Candidate Reattempt Reason Modal Dialog -->
+    <div id="reattemptModal" style="display: none; position: fixed; inset: 0; z-index: 9999; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(8px); align-items: center; justify-content: center; padding: 16px;">
+        <div style="background: #ffffff; width: 100%; max-width: 520px; border-radius: 20px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35); border: 1px solid #e2e8f0; overflow: hidden; animation: modalPop 0.25s cubic-bezier(0.16, 1, 0.3, 1);">
+            <div style="padding: 20px 24px; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="width: 40px; height: 40px; border-radius: 10px; background: #fef3c7; color: #d97706; display: flex; align-items: center; justify-content: center; font-size: 20px; border: 1px solid #fde68a;">
+                        🔄
+                    </div>
+                    <div>
+                        <h3 style="font-size: 17px; font-weight: 800; color: #92400e; margin: 0;">Reattempt Examination</h3>
+                        <p style="font-size: 12px; color: #b45309; margin: 2px 0 0 0;">Exam: <span id="lbl-modal-exam-code" style="font-weight: 700;">NAT-2026-EXAM</span></p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeReattemptModal()" style="background: transparent; border: none; font-size: 22px; color: #94a3b8; cursor: pointer;">&times;</button>
+            </div>
+
+            <div style="padding: 24px;">
+                <p style="font-size: 13.5px; color: #334155; margin-top: 0; margin-bottom: 14px; line-height: 1.5;">
+                    Please state your <strong>reason for reattempting</strong> this examination. Your reason will be permanently recorded alongside your reattempt score for institutional faculty and proctor verification.
+                </p>
+
+                <!-- Quick Reason Presets -->
+                <div style="margin-bottom: 12px;">
+                    <label style="font-size: 11.5px; font-weight: 700; color: #64748b; text-transform: uppercase; display: block; margin-bottom: 6px;">Common Reasons (Click to select):</label>
+                    <div style="display: flex; flex-direction: column; gap: 6px;">
+                        <button type="button" class="btn-reason-pill" onclick="setReattemptPreset('Network disconnection / power interruption during first attempt')">
+                            📶 Network disconnection / power interruption
+                        </button>
+                        <button type="button" class="btn-reason-pill" onclick="setReattemptPreset('Technical glitch / browser freeze during test')">
+                            💻 Technical glitch / browser freeze during test
+                        </button>
+                        <button type="button" class="btn-reason-pill" onclick="setReattemptPreset('Permission granted by faculty / test coordinator for retake')">
+                            👨‍🏫 Permission granted by faculty / proctor
+                        </button>
+                        <button type="button" class="btn-reason-pill" onclick="setReattemptPreset('Score improvement & knowledge mastery attempt')">
+                            🎯 Score improvement & knowledge mastery
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Reason Textarea -->
+                <div style="margin-bottom: 20px;">
+                    <label style="font-size: 12.5px; font-weight: 700; color: #0f172a; display: block; margin-bottom: 6px;">
+                        Explain Reason in Detail *
+                    </label>
+                    <textarea id="txt-reattempt-reason" rows="3" class="form-control" placeholder="Type specific reason for reattempting this assessment..." style="width: 100%; padding: 10px 12px; font-size: 13px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-family: inherit; resize: vertical; box-sizing: border-box;"></textarea>
+                </div>
+
+                <!-- Action Buttons -->
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button type="button" class="btn-secondary-action-pill" style="padding: 9px 18px; font-size: 13px;" onclick="closeReattemptModal()">Cancel</button>
+                    <button type="button" class="btn-proceed-instructions" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white; border: none; padding: 10px 22px; font-size: 13px; font-weight: 700; border-radius: 10px; cursor: pointer; box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);" onclick="confirmAndStartReattempt()">
+                        <span>Start Reattempt</span>
+                        <span>→</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .btn-reason-pill {
+            text-align: left;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 6px 10px;
+            font-size: 12px;
+            color: #334155;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .btn-reason-pill:hover {
+            background: #fef3c7;
+            border-color: #fde68a;
+            color: #92400e;
+        }
+    </style>
 </body>
 </html>

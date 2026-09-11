@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Exam;
 use App\Models\Question;
+use App\Models\Submission;
 use App\Models\User;
 use Illuminate\Http\Request;
 
@@ -151,6 +152,8 @@ class ExamController extends Controller
 
         $exam = Exam::with(['questions' => function ($q) {
             $q->orderBy('question_number', 'asc');
+        }, 'submissions' => function ($q) {
+            $q->orderBy('submission_timestamp', 'desc');
         }, 'submissions.candidate', 'violations.candidate', 'teacher'])
             ->findOrFail($exam_code);
 
@@ -158,7 +161,56 @@ class ExamController extends Controller
         $submissionsCount = $exam->submissions->count();
         $avgScore = $exam->submissions->avg('total_score') ?? 0;
 
-        return view('exams.show', compact('exam', 'questionsCount', 'submissionsCount', 'avgScore', 'currentUser'));
+        // Multi-Attempt Analytics & Comparisons
+        $candidateAttempts = [];
+        $reattemptedCandidatesCount = 0;
+        $totalImprovement = 0;
+        $improvementCount = 0;
+
+        // Chronologically group submissions by candidate
+        $chronologicalSubs = $exam->submissions->sortBy('submission_timestamp');
+        foreach ($chronologicalSubs as $sub) {
+            $cId = $sub->candidate_id;
+            if (!isset($candidateAttempts[$cId])) {
+                $candidateAttempts[$cId] = [];
+            }
+            $candidateAttempts[$cId][] = $sub;
+        }
+
+        $uniqueCandidatesCount = count($candidateAttempts);
+
+        foreach ($candidateAttempts as $cId => $subList) {
+            $first = $subList[0];
+            $latest = end($subList);
+            $count = count($subList);
+
+            if ($count > 1) {
+                $reattemptedCandidatesCount++;
+                $diff = $latest->total_score - $first->total_score;
+                $totalImprovement += $diff;
+                $improvementCount++;
+            }
+
+            foreach ($subList as $idx => $sub) {
+                $sub->computed_attempt_number = $sub->attempt_number ?: ($idx + 1);
+                $sub->first_attempt_score = $first->total_score;
+                $sub->score_diff_from_first = $sub->total_score - $first->total_score;
+                $sub->total_attempts_by_cand = $count;
+            }
+        }
+
+        $avgImprovement = $improvementCount > 0 ? ($totalImprovement / $improvementCount) : 0;
+
+        return view('exams.show', compact(
+            'exam', 
+            'questionsCount', 
+            'submissionsCount', 
+            'avgScore', 
+            'uniqueCandidatesCount',
+            'reattemptedCandidatesCount',
+            'avgImprovement',
+            'currentUser'
+        ));
     }
 
     public function edit($exam_code)
@@ -206,6 +258,59 @@ class ExamController extends Controller
         ]);
 
         return redirect()->route('exams.show', $exam->exam_code)->with('success', 'Exam parameters updated successfully.');
+    }
+
+    public function reschedule(Request $request, $exam_code)
+    {
+        $userId = session('auth_user_id');
+        $currentUser = User::find($userId);
+
+        if ($currentUser && $currentUser->isTeacher() && !$currentUser->canCreateExams()) {
+            return back()->with('error', 'Access Restricted: You do not have permission to reschedule exams.');
+        }
+
+        $exam = Exam::findOrFail($exam_code);
+
+        // Check if selective candidate rescheduling was requested
+        $candidateIds = $request->input('candidate_ids', []);
+        $singleCand = $request->input('candidate_id');
+        if ($singleCand) {
+            $candidateIds[] = $singleCand;
+        }
+        $candidateIds = array_unique(array_filter($candidateIds));
+
+        if (!empty($candidateIds)) {
+            // Only perform hard delete if explicitly requested with hard_reset_submissions
+            if ($request->boolean('hard_reset_submissions')) {
+                Submission::where('exam_code', $exam_code)
+                    ->whereIn('candidate_id', $candidateIds)
+                    ->delete();
+            }
+
+            $count = count($candidateIds);
+            $dateInfo = $request->exam_date ? " to {$request->exam_date}" : "";
+            return back()->with('success', "Successfully rescheduled / authorized reattempt for {$count} candidate(s){$dateInfo}. Historical attempts are preserved for cross-attempt score comparison.");
+        }
+
+        $request->validate([
+            'exam_date' => 'required|string',
+            'exam_time' => 'required|string',
+        ]);
+
+        $status = $request->input('status', ($exam->status === 'COMPLETED' ? 'UPCOMING' : $exam->status));
+
+        $exam->update([
+            'exam_date' => $this->normalizeDate($request->exam_date),
+            'exam_time' => $request->exam_time,
+            'duration_minutes' => $request->duration_minutes ? (int)$request->duration_minutes : $exam->duration_minutes,
+            'status' => $status,
+        ]);
+
+        if ($request->boolean('hard_reset_submissions')) {
+            Submission::where('exam_code', $exam_code)->delete();
+        }
+
+        return back()->with('success', "Exam {$exam->exam_code} has been successfully rescheduled for all candidates to {$exam->exam_date} ({$exam->exam_time}). Historical attempts remain preserved.");
     }
 
     public function destroy($exam_code)

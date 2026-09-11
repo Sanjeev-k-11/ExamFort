@@ -239,7 +239,11 @@
                         <p>Stay focused and do your best!</p>
                     </div>
                 </div>
-                <div class="top-right-meta">
+                <div class="top-right-meta" style="display: flex; align-items: center; gap: 10px;">
+                    <button class="btn-refresh-pill" id="btn-refresh-page" onclick="triggerPageRefresh(this)" title="Refresh Dashboard & Sync Latest Exam Schedule" style="background: #ffffff; border: 1.5px solid #cbd5e1; border-radius: 8px; padding: 6px 14px; font-size: 12px; font-weight: 700; color: #4338ca; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); transition: all 0.2s;">
+                        <span class="refresh-icon-rot" style="font-size: 13px; display: inline-block; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);">🔄</span>
+                        <span>Refresh</span>
+                    </button>
                     <select class="select-filter-top" id="sel-exam-filter">
                         <option value="all">All Exams</option>
                         <option value="active">Active Assessments</option>
@@ -744,6 +748,18 @@
                 }).catch(() => {});
         }
 
+        function triggerPageRefresh(btn) {
+            if (btn) {
+                const icon = btn.querySelector('.refresh-icon-rot');
+                if (icon) icon.style.transform = 'rotate(360deg)';
+                btn.style.opacity = '0.7';
+                btn.disabled = true;
+            }
+            setTimeout(() => {
+                window.location.reload();
+            }, 300);
+        }
+
         // 1. Live Laptop Real-Time Clock (Ticks every second with laptop's exact date & time)
         function updateLiveDateTime() {
             const el = document.getElementById('lbl-live-date');
@@ -843,7 +859,12 @@
                 const tEnd = toTime24(endPart, 23, 59);
 
                 const start = new Date(year, month, day, tStart.hour, tStart.minute, 0);
-                const end = new Date(year, month, day, tEnd.hour, tEnd.minute, 59);
+                let end = new Date(year, month, day, tEnd.hour, tEnd.minute, 59);
+
+                // Handle overnight time ranges (e.g. 03:00 PM to 12:59 AM next day)
+                if (end < start) {
+                    end.setDate(end.getDate() + 1);
+                }
 
                 return {
                     start: isNaN(start.getTime()) ? null : start,
@@ -881,8 +902,10 @@
                         const subKey = `exam_submitted_${candId}_${e.exam_code}`;
                         const isSub = e.is_submitted || localStorage.getItem(subKey) === 'true';
                         const { start, end, startTime } = parseExamDateTimeRange(e.exam_date, e.exam_time);
+                        const statusUpper = (e.status || '').toUpperCase();
+
                         const isFuture = start ? (now < start) : false;
-                        const isExpired = end ? (now > end) : false;
+                        const isExpired = (statusUpper === 'COMPLETED') || (end ? (now > end) : false);
                         
                         return {
                             ...e,
@@ -1043,8 +1066,11 @@
                 if (currentExamHasSubmitted) {
                     emptyMsg.innerHTML = `
                         <div style="font-size: 24px; margin-bottom: 4px;">🎉</div>
-                        <strong style="display:block; font-size: 13.5px; color:#0f172a; margin-bottom: 2px;">All Active Exams Completed!</strong>
-                        <span style="display:block; font-size: 11.5px; color:#64748b;">You have completed all your assigned assessments. View past scorecards in history.</span>
+                        <strong style="display:block; font-size: 13.5px; color:#0f172a; margin-bottom: 2px;">Exam Assessment Submitted</strong>
+                        <span style="display:block; font-size: 11.5px; color:#64748b; margin-bottom: 10px;">You have submitted your attempt. You can review past scores or start an authorized reattempt.</span>
+                        <a href="exam_details.html?code=${encodeURIComponent(targetExamCode || 'NAT-2026-EXAM')}" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; font-size: 12px; font-weight: 700; text-decoration: none; border-radius: 8px;">
+                            <span>Reattempt Assessment</span> <span>🔄</span>
+                        </a>
                     `;
                 } else {
                     emptyMsg.innerHTML = `

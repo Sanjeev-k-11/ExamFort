@@ -21,6 +21,8 @@ class Submission extends Model
         'coding_hidden_score',
         'essay_score',
         'total_score',
+        'attempt_number',
+        'reattempt_reason',
         'evaluation_report',
         'submission_timestamp',
     ];
@@ -28,12 +30,18 @@ class Submission extends Model
     protected $casts = [
         'answers_json' => 'array',
         'evaluation_report' => 'array',
+        'attempt_number' => 'integer',
         'mcq_score' => 'float',
         'coding_public_score' => 'float',
         'coding_hidden_score' => 'float',
         'essay_score' => 'float',
         'total_score' => 'float',
     ];
+
+    public function isReattempt(): bool
+    {
+        return ($this->attempt_number ?? 1) > 1;
+    }
 
     public function candidate()
     {

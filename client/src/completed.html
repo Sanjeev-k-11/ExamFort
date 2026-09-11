@@ -50,11 +50,30 @@
                     <div class="summary-line"><span>Candidate ID:</span><strong id="lbl-final-cand-id">123</strong></div>
                     <div class="summary-line"><span>Exam Code:</span><strong id="lbl-final-exam-code">NAT-2026-EXAM</strong></div>
                     <div class="summary-line"><span>Submission Time:</span><strong id="lbl-final-timestamp">Just now</strong></div>
-                    <div class="summary-line"><span>Attempt Status:</span><strong class="highlight-blue">1 of 1 Used (Completed & Locked)</strong></div>
-                    <div class="summary-line"><span>Database Record:</span><strong class="green-text">SAVED IN MYSQL (Table: submissions) ✓</strong></div>
+                    <div class="summary-line"><span>Attempt Track:</span><strong class="highlight-blue" id="lbl-final-attempt-badge">Attempt #1 (Recorded & Locked)</strong></div>
+                    <div class="summary-line" id="row-final-reattempt-reason" style="display: none; background: #fffbeb; padding: 6px 10px; border-radius: 6px; border-left: 3px solid #f59e0b;">
+                        <span style="color: #92400e; font-weight: 700;">Reattempt Reason:</span>
+                        <strong style="color: #b45309;" id="lbl-final-reattempt-reason">-</strong>
+                    </div>
+                    <div class="summary-line"><span>Database Record:</span><strong class="green-text">SAVED IN DATABASE (Table: submissions) ✓</strong></div>
                     <div class="summary-line" style="border-top: 1px dashed #e2e8f0; margin-top: 8px; padding-top: 10px;">
                         <span>Evaluation & Marks:</span>
-                        <strong class="highlight-purple" id="lbl-final-marks-status" style="font-size:13.5px;">🔒 Confidential (Awaiting Teacher / Admin Declaration)</strong>
+                        <strong class="highlight-purple" id="lbl-final-marks-status" style="font-size:13.5px;">🔒 Evaluated & Securely Logged</strong>
+                    </div>
+                </div>
+
+                <!-- Cross-Attempt Score Comparison Container -->
+                <div id="container-attempts-comparison" style="display: none; margin: 16px 0; background: #ffffff; border: 1.5px solid #e0e7ff; border-radius: 12px; padding: 16px; text-align: left;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                        <div style="font-size: 13.5px; font-weight: 800; color: #1e1b4b; display: flex; align-items: center; gap: 8px;">
+                            <span>📊</span> Candidate Attempt History & Score Comparison
+                        </div>
+                        <span id="lbl-improvement-badge" style="font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 6px; background: #dcfce7; color: #15803d; display: none;">
+                            +0 Pts Improvement
+                        </span>
+                    </div>
+                    <div id="list-attempts-breakdown" style="display: flex; flex-direction: column; gap: 8px;">
+                        <!-- Rendered by JS -->
                     </div>
                 </div>
 
@@ -62,7 +81,7 @@
                     <div style="font-weight: 700; color: #1e293b; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
                         <span>📢</span> Result & Marks Policy Notice
                     </div>
-                    As per institution guidelines, individual scores and detailed evaluation reports are withheld until your instructor or administrator officially evaluates and publishes the results.
+                    As per institution guidelines, individual scores and detailed evaluation reports are recorded and synced with faculty portals. In case of authorized reattempts, faculty can review both 1st attempt and reattempt scores with stated reasons.
                 </div>
 
                 
@@ -97,22 +116,108 @@
         if (!cand) cand = { id: 'CAND123456', name: 'Candidate 123' };
 
         const examCode = cand.examCode || window.EXAMFORT_ENV?.DEFAULT_EXAM_CODE || 'NAT-2026-EXAM';
-
         const baseUrl = window.EXAMFORT_ENV?.API_BASE_URL || 'http://localhost:5000';
         const candId = cand.student_id || cand.id || 'CAND123456';
 
         if (document.getElementById('lbl-final-cand-id')) document.getElementById('lbl-final-cand-id').textContent = candId;
         if (document.getElementById('lbl-final-exam-code')) document.getElementById('lbl-final-exam-code').textContent = examCode;
 
-        // Fetch submission recorded in MySQL
-        fetch(`${baseUrl}/api/exam/submission/${candId}/${examCode}`)
+        // Check local submission result
+        let localSubmissionResult = null;
+        try {
+            localSubmissionResult = JSON.parse(sessionStorage.getItem('exam_submission_result') || 'null');
+        } catch(_) {}
+
+        if (localSubmissionResult?.attemptNumber && localSubmissionResult.attemptNumber > 1) {
+            document.getElementById('lbl-final-attempt-badge').textContent = `Reattempt #${localSubmissionResult.attemptNumber} (Recorded)`;
+            if (localSubmissionResult.reattemptReason) {
+                document.getElementById('row-final-reattempt-reason').style.display = 'flex';
+                document.getElementById('lbl-final-reattempt-reason').textContent = localSubmissionResult.reattemptReason;
+            }
+        }
+
+        // Fetch all attempts & cross-comparison from API
+        fetch(`${baseUrl}/api/exam/attempts/${candId}/${examCode}`)
             .then(res => res.json())
             .then(data => {
-                if (data.success && data.submission) {
-                    const s = data.submission;
-                    if (s.submittedAt) {
-                        const d = new Date(s.submittedAt);
+                if (data.success && data.attempts && data.attempts.length > 0) {
+                    const attempts = data.attempts;
+                    const latest = attempts[attempts.length - 1];
+                    
+                    if (latest.submitted_at || latest.created_at) {
+                        const d = new Date(latest.submitted_at || latest.created_at);
                         document.getElementById('lbl-final-timestamp').textContent = d.toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                    }
+
+                    if (latest.attempt_number > 1) {
+                        document.getElementById('lbl-final-attempt-badge').innerHTML = `<span style="color:#d97706; font-weight:800;">Reattempt #${latest.attempt_number}</span> (Completed)`;
+                    } else {
+                        document.getElementById('lbl-final-attempt-badge').textContent = `Attempt #1 (Initial - Completed)`;
+                    }
+
+                    if (latest.reattempt_reason) {
+                        document.getElementById('row-final-reattempt-reason').style.display = 'flex';
+                        document.getElementById('lbl-final-reattempt-reason').textContent = latest.reattempt_reason;
+                    }
+
+                    // Render comparison section if multiple attempts exist
+                    if (attempts.length >= 1) {
+                        const compContainer = document.getElementById('container-attempts-comparison');
+                        const listEl = document.getElementById('list-attempts-breakdown');
+                        if (compContainer && listEl) {
+                            compContainer.style.display = 'block';
+
+                            const firstScore = Number(attempts[0].total_score ?? attempts[0].score ?? 0);
+                            const latestScore = Number(latest.total_score ?? latest.score ?? 0);
+                            const scoreDiff = latestScore - firstScore;
+
+                            const impBadge = document.getElementById('lbl-improvement-badge');
+                            if (impBadge && attempts.length > 1) {
+                                impBadge.style.display = 'inline-block';
+                                if (scoreDiff > 0) {
+                                    impBadge.style.background = '#dcfce7';
+                                    impBadge.style.color = '#15803d';
+                                    impBadge.textContent = `+${scoreDiff} Pts Improvement in Reattempt`;
+                                } else if (scoreDiff < 0) {
+                                    impBadge.style.background = '#fee2e2';
+                                    impBadge.style.color = '#b91c1c';
+                                    impBadge.textContent = `${scoreDiff} Pts in Reattempt`;
+                                } else {
+                                    impBadge.style.background = '#f1f5f9';
+                                    impBadge.style.color = '#475569';
+                                    impBadge.textContent = `Equal Score (${latestScore} pts)`;
+                                }
+                            }
+
+                            listEl.innerHTML = attempts.map((att, idx) => {
+                                const attNum = att.attempt_number || (idx + 1);
+                                const isRe = attNum > 1;
+                                const d = new Date(att.submitted_at || att.created_at || Date.now());
+                                const timeFormatted = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                                const dateFormatted = d.toLocaleDateString([], { day: '2-digit', month: 'short' });
+                                const scoreVal = att.total_score !== null && att.total_score !== undefined ? `${att.total_score} pts` : `${att.score || 0} pts`;
+
+                                return `
+                                    <div style="background: ${isRe ? '#f8fafc' : '#ffffff'}; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+                                        <div style="display: flex; align-items: center; gap: 10px;">
+                                            <span style="display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 50%; font-size: 11px; font-weight: 800; background: ${isRe ? '#fef3c7' : '#e0e7ff'}; color: ${isRe ? '#b45309' : '#4338ca'};">
+                                                #${attNum}
+                                            </span>
+                                            <div>
+                                                <div style="font-size: 12.5px; font-weight: 700; color: #1e293b;">
+                                                    ${isRe ? `Reattempt #${attNum}` : '1st Initial Attempt'}
+                                                    <span style="font-size: 11px; font-weight: 500; color: #64748b; margin-left: 6px;">(${dateFormatted} at ${timeFormatted})</span>
+                                                </div>
+                                                ${att.reattempt_reason ? `<div style="font-size: 11px; color: #b45309; font-weight: 600; margin-top: 2px;">Reason: "${att.reattempt_reason}"</div>` : ''}
+                                            </div>
+                                        </div>
+                                        <div style="text-align: right;">
+                                            <span style="font-size: 13px; font-weight: 800; color: #4338ca;">${scoreVal}</span>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('');
+                        }
                     }
                 }
             })
@@ -129,31 +234,24 @@
         const actionsContainer = document.getElementById('completed-actions-container');
 
         if (actionsContainer) {
-            if (isStartedWithCode) {
-                // Flow B: Started with Code -> Show EXIT APPLICATION as primary
-                actionsContainer.innerHTML = `
-                    <button class="btn-primary-exit" id="btn-primary-action">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>
-                        <span>EXIT APPLICATION</span>
-                    </button>
-                    <button class="btn-secondary-action-pill" id="btn-secondary-action">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m15 18-6-6 6-6"/></svg>
-                        <span>Return to Dashboard</span>
-                    </button>
-                `;
-            } else {
-                // Flow A: Normal/Dashboard -> Show GO BACK TO DASHBOARD as primary
-                actionsContainer.innerHTML = `
-                    <button class="btn-primary-dashboard" id="btn-primary-action">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-                        <span>GO BACK TO DASHBOARD</span>
-                    </button>
-                    <button class="btn-secondary-action-pill" id="btn-secondary-action">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>
-                        <span>Exit Application</span>
-                    </button>
-                `;
-            }
+            actionsContainer.innerHTML = `
+                <div style="display: flex; flex-direction: column; gap: 10px; width: 100%;">
+                    <a href="exam_details.html?code=${encodeURIComponent(examCode)}" class="btn-primary-dashboard" style="text-align: center; text-decoration: none; background: #6366f1; justify-content: center;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+                        <span>REATTEMPT / EXAM DETAILS</span>
+                    </a>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn-secondary-action-pill" id="btn-primary-action" style="flex: 1; justify-content: center; border: 1.5px solid #cbd5e1; font-weight: 700;">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m15 18-6-6 6-6"/></svg>
+                            <span>Dashboard</span>
+                        </button>
+                        <button class="btn-secondary-action-pill" id="btn-secondary-action" style="flex: 1; justify-content: center; border: 1.5px solid #fecaca; color: #dc2626; font-weight: 700;">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>
+                            <span>Exit App</span>
+                        </button>
+                    </div>
+                </div>
+            `;
 
             const handleExit = () => {
                 if (window.electronAPI?.exitApp) {
@@ -164,19 +262,11 @@
             };
 
             document.getElementById('btn-primary-action')?.addEventListener('click', () => {
-                if (isStartedWithCode) {
-                    handleExit();
-                } else {
-                    window.location.href = 'dashboard.html';
-                }
+                window.location.href = 'dashboard.html';
             });
 
             document.getElementById('btn-secondary-action')?.addEventListener('click', () => {
-                if (isStartedWithCode) {
-                    window.location.href = 'dashboard.html';
-                } else {
-                    handleExit();
-                }
+                handleExit();
             });
         }
     </script>
