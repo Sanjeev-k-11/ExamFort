@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, globalShortcut, screen, clipboard, systemPreferences } = require('electron');
+const { app, BrowserWindow, dialog, ipcMain, globalShortcut, screen, clipboard, systemPreferences } = require('electron');
 const path = require('path');
 const { exec, execSync, spawn } = require('child_process');
 const os = require('os');
@@ -177,9 +177,21 @@ const PROHIBITED_PROCESSES = [
     { name: 'wireshark.exe', label: 'Wireshark Packet Sniffer', category: 'Network Hijack' },
     { name: 'fiddler.exe', label: 'Fiddler Web Debugger', category: 'Proxy / Interceptor' },
 
-    { name: 'vmware.exe', label: 'VMware Workstation', category: 'Virtual Machine' },
-    { name: 'virtualbox.exe', label: 'VirtualBox Manager', category: 'Virtual Machine' },
+    { name: 'vmware.exe', label: 'VMware Workstation Hypervisor', category: 'Virtual Machine' },
+    { name: 'vmtoolsd.exe', label: 'VMware Tools Daemon', category: 'Virtual Machine Guest Service' },
+    { name: 'vmwaretray.exe', label: 'VMware Tray Agent', category: 'Virtual Machine Guest Service' },
+    { name: 'vmwareuser.exe', label: 'VMware User Process', category: 'Virtual Machine Guest Service' },
+    { name: 'vgauthservice.exe', label: 'VMware Guest Auth Service', category: 'Virtual Machine Guest Service' },
+    { name: 'vmacthlp.exe', label: 'VMware Helper Service', category: 'Virtual Machine Guest Service' },
+    { name: 'virtualbox.exe', label: 'VirtualBox Hypervisor Manager', category: 'Virtual Machine' },
     { name: 'vboxheadless.exe', label: 'VirtualBox Headless', category: 'Virtual Machine' },
+    { name: 'vboxservice.exe', label: 'VirtualBox Guest Integration Service', category: 'Virtual Machine Guest Service' },
+    { name: 'vboxtray.exe', label: 'VirtualBox Tray Agent', category: 'Virtual Machine Guest Service' },
+    { name: 'qemu-ga.exe', label: 'QEMU Guest Agent Service', category: 'Virtual Machine Guest Service' },
+    { name: 'qemu-system-x86_64.exe', label: 'QEMU Virtual Machine Emulator', category: 'Virtual Machine' },
+    { name: 'prl_cc.exe', label: 'Parallels Control Center', category: 'Virtual Machine Guest Service' },
+    { name: 'prl_tools.exe', label: 'Parallels Tools Guest Agent', category: 'Virtual Machine Guest Service' },
+    { name: 'xenservice.exe', label: 'Xen Guest Agent Service', category: 'Virtual Machine Guest Service' },
     { name: 'bluestacks.exe', label: 'BlueStacks Android Emulator', category: 'Emulator' },
     { name: 'nox.exe', label: 'NoxPlayer Emulator', category: 'Emulator' },
 
@@ -540,6 +552,65 @@ function toggleWindowsTaskbar(show) {
     const cmd = show ? 5 : 0; 
     const ps = `powershell -NoProfile -WindowStyle Hidden -Command "$c='[DllImport(\\\"user32.dll\\\")] public static extern int ShowWindow(int h, int c); [DllImport(\\\"user32.dll\\\")] public static extern int FindWindow(string n, string t);'; Add-Type -MemberDefinition $c -Name W -Namespace N -ErrorAction SilentlyContinue; $h=[N.W]::FindWindow('Shell_TrayWnd',''); if($h -gt 0){ [N.W]::ShowWindow($h, ${cmd}) }; $s=[N.W]::FindWindow('Shell_SecondaryTrayWnd',''); if($s -gt 0){ [N.W]::ShowWindow($s, ${cmd}) }"`;
     exec(ps, { timeout: 2000 });
+}
+
+function detectVirtualMachineEnvironment() {
+    if (process.platform !== 'win32') return { isVM: false, reasons: [] };
+    const reasons = [];
+
+    // 1. Process & Service check (VMware Tools, VirtualBox Guest Additions, QEMU, Parallels, Xen)
+    const vmProcessList = [
+        'vmtoolsd.exe', 'vmwaretray.exe', 'vmwareuser.exe', 'vgauthservice.exe', 'vmacthlp.exe',
+        'vboxservice.exe', 'vboxtray.exe', 'qemu-ga.exe', 'prl_cc.exe', 'prl_tools.exe',
+        'xenservice.exe'
+    ];
+    try {
+        const tasklist = execSync('tasklist /NH /FO CSV', { timeout: 3000, encoding: 'utf8' }).toLowerCase();
+        for (const proc of vmProcessList) {
+            if (tasklist.includes(`"${proc.toLowerCase()}"`) || tasklist.includes(proc.toLowerCase())) {
+                reasons.push(`VM Guest Agent: ${proc}`);
+            }
+        }
+    } catch (_) {}
+
+    // 2. Hardware / BIOS / Video / Disk WMI Inspection
+    try {
+        const psScript = '$m = (Get-CimInstance Win32_ComputerSystem -ErrorAction SilentlyContinue | Select-Object -Property Manufacturer, Model | Out-String); $b = (Get-CimInstance Win32_BIOS -ErrorAction SilentlyContinue | Select-Object -Property SerialNumber, Version, Manufacturer | Out-String); $g = (Get-CimInstance Win32_VideoController -ErrorAction SilentlyContinue | Select-Object -Property Name | Out-String); $d = (Get-CimInstance Win32_DiskDrive -ErrorAction SilentlyContinue | Select-Object -Property Model | Out-String); Write-Output $m; Write-Output $b; Write-Output $g; Write-Output $d;';
+        const encoded = Buffer.from(psScript, 'utf16le').toString('base64');
+        const sysInfo = execSync(`powershell -NoProfile -EncodedCommand ${encoded}`, { timeout: 5000, encoding: 'utf8' }).toLowerCase();
+
+        const vmSignatures = [
+            'vmware', 'virtualbox', 'vbox', 'qemu', 'kvm',
+            'virtual machine', 'parallels', 'xen', 'bochs',
+            'innotek', 'red hat qxl'
+        ];
+
+        for (const sig of vmSignatures) {
+            if (sysInfo.includes(sig)) {
+                reasons.push(`Hypervisor Hardware Signature: ${sig.toUpperCase()}`);
+            }
+        }
+    } catch (_) {}
+
+    // 3. Driver files check
+    const vmFiles = [
+        'C:\\Windows\\System32\\drivers\\vmmouse.sys',
+        'C:\\Windows\\System32\\drivers\\vmusbmouse.sys',
+        'C:\\Windows\\System32\\drivers\\vmhgfs.sys',
+        'C:\\Windows\\System32\\drivers\\vboxmouse.sys',
+        'C:\\Windows\\System32\\drivers\\vboxguest.sys',
+        'C:\\Windows\\System32\\drivers\\vboxsf.sys',
+        'C:\\Windows\\System32\\drivers\\vboxvideo.sys'
+    ];
+    for (const f of vmFiles) {
+        try {
+            if (fs.existsSync(f)) {
+                reasons.push(`VM Kernel Driver: ${path.basename(f)}`);
+            }
+        } catch (_) {}
+    }
+
+    return { isVM: reasons.length > 0, reasons: [...new Set(reasons)] };
 }
 
 function createWindow() {
@@ -995,7 +1066,22 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
+    logDebug('App ready. Verifying integrity & virtual environment...');
     if (!verifyApplicationIntegrity()) return;
+
+    // Strict Anti-VM / Anti-Hypervisor Check (VMware, VirtualBox, QEMU, Hyper-V, Parallels)
+    const vmCheck = detectVirtualMachineEnvironment();
+    if (vmCheck.isVM) {
+        const breachReasons = vmCheck.reasons.join('\n• ');
+        const breachMsg = `ExamFort Lockdown Client cannot run inside a Virtual Machine or Hypervisor (VMware / VirtualBox / QEMU / Hyper-V).\n\nDetected Environment:\n• ${breachReasons}\n\nPlease close the virtual machine and launch ExamFort directly on your physical computer operating system.`;
+        logDebug('[CRITICAL SECURITY VIOLATION] Virtual Machine execution blocked: ' + vmCheck.reasons.join(', '));
+        try {
+            dialog.showErrorBox('Virtual Machine Execution Prohibited', breachMsg);
+        } catch (_) {}
+        app.exit(109);
+        return;
+    }
+
     createWindow();
     startLowLevelKeyboardHook(mainWindow);
 

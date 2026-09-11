@@ -220,6 +220,36 @@ public class AegisKeyboardSentinel {
     }
 
     private static int _injectedStrokeCount = 0;
+    private static int _injectedMouseCount = 0;
+
+    private static void ScanAndKillVirtualCursors() {
+        try {
+            foreach (Process p in Process.GetProcesses()) {
+                try {
+                    string pName = p.ProcessName.ToLower();
+                    if (_examPids.Contains((uint)p.Id) || SafeSystemProcesses.Contains(pName)) continue;
+
+                    if (pName.Contains("mousejiggler") || pName.Contains("jiggler") || pName.Contains("movemouse") ||
+                        pName.Contains("caffeine") || pName.Contains("mousemover") || pName.Contains("automouse") ||
+                        pName.Contains("fakecursor") || pName.Contains("virtualcursor") || pName.Contains("dualcursor") ||
+                        pName.Contains("virtualmouse") || pName.Contains("clonedcursor") || pName.Contains("inputdirector") ||
+                        pName.Contains("sharemouse") || pName.Contains("synergy") || pName.Contains("barrier") ||
+                        pName.Contains("deskflow") || pName.Contains("across") || pName.Contains("autoclicker") ||
+                        pName.Contains("opautoclicker") || pName.Contains("speedautoclicker") || pName.Contains("gsautoclicker") ||
+                        pName.Contains("mouserecorder") || pName.Contains("ghostmouse") || pName.Contains("supermouse") ||
+                        pName.Contains("clicker") || pName.Contains("phantommouse") || pName.Contains("mousecontroller")) {
+                        p.Kill();
+                        try {
+                            Process.Start(new ProcessStartInfo("taskkill.exe", "/F /PID " + p.Id) {
+                                CreateNoWindow = true,
+                                UseShellExecute = false
+                            });
+                        } catch {}
+                    }
+                } catch {}
+            }
+        } catch {}
+    }
 
     private static void ScanAndKillAutoTypers() {
         try {
@@ -236,6 +266,30 @@ public class AegisKeyboardSentinel {
                         pName.Contains("clavier") || pName.Contains("beeftext") || pName.Contains("textexpander") ||
                         pName.Contains("phraseexpress") || pName.Contains("murgee") || pName.Contains("typingsimulator") ||
                         pName.Contains("codepaster") || pName.Contains("keyspider")) {
+                        p.Kill();
+                        try {
+                            Process.Start(new ProcessStartInfo("taskkill.exe", "/F /PID " + p.Id) {
+                                CreateNoWindow = true,
+                                UseShellExecute = false
+                            });
+                        } catch {}
+                    }
+                } catch {}
+            }
+        } catch {}
+    }
+
+    private static void ScanAndKillVMwareAndHypervisors() {
+        try {
+            foreach (Process p in Process.GetProcesses()) {
+                try {
+                    string pName = p.ProcessName.ToLower();
+                    if (_examPids.Contains((uint)p.Id) || SafeSystemProcesses.Contains(pName)) continue;
+
+                    if (pName.Contains("vmtoolsd") || pName.Contains("vmwaretray") || pName.Contains("vmwareuser") ||
+                        pName.Contains("vgauthservice") || pName.Contains("vmacthlp") || pName.Contains("vboxservice") ||
+                        pName.Contains("vboxtray") || pName.Contains("qemu-ga") || pName.Contains("prl_cc") ||
+                        pName.Contains("prl_tools") || pName.Contains("xenservice")) {
                         p.Kill();
                         try {
                             Process.Start(new ProcessStartInfo("taskkill.exe", "/F /PID " + p.Id) {
@@ -405,7 +459,9 @@ public class AegisKeyboardSentinel {
                         titleStr.Contains("screenshare") || titleStr.Contains("sharing your screen") || titleStr.Contains("remote desktop") ||
                         titleStr.Contains("anydesk") || titleStr.Contains("teamviewer") || titleStr.Contains("rustdesk") ||
                         titleStr.Contains("ultraviewer") || titleStr.Contains("parsec") || titleStr.Contains("obs studio") ||
-                        titleStr.Contains("streamlabs") || titleStr.Contains("discord") || titleStr.Contains("zoom");
+                        titleStr.Contains("streamlabs") || titleStr.Contains("discord") || titleStr.Contains("zoom") ||
+                        titleStr.Contains("vmware") || titleStr.Contains("virtualbox") || titleStr.Contains("qemu") ||
+                        clsStr.Contains("vmware") || clsStr.Contains("vbox");
 
                     // C. GENERIC BEHAVIORAL OVERLAY DETECTION (Independent of EXE name):
                     // Any visible foreign window with Topmost, Layered/Transparent overlay, Toolwindow, or NoActivate
@@ -490,6 +546,7 @@ public class AegisKeyboardSentinel {
                 }
             } catch {}
 
+            ScanAndKillVMwareAndHypervisors();
             Thread.Sleep(80); // Fast 80ms loop ensures zero visible flicker from intruders
         }
     }
