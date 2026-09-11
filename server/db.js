@@ -752,7 +752,7 @@ class MySQLDatabaseService {
             const formatted = exams.map(ex => {
                 const sub = subMap.get(ex.exam_code);
                 const hasSub = !!sub;
-                const auth = authMap.get(ex.exam_code) || authMap.get('ALL');
+                const auth = authMap.get(ex.exam_code);
                 const isReattemptAuth = !!auth;
 
                 // Match personalized schedule strictly by exam_code
