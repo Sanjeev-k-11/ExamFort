@@ -25,6 +25,8 @@
                 <i data-lucide="crown" style="width: 16px; height: 16px;"></i>
                 <span>Appoint Dean</span>
             </a>
+        </div>
+    </div>
 </div>
 
 <!-- GOOGLE GEMINI AI KEY CONFIGURATION CARD FOR ADMIN -->
