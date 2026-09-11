@@ -43,8 +43,17 @@ class AssessmentEngine {
             javascript: 'JavaScript (Node.js 24)'
         };
 
-        this.warningCount = 0;
+        const candId = this.getCandidateId();
+        const warnKey = `exam_warnings_${candId}_${this.examCode}`;
+        const savedWarnings = parseInt(localStorage.getItem(warnKey) || sessionStorage.getItem(warnKey) || '0', 10);
+        this.warningCount = isNaN(savedWarnings) ? 0 : savedWarnings;
         this.maxWarnings = 10;
+
+        const secLockKey = `exam_section_lock_${candId}_${this.examCode}`;
+        const savedSecIndex = parseInt(localStorage.getItem(secLockKey) || sessionStorage.getItem(secLockKey) || '0', 10);
+        this.maxActiveSectionIndex = isNaN(savedSecIndex) ? 0 : savedSecIndex;
+        this.pendingSectionTransition = null;
+
         this.fontSize = 14;
         this.isProblemCollapsed = false;
         this.warningAckTimer = null;
@@ -70,8 +79,25 @@ class AssessmentEngine {
             this.setupConsoleHeightResizer();
             this.setupFontSizeControls();
             this.setupProblemPanelToggle();
+
+            // Immediately display restored persistent security warning count in header
+            const headerBadge = document.getElementById('lbl-header-warnings');
+            if (headerBadge) {
+                headerBadge.textContent = `${this.warningCount} / ${this.maxWarnings}`;
+                if (this.warningCount >= 7) headerBadge.style.color = '#ef4444';
+            }
         } catch (uiErr) {
             console.error('UI setup warning:', uiErr);
+        }
+
+        // If candidate already reached max warnings in prior session, enforce immediate lock
+        if (this.warningCount >= this.maxWarnings) {
+            this.isSubmitting = true;
+            this.showToast('🚨 Maximum warning limit reached (10 Warnings). Auto-submitting exam...', 'error');
+            setTimeout(() => {
+                this.submitAssessment(true, 'MAX_WARNINGS_EXCEEDED');
+            }, 1200);
+            return;
         }
 
         const alreadySubmitted = await this.checkExistingSubmission();
@@ -112,10 +138,12 @@ class AssessmentEngine {
                               sessionStorage.getItem(`is_reattempt_${this.examCode}`) === 'true' ||
                               sessionStorage.getItem('is_reattempt') === 'true';
 
-        const candId = this.candidate?.id || this.candidate?.student_id || 'CAND123456';
+        const candId = this.getCandidateId();
         const localKey = `exam_submitted_${candId}_${this.examCode}`;
         const timeExpiredKey = `exam_time_expired_${candId}_${this.examCode}`;
         const endKey = `exam_end_time_${candId}_${this.examCode}`;
+        const warnKey = `exam_warnings_${candId}_${this.examCode}`;
+        const secLockKey = `exam_section_lock_${candId}_${this.examCode}`;
 
         try {
             const res = await fetch(`${this.backendUrl}/api/exam/check-attempt/${candId}/${this.examCode}`);
@@ -124,8 +152,6 @@ class AssessmentEngine {
                 if (data.isReattemptAuthorized) {
                     // Admin has officially authorized a reattempt!
                     isReattemptMode = true;
-                    sessionStorage.setItem(`is_reattempt_${this.examCode}`, 'true');
-                    sessionStorage.setItem('is_reattempt', 'true');
                     if (data.reattemptReason) {
                         sessionStorage.setItem(`reattempt_reason_${this.examCode}`, data.reattemptReason);
                         sessionStorage.setItem('reattempt_reason', data.reattemptReason);
@@ -146,16 +172,26 @@ class AssessmentEngine {
         } catch (_) {}
 
         if (isReattemptMode) {
-            console.log('🔄 [Assessment Engine] Authorized Reattempt session active. Resetting locks and timer.');
+            console.log('🔄 [Assessment Engine] Authorized Reattempt session initialized. Resetting submission flags.');
             localStorage.removeItem(localKey);
             sessionStorage.removeItem(localKey);
             localStorage.removeItem(`exam_submitted_${this.examCode}`);
             sessionStorage.removeItem(`exam_submitted_${this.examCode}`);
             localStorage.removeItem(timeExpiredKey);
             sessionStorage.removeItem(timeExpiredKey);
-            localStorage.removeItem(endKey);
+            sessionStorage.removeItem(`is_reattempt_${this.examCode}`);
+            sessionStorage.removeItem('is_reattempt');
+            if (urlParams.get('reattempt') === '1') {
+                localStorage.removeItem(endKey);
+                localStorage.removeItem(warnKey);
+                localStorage.removeItem(secLockKey);
+                this.warningCount = 0;
+                this.maxActiveSectionIndex = 0;
+            }
             return false;
         }
+
+        return localStorage.getItem(localKey) === 'true' || sessionStorage.getItem(localKey) === 'true';
 
         return localStorage.getItem(localKey) === 'true' || sessionStorage.getItem(localKey) === 'true';
     }
@@ -403,6 +439,9 @@ class AssessmentEngine {
             this.submitAssessment(false);
         });
 
+        document.getElementById('btn-cancel-section-lock')?.addEventListener('click', () => this.hideSectionLockModal());
+        document.getElementById('btn-confirm-section-lock')?.addEventListener('click', () => this.confirmSectionTransition());
+
         document.getElementById('btn-mcq-next')?.addEventListener('click', () => this.nextQuestion());
         document.getElementById('btn-mcq-prev')?.addEventListener('click', () => this.prevQuestion());
         document.getElementById('btn-mcq-review')?.addEventListener('click', () => this.toggleReview());
@@ -613,6 +652,13 @@ class AssessmentEngine {
         if (this.isSubmitting || this.isWarningModalOpen) return;
 
         this.warningCount++;
+        const candId = this.getCandidateId();
+        const warnKey = `exam_warnings_${candId}_${this.examCode}`;
+        try {
+            localStorage.setItem(warnKey, this.warningCount.toString());
+            sessionStorage.setItem(warnKey, this.warningCount.toString());
+        } catch (_) {}
+
         console.warn(`[Proctoring] Strike ${this.warningCount}/${this.maxWarnings}: ${type} - ${details}`);
 
         const headerBadge = document.getElementById('lbl-header-warnings');
@@ -640,7 +686,7 @@ class AssessmentEngine {
             this.isSubmitting = true;
             this.showToast('🚨 Maximum warning limit reached (10 Warnings). Auto-submitting exam now...', 'error');
             setTimeout(() => {
-                this.submitAssessment(true);
+                this.submitAssessment(true, 'MAX_WARNINGS_EXCEEDED');
             }, 1500);
             return;
         }
@@ -1435,28 +1481,91 @@ class AssessmentEngine {
         this.showToast(`Switched compiler to ${this.supportedLanguages[newLang]}`, 'info');
     }
 
-    handleSectionChange(secId) {
-        const sec = this.sections?.find(s => s.id === secId);
-        let targetIdx = this.questions.findIndex(q => 
-            q.section === secId || 
-            (secId === 'coding' && q.type === 'CODING') || 
-            (secId === 'essay' && q.type === 'PARAGRAPH') || 
-            (secId === 'mcq' && q.type === 'MCQ')
-        );
+    getSectionIndex(secIdOrType) {
+        if (!this.sections || this.sections.length === 0) {
+            if (secIdOrType === 'coding' || secIdOrType === 'CODING') return 1;
+            if (secIdOrType === 'essay' || secIdOrType === 'PARAGRAPH') return 2;
+            return 0;
+        }
+        const idx = this.sections.findIndex(s => s.id === secIdOrType || s.type === secIdOrType);
+        return idx !== -1 ? idx : 0;
+    }
 
+    getQuestionSectionIndex(q) {
+        if (!q) return 0;
+        const secId = q.section || (q.type === 'CODING' ? 'coding' : (q.type === 'PARAGRAPH' ? 'essay' : 'mcq'));
+        return this.getSectionIndex(secId);
+    }
+
+    isSectionLocked(secIndex) {
+        return secIndex < this.maxActiveSectionIndex;
+    }
+
+    promptSectionTransitionModal(targetSecIdx, targetQIdx) {
+        this.pendingSectionTransition = { targetSecIdx, targetQIdx };
+        const modal = document.getElementById('modal-section-lock-confirm');
+        const titleEl = document.getElementById('lbl-section-lock-title');
+        const descEl = document.getElementById('lbl-section-lock-desc');
+
+        const curSec = this.sections[this.maxActiveSectionIndex];
+        const nextSec = this.sections[targetSecIdx];
+        const curName = curSec?.name || `Section ${this.maxActiveSectionIndex + 1}`;
+        const nextName = nextSec?.name || `Section ${targetSecIdx + 1}`;
+
+        if (titleEl) titleEl.textContent = `Lock ${curName} & Proceed?`;
+        if (descEl) descEl.innerHTML = `You are about to complete and permanently lock <strong>${curName}</strong> and proceed to <strong>${nextName}</strong>.`;
+
+        if (modal) modal.classList.remove('hidden');
+    }
+
+    hideSectionLockModal() {
+        const modal = document.getElementById('modal-section-lock-confirm');
+        if (modal) modal.classList.add('hidden');
+        this.pendingSectionTransition = null;
+    }
+
+    confirmSectionTransition() {
+        if (!this.pendingSectionTransition) return;
+        const { targetSecIdx, targetQIdx } = this.pendingSectionTransition;
+        this.hideSectionLockModal();
+
+        this.saveCurrent();
+        this.maxActiveSectionIndex = Math.max(this.maxActiveSectionIndex, targetSecIdx);
+        const candId = this.getCandidateId();
+        const secLockKey = `exam_section_lock_${candId}_${this.examCode}`;
+        localStorage.setItem(secLockKey, this.maxActiveSectionIndex.toString());
+        sessionStorage.setItem(secLockKey, this.maxActiveSectionIndex.toString());
+
+        this.currentIndex = targetQIdx;
+        this.renderDynamicSectionSwitcher();
+        this.renderPalette();
+        this.renderCurrentQuestion();
+
+        const newSec = this.sections[targetSecIdx];
+        this.showToast(`🔒 Section locked. Now on ${newSec?.name || 'Next Section'}`, 'info');
+    }
+
+    handleSectionChange(secId) {
+        const targetSecIdx = this.getSectionIndex(secId);
+        const targetSec = this.sections[targetSecIdx];
+
+        if (this.isSectionLocked(targetSecIdx)) {
+            this.showToast(`🔒 ${targetSec?.name || 'Section'} is already completed and locked. You cannot navigate back.`, 'warning');
+            return;
+        }
+
+        let targetIdx = this.questions.findIndex(q => this.getQuestionSectionIndex(q) === targetSecIdx);
         if (targetIdx === -1) targetIdx = 0;
 
-        const secName = sec?.name || (secId === 'coding' ? 'Section 2: Coding Assessment' : (secId === 'essay' ? 'Section 3: Descriptive & Paragraph' : 'Section 1: Aptitude & Reasoning'));
+        if (targetSecIdx > this.maxActiveSectionIndex) {
+            this.promptSectionTransitionModal(targetSecIdx, targetIdx);
+            return;
+        }
 
-        const lbl = document.getElementById('lbl-selected-section');
-        if (lbl) lbl.textContent = secName;
-
-        document.querySelectorAll('#menu-section-switcher .custom-select-option').forEach(opt => {
-            opt.classList.toggle('selected', opt.getAttribute('data-section') === secId);
-        });
-
-        this.jumpTo(targetIdx);
-        this.showToast(`Switched to ${secName}`, 'info');
+        this.saveCurrent();
+        this.currentIndex = targetIdx;
+        this.renderCurrentQuestion();
+        this.showToast(`Switched to ${targetSec?.name || 'Section'}`, 'info');
     }
 
     // Dynamically render section cards inside the Change Section dropdown based on backend exam data
@@ -1508,23 +1617,34 @@ class AssessmentEngine {
         // 2. Clear hardcoded HTML and render dynamic sections received from backend
         menu.innerHTML = '';
         this.sections.forEach((sec, idx) => {
+            const isLocked = this.isSectionLocked(idx);
+            const isActive = idx === this.maxActiveSectionIndex;
             const opt = document.createElement('div');
-            opt.className = `custom-select-option section-opt-card ${idx === 0 ? 'selected' : ''}`;
+            opt.className = `custom-select-option section-opt-card ${isLocked ? 'locked' : (isActive ? 'selected' : '')}`;
             opt.setAttribute('data-section', sec.id);
             opt.setAttribute('role', 'option');
 
             const bgCol = sec.type === 'CODING' ? 'rgba(59, 130, 246, 0.12)' : (sec.type === 'PARAGRAPH' ? 'rgba(16, 185, 129, 0.12)' : 'rgba(99, 102, 241, 0.12)');
             const desc = sec.description || (sec.question_range ? `Questions ${sec.question_range} • ${sec.count} Questions` : `${sec.count} Questions`);
 
+            let statusTag = '';
+            if (isLocked) {
+                statusTag = '<span class="section-lock-tag">🔒 Locked</span>';
+            } else if (isActive) {
+                statusTag = '<span class="section-active-tag">● Active</span>';
+            } else {
+                statusTag = '<span class="section-available-tag">Next Section</span>';
+            }
+
             opt.innerHTML = `
                 <div class="section-opt-icon-circle" style="background: ${bgCol}; width:34px; height:34px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:16px;">
-                    ${sec.icon || (sec.type === 'CODING' ? '💻' : (sec.type === 'PARAGRAPH' ? '✍️' : '📝'))}
+                    ${isLocked ? '🔒' : (sec.icon || (sec.type === 'CODING' ? '💻' : (sec.type === 'PARAGRAPH' ? '✍️' : '📝')))}
                 </div>
                 <div class="section-opt-info" style="flex:1;">
-                    <strong class="sec-title" style="display:block; font-size:13px; font-weight:700; color:#1e293b;">${sec.name}</strong>
+                    <strong class="sec-title" style="display:block; font-size:13px; font-weight:700; color:${isLocked ? '#94a3b8' : '#1e293b'};">${sec.name}</strong>
                     <span class="sec-desc" style="display:block; font-size:11px; color:#64748b;">${desc}</span>
                 </div>
-                <svg class="opt-check-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                ${statusTag}
             `;
 
             opt.addEventListener('click', (e) => {
@@ -1539,7 +1659,7 @@ class AssessmentEngine {
 
         // Update default trigger label to current active section
         const curQ = this.questions[this.currentIndex];
-        const activeSec = (curQ && this.sections.find(s => s.id === curQ.section || s.type === curQ.type)) || this.sections[0];
+        const activeSec = (curQ && this.sections.find(s => s.id === curQ.section || s.type === curQ.type)) || this.sections[this.maxActiveSectionIndex] || this.sections[0];
         const lbl = document.getElementById('lbl-selected-section');
         if (lbl && activeSec) {
             lbl.textContent = activeSec.name;
@@ -1549,15 +1669,17 @@ class AssessmentEngine {
         const tabsBar = document.getElementById('assessment-section-tabs-bar');
         if (tabsBar) {
             tabsBar.innerHTML = '';
-            this.sections.forEach((sec) => {
+            this.sections.forEach((sec, idx) => {
+                const isLocked = this.isSectionLocked(idx);
+                const isActive = idx === this.maxActiveSectionIndex;
                 const btn = document.createElement('button');
                 btn.type = 'button';
-                btn.className = 'section-tab-btn';
+                btn.className = `section-tab-btn ${isLocked ? 'locked' : (isActive ? 'active' : '')}`;
                 btn.setAttribute('data-section', sec.id);
                 btn.innerHTML = `
-                    <span>${sec.icon || (sec.type === 'CODING' ? '💻' : (sec.type === 'PARAGRAPH' ? '✍️' : '📝'))}</span>
+                    <span>${isLocked ? '🔒' : (sec.icon || (sec.type === 'CODING' ? '💻' : (sec.type === 'PARAGRAPH' ? '✍️' : '📝')))}</span>
                     <span>${sec.name}</span>
-                    <span class="tab-badge-count">${sec.count} Questions</span>
+                    <span class="tab-badge-count">${isLocked ? 'Completed 🔒' : `${sec.count} Qs`}</span>
                 `;
                 btn.addEventListener('click', (e) => {
                     e.preventDefault();
@@ -2055,6 +2177,18 @@ class AssessmentEngine {
             pauseBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="9" x2="15" y2="15"></line><line x1="15" y1="9" x2="9" y2="15"></line></svg><span>End Test</span>`;
         }
 
+        // Synchronize highest reached section index
+        const curSecIdx = this.getQuestionSectionIndex(q);
+        if (curSecIdx > this.maxActiveSectionIndex) {
+            this.maxActiveSectionIndex = curSecIdx;
+            const candId = this.getCandidateId();
+            const secLockKey = `exam_section_lock_${candId}_${this.examCode}`;
+            try {
+                localStorage.setItem(secLockKey, this.maxActiveSectionIndex.toString());
+                sessionStorage.setItem(secLockKey, this.maxActiveSectionIndex.toString());
+            } catch (_) {}
+        }
+
         // Dynamic Section Switcher trigger text update and option highlight
         const secTriggerLabel = document.getElementById('lbl-selected-section');
         if (secTriggerLabel) {
@@ -2063,6 +2197,31 @@ class AssessmentEngine {
         document.querySelectorAll('#menu-section-switcher .custom-select-option').forEach(opt => {
             opt.classList.toggle('selected', opt.getAttribute('data-section') === (curSec?.id || q.section));
         });
+
+        // Update Previous navigation buttons visibility & lock state
+        const canGoPrev = this.currentIndex > 0 && !this.isSectionLocked(this.getQuestionSectionIndex(this.questions[this.currentIndex - 1]));
+        const btnPrevMCQ = document.getElementById('btn-mcq-prev');
+        const btnPrevCode = document.getElementById('btn-code-prev');
+        const btnPrevEssay = document.getElementById('btn-essay-prev');
+
+        if (btnPrevMCQ) {
+            btnPrevMCQ.style.visibility = canGoPrev ? 'visible' : 'hidden';
+            btnPrevMCQ.disabled = !canGoPrev;
+        }
+        if (btnPrevCode) {
+            btnPrevCode.style.visibility = canGoPrev ? 'visible' : 'hidden';
+            btnPrevCode.disabled = !canGoPrev;
+        }
+        if (btnPrevEssay) {
+            btnPrevEssay.style.visibility = canGoPrev ? 'visible' : 'hidden';
+            btnPrevEssay.disabled = !canGoPrev;
+        }
+
+        // Update Tip Box with forward-only regulation
+        const tipDesc = document.querySelector('.tip-box-card .tip-description');
+        if (tipDesc) {
+            tipDesc.innerHTML = `📌 <strong>Section Rule:</strong> Navigation is <strong>forward-only</strong>. Once you proceed to the next section (e.g., Coding), all previous sections are locked permanently.`;
+        }
 
         // Review state
         const isMarked = this.markedForReview.has(q.question_number);
@@ -2751,28 +2910,62 @@ class AssessmentEngine {
 
     nextQuestion() {
         this.saveCurrent();
-        if (this.currentIndex < this.questions.length - 1) {
-            this.currentIndex++;
-            this.renderCurrentQuestion();
-        } else {
+        if (this.currentIndex >= this.questions.length - 1) {
             this.showSubmitModal();
+            return;
         }
+
+        const currentQ = this.questions[this.currentIndex];
+        const nextQ = this.questions[this.currentIndex + 1];
+        const curSecIdx = this.getQuestionSectionIndex(currentQ);
+        const nextSecIdx = this.getQuestionSectionIndex(nextQ);
+
+        // If stepping across into the next higher section
+        if (nextSecIdx > curSecIdx && nextSecIdx > this.maxActiveSectionIndex) {
+            this.promptSectionTransitionModal(nextSecIdx, this.currentIndex + 1);
+            return;
+        }
+
+        this.currentIndex++;
+        this.renderCurrentQuestion();
     }
 
     prevQuestion() {
         this.saveCurrent();
-        if (this.currentIndex > 0) {
-            this.currentIndex--;
-            this.renderCurrentQuestion();
+        if (this.currentIndex <= 0) return;
+
+        const targetQ = this.questions[this.currentIndex - 1];
+        const targetSecIdx = this.getQuestionSectionIndex(targetQ);
+
+        if (this.isSectionLocked(targetSecIdx)) {
+            this.showToast('🔒 Section Locked: You cannot navigate back to previously completed sections.', 'warning');
+            return;
         }
+
+        this.currentIndex--;
+        this.renderCurrentQuestion();
     }
 
     jumpTo(idx) {
         this.saveCurrent();
-        if (idx >= 0 && idx < this.questions.length) {
-            this.currentIndex = idx;
-            this.renderCurrentQuestion();
+        if (idx < 0 || idx >= this.questions.length) return;
+
+        const targetQ = this.questions[idx];
+        const targetSecIdx = this.getQuestionSectionIndex(targetQ);
+
+        if (this.isSectionLocked(targetSecIdx)) {
+            const secName = this.sections[targetSecIdx]?.name || `Section ${targetSecIdx + 1}`;
+            this.showToast(`🔒 ${secName} is locked. You cannot return to previously completed sections.`, 'warning');
+            return;
         }
+
+        if (targetSecIdx > this.maxActiveSectionIndex) {
+            this.promptSectionTransitionModal(targetSecIdx, idx);
+            return;
+        }
+
+        this.currentIndex = idx;
+        this.renderCurrentQuestion();
     }
 
     toggleReview() {
@@ -2795,10 +2988,15 @@ class AssessmentEngine {
 
         this.questions.forEach((q, idx) => {
             if (grid) {
+                const qSecIdx = this.getQuestionSectionIndex(q);
+                const isLocked = this.isSectionLocked(qSecIdx);
                 const tile = document.createElement('div');
-                tile.className = 'palette-tile';
+                tile.className = `palette-tile ${isLocked ? 'locked' : ''}`;
                 tile.id = `palette-tile-${q.question_number}`;
                 tile.textContent = q.question_number;
+                if (isLocked) {
+                    tile.title = 'Section completed and locked';
+                }
                 tile.addEventListener('click', () => this.jumpTo(idx));
                 grid.appendChild(tile);
             }
@@ -2815,6 +3013,8 @@ class AssessmentEngine {
             const tile = document.getElementById(`palette-tile-${q.question_number}`);
             const isMarked = this.markedForReview.has(q.question_number);
             const ans = this.answers[q.question_number];
+            const qSecIdx = this.getQuestionSectionIndex(q);
+            const isLocked = this.isSectionLocked(qSecIdx);
 
             if (ans?.status === 'ANSWERED' || ans?.selectedOption) {
                 answeredCount++;
@@ -2824,7 +3024,9 @@ class AssessmentEngine {
                 tile.className = 'palette-tile';
                 if (idx === this.currentIndex) tile.classList.add('current');
 
-                if (isMarked) {
+                if (isLocked) {
+                    tile.classList.add('locked');
+                } else if (isMarked) {
                     tile.classList.add('marked');
                 } else if (ans?.status === 'ANSWERED') {
                     tile.classList.add('answered');
@@ -2936,21 +3138,24 @@ class AssessmentEngine {
     startTimer() {
         if (this.timerInterval) clearInterval(this.timerInterval);
         const timerLbl = document.getElementById('lbl-exam-timer');
-        const candId = this.candidate?.id || this.candidate?.student_id || 'CAND123456';
+        const candId = this.getCandidateId();
         const endKey = `exam_end_time_${candId}_${this.examCode}`;
 
-        const urlParams = new URLSearchParams(window.location.search);
-        const isReattempt = urlParams.get('reattempt') === '1' || 
-                            sessionStorage.getItem(`is_reattempt_${this.examCode}`) === 'true' ||
-                            sessionStorage.getItem('is_reattempt') === 'true';
-
-        let targetEndTime = parseInt(localStorage.getItem(endKey) || '0', 10);
+        let targetEndTime = parseInt(localStorage.getItem(endKey) || sessionStorage.getItem(endKey) || '0', 10);
         const now = Date.now();
 
-        // If in reattempt mode, or target end time is unset, invalid, or already expired (targetEndTime <= now), initialize fresh duration
-        if (isReattempt || !targetEndTime || isNaN(targetEndTime) || targetEndTime <= now) {
+        // 1. If targetEndTime already expired, trigger time expiration immediately
+        if (targetEndTime && targetEndTime <= now) {
+            console.warn('⌛ [Exam Timer] Target end time already expired.');
+            this.handleTimeExpired();
+            return;
+        }
+
+        // 2. If targetEndTime does not exist or is invalid, initialize it once
+        if (!targetEndTime || isNaN(targetEndTime)) {
             targetEndTime = now + (this.timerSeconds * 1000);
             localStorage.setItem(endKey, targetEndTime.toString());
+            sessionStorage.setItem(endKey, targetEndTime.toString());
         }
 
         const tick = () => {

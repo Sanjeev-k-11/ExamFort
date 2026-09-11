@@ -621,7 +621,34 @@
         </div>
     </div>
 
-    
+    <!-- 🔒 Section Lock & Transition Confirmation Modal -->
+    <div class="exam-modal-backdrop hidden" id="modal-section-lock-confirm">
+        <div class="exam-modal-card">
+            <div class="exam-modal-icon-wrap icon-warning" style="background: rgba(245, 158, 11, 0.12); color: #d97706;">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+            </div>
+            <h3 class="exam-modal-title" id="lbl-section-lock-title">Lock Current Section & Proceed?</h3>
+            <p class="exam-modal-desc" id="lbl-section-lock-desc">
+                You are about to complete and lock this section and proceed to the next section.
+            </p>
+            <div style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 12px 14px; margin-bottom: 20px; font-size: 12.5px; color: #92400e; text-align: left; line-height: 1.5;">
+                <strong>⚠️ Strict Exam Regulation:</strong> Section progression is strictly forward-only. Once you proceed, all previous sections are <strong>permanently locked</strong> and you cannot return to modify answers.
+            </div>
+            <div class="exam-modal-actions">
+                <button type="button" class="btn-modal-cancel" id="btn-cancel-section-lock">
+                    Stay in Current Section
+                </button>
+                <button type="button" class="btn-modal-primary" id="btn-confirm-section-lock" style="background: #d97706; border-color: #d97706;">
+                    Lock & Proceed 🔒
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Submit Complete Exam Modal -->
     <div class="exam-modal-backdrop hidden" id="modal-submit-confirm">
         <div class="exam-modal-card">
             <div class="exam-modal-icon-wrap icon-info">
