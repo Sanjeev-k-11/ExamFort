@@ -2380,6 +2380,10 @@ class AssessmentEngine {
             if (summary) {
                 if (executionResult.allPassed) {
                     summary.textContent = `✓ Accepted — All ${totalCount} Test Cases Passed`;
+                    summary.className = 'console-status-badge status-passed';
+                } else {
+                    summary.textContent = `✕ Wrong Answer — ${passedCount}/${totalCount} Test Cases Passed`;
+                    summary.className = 'console-status-badge status-failed';
                 }
             }
 
