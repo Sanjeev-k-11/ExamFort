@@ -340,7 +340,21 @@ public class AegisKeyboardSentinel {
                         return true;
                     }
 
-                    // B. Signature Detection (Titles / Classes of known AI Copilots, Cheats, OCR, Overlays)
+                    // B. Signature & Class Detection (Text Extractors, OCR Tools, Screen Snips, AI Copilots, Cheats, Overlays)
+                    bool isTextExtractorOrOCR =
+                        clsStr.Contains("textextractor") || clsStr.Contains("screenclipping") || clsStr.Contains("snip") ||
+                        clsStr.Contains("capture2text") || clsStr.Contains("textshot") || clsStr.Contains("easyscreenocr") ||
+                        clsStr.Contains("screenocr") || clsStr.Contains("tesseract") || clsStr.Contains("paddleocr") ||
+                        clsStr.Contains("easyocr") || clsStr.Contains("blackbox") || clsStr.Contains("snipast") ||
+                        clsStr.Contains("lightshot") || clsStr.Contains("greenshot") || clsStr.Contains("sharex") ||
+                        clsStr.Contains("magnifier") || clsStr.Contains("cropandlock") ||
+                        titleStr.Contains("text extractor") || titleStr.Contains("text extractor window") ||
+                        titleStr.Contains("capture2text") || titleStr.Contains("textshot") || titleStr.Contains("easy screen ocr") ||
+                        titleStr.Contains("screen to text") || titleStr.Contains("ocr screen") || titleStr.Contains("extract text") ||
+                        titleStr.Contains("snipping tool") || titleStr.Contains("snip & sketch") || titleStr.Contains("screen clipping") ||
+                        titleStr.Contains("snipast") || titleStr.Contains("lightshot") || titleStr.Contains("greenshot") ||
+                        titleStr.Contains("sharex") || titleStr.Contains("crop and lock") || titleStr.Contains("powertoys");
+
                     bool isKnownCheatOrOverlay = 
                         clsStr.Contains("securepopclass") || clsStr.Contains("overlayclass") || clsStr.Contains("tktop") ||
                         clsStr.Contains("autohotkey") || clsStr.Contains("cheatengine") || clsStr.Contains("x64dbg") ||
@@ -363,7 +377,9 @@ public class AegisKeyboardSentinel {
                     bool isStealthOverlay = isVisible && ((exStyle & WS_EX_LAYERED) != 0 || (exStyle & WS_EX_TRANSPARENT) != 0 || (exStyle & WS_EX_TOOLWINDOW) != 0 || (exStyle & WS_EX_NOACTIVATE) != 0);
 
                     string violationReason = "";
-                    if (isKnownCheatOrOverlay) {
+                    if (isTextExtractorOrOCR) {
+                        violationReason = "Unauthorized Screen Text Extractor / OCR Tool (" + (string.IsNullOrEmpty(titleStr) ? clsStr : titleStr) + ")";
+                    } else if (isKnownCheatOrOverlay) {
                         violationReason = "Blacklisted Cheat / Assistant Overlay Signature (" + titleStr + ")";
                     } else if (isForeignTopmost && isStealthOverlay) {
                         violationReason = "Topmost Layered Transparent Overlay (HWND_TOPMOST + WS_EX_LAYERED)";

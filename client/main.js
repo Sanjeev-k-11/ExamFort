@@ -328,13 +328,15 @@ function startTopmostOverlayScanner() {
                         $isTopmost = ($exStyle -band 0x00000008) -ne 0;
                         $isLayered = ($exStyle -band 0x00080000) -ne 0;
                         $isTrans = ($exStyle -band 0x00000020) -ne 0;
-                        if ($isTopmost -or ($isLayered -and $isTrans)) {
+                        $sb = New-Object System.Text.StringBuilder 256;
+                        [WinChecker]::GetWindowText($hWnd, $sb, 256);
+                        $wTitle = $sb.ToString().ToLower();
+                        $isOCR = $wTitle -match 'text extractor|ocr|screen clip|snipping|capture2text|textshot|snipast|crop and lock|magnifier';
+                        if ($isTopmost -or ($isLayered -and $isTrans) -or $isOCR) {
                             try {
                                 $proc = Get-Process -Id $pidVal -ErrorAction SilentlyContinue;
                                 if ($proc -and $proc.ProcessName -notmatch '^(explorer|dwm|system|lsass|services|svchost|powershell|pwsh|cmd|conhost|taskmgr|antigravity|code)$') {
-                                    $sb = New-Object System.Text.StringBuilder 256;
-                                    [WinChecker]::GetWindowText($hWnd, $sb, 256);
-                                    Write-Output "FOUND_OVERLAY:$pidVal:$($proc.ProcessName):$($sb.ToString())";
+                                    Write-Output "FOUND_OVERLAY:$pidVal:$($proc.ProcessName):$($sb.ToString()):$($isOCR)";
                                 }
                             } catch {}
                         }
@@ -342,6 +344,16 @@ function startTopmostOverlayScanner() {
                 }
                 return $true;
             }, [IntPtr]::Zero) | Out-Null
+
+            # Also scan for background Text Extractor / OCR processes
+            $ocrProcs = Get-Process -ErrorAction SilentlyContinue | Where-Object {
+                $_.ProcessName -match '^(powertoys\.textextractor|capture2text|textshot|easyscreenocr|screenclippinghost|snippingtool|snipaste|snipast|lightshot|greenshot|sharex|tesseract|paddleocr|easyocr|blackbox|screentotext)$'
+            };
+            if ($ocrProcs) {
+                foreach ($op in $ocrProcs) {
+                    Write-Output "FOUND_OVERLAY:$($op.Id):$($op.ProcessName):Background OCR Tool:True";
+                }
+            }
         `;
 
         exec(`powershell -NoProfile -WindowStyle Hidden -Command "${psCmd.replace(/\r?\n/g, ' ')}"`, { timeout: 2500 }, (err, stdout) => {
@@ -349,17 +361,21 @@ function startTopmostOverlayScanner() {
                 const lines = stdout.split(/\r?\n/);
                 for (const line of lines) {
                     if (line.startsWith('FOUND_OVERLAY:')) {
-                        const [, pid, procName, title] = line.split(':');
+                        const [, pid, procName, title, isOCR] = line.split(':');
                         if (procName) {
-                            console.warn(`[Security] Continuous Watcher killed topmost overlay process: ${procName} (PID: ${pid})`);
+                            console.warn(`[Security] Continuous Watcher killed unauthorized overlay / text extractor process: ${procName} (PID: ${pid})`);
                             exec(`taskkill /F /PID ${pid} 2>nul`);
+                            exec(`taskkill /F /IM ${procName}.exe 2>nul`);
                             if (mainWindow && !mainWindow.isDestroyed() && !mainWindow._allowClose) {
+                                const isTextExt = isOCR === 'True' || /text extractor|ocr|screen clip|snipping|capture2text|textshot|snipast/i.test(procName + ' ' + title);
                                 mainWindow.webContents.send('security:violation', {
-                                    type: 'UNAUTHORIZED_SCREEN_OVERLAY',
+                                    type: isTextExt ? 'UNAUTHORIZED_TEXT_EXTRACTOR' : 'UNAUTHORIZED_SCREEN_OVERLAY',
                                     process: procName,
                                     pid: pid,
                                     title: title,
-                                    details: `Topmost/Layered Window detected from "${procName}.exe" (${title || 'Overlay'}). Offending process killed by system.`
+                                    details: isTextExt 
+                                        ? `Unauthorized Screen Text Extractor / OCR Tool detected from "${procName}.exe" (${title || 'OCR Process'}). Offending process killed by system.`
+                                        : `Topmost/Layered Window detected from "${procName}.exe" (${title || 'Overlay'}). Offending process killed by system.`
                                 });
                             }
                         }
@@ -1261,23 +1277,41 @@ ipcMain.handle('system:scan-processes', async () => {
                 'streamlabs obs.exe': 'Screen Recording / Capture Tool',
                 'camtasia.exe': 'Screen Recording / Capture Tool',
                 'bandicam.exe': 'Screen Recording / Capture Tool',
-                'sharex.exe': 'Screen Snipping / Capture Tool',
-                'lightshot.exe': 'Screen Snipping / Capture Tool',
-                'snippingtool.exe': 'Screen Snipping / Capture Tool',
-                'screenclippinghost.exe': 'Screen Snipping / Capture Tool',
-                'snipaste.exe': 'Screen Snipping / Capture Tool',
-                'picpick.exe': 'Screen Snipping / Capture Tool',
-                'flameshot.exe': 'Screen Snipping / Capture Tool',
+                'sharex.exe': 'Screen Snipping / Text Extractor / Capture Tool',
+                'lightshot.exe': 'Screen Snipping / Text Extractor / Capture Tool',
+                'snippingtool.exe': 'Screen Snipping / Text Extractor / OCR Tool',
+                'screenclippinghost.exe': 'Screen Snipping / Text Extractor Host',
+                'snipaste.exe': 'Screen Snipping / Text Extractor Tool',
+                'snipast.exe': 'Screen Snipping / Text Extractor Tool',
+                'picpick.exe': 'Screen Snipping / OCR Tool',
+                'flameshot.exe': 'Screen Snipping / Text Extractor Tool',
                 'gyazo.exe': 'Screen Snipping / Capture Tool',
                 'screentogif.exe': 'Screen Recording / Capture Tool',
-                'snagit32.exe': 'Screen Snipping / Capture Tool',
-                'snagit64.exe': 'Screen Snipping / Capture Tool',
-                'greenshot.exe': 'Screen Snipping / Capture Tool',
+                'snagit32.exe': 'Screen Snipping / OCR Tool',
+                'snagit64.exe': 'Screen Snipping / OCR Tool',
+                'greenshot.exe': 'Screen Snipping / OCR Tool',
                 'gamebar.exe': 'Game Bar Screen Recorder',
                 'avicacapturer.exe': 'Screen Recording / Capture Tool',
                 'avica.exe': 'Remote Desktop / Screen Capture',
                 'xsplit.exe': 'Screen Recording / Streaming Tool',
                 'prismlive.exe': 'Screen Recording / Streaming Tool',
+
+                'powertoys.textextractor.exe': 'PowerToys Screen Text Extractor / OCR Tool',
+                'powertoys.powerlauncher.exe': 'PowerToys OCR / Launcher Tool',
+                'powertoys.alwaysontop.exe': 'PowerToys Always-On-Top Overlay Injector',
+                'powertoys.cropandlock.exe': 'PowerToys Window Overlay / Screen Cropper',
+                'powertoys.exe': 'PowerToys Overlay Suite',
+                'capture2text.exe': 'Capture2Text Screen OCR / Extractor Tool',
+                'capture2text_cli.exe': 'Capture2Text Screen OCR / Extractor CLI',
+                'textshot.exe': 'TextShot Screen OCR Text Extractor',
+                'easyscreenocr.exe': 'Easy Screen OCR Text Grabber Tool',
+                'easyscreenocrservice.exe': 'Easy Screen OCR Background Service',
+                'tesseract.exe': 'Tesseract OCR Text Extraction Engine',
+                'paddleocr.exe': 'PaddleOCR AI Text Extraction Engine',
+                'easyocr.exe': 'EasyOCR Text Extraction Engine',
+                'blackbox.exe': 'Blackbox AI Screen Text Extractor',
+                'screentotext.exe': 'Screen To Text OCR Extractor',
+                'clipgrab.exe': 'ClipGrab Screen Text/Media Harvester',
 
                 'python.exe': 'Script Automation / Python Runtime',
                 'pythonw.exe': 'Script Automation / Python Runtime',

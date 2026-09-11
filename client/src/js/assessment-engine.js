@@ -684,8 +684,8 @@ class AssessmentEngine {
     triggerProctoringWarning(type, details) {
         if (this.isSubmitting) return;
 
-        // CRITICAL INSTANT-TERMINATION ON TOPMOST / STEALTH OVERLAY DETECTED
-        if (type === 'UNAUTHORIZED_SCREEN_OVERLAY' || type === 'UNAUTHORIZED_TOPMOST_WINDOW') {
+        // CRITICAL INSTANT-TERMINATION ON TOPMOST / STEALTH OVERLAY / TEXT EXTRACTOR DETECTED
+        if (type === 'UNAUTHORIZED_SCREEN_OVERLAY' || type === 'UNAUTHORIZED_TOPMOST_WINDOW' || type === 'UNAUTHORIZED_TEXT_EXTRACTOR') {
             this.isSubmitting = true;
             if (this.timerInterval) clearInterval(this.timerInterval);
             if (this.autoSaveInterval) clearInterval(this.autoSaveInterval);
