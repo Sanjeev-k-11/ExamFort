@@ -598,7 +598,7 @@
             </div>
             <h3 class="exam-modal-title">Are you sure you want to close this exam?</h3>
             <p class="exam-modal-desc">
-                Your examination is currently in progress. If you close the application now, your test session will terminate.
+                Your examination is currently in progress. If you close this exam now, all your recorded answers and code will be <strong>automatically submitted and locked</strong> into the secure database. You will <strong>not be able to re-enter or re-attempt</strong> this test.
             </p>
             <div class="exam-modal-summary-box">
                 <div class="summary-row">
@@ -610,12 +610,15 @@
                     <strong class="summary-val text-indigo" id="lbl-modal-time-left">01:59:35</strong>
                 </div>
             </div>
+            <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 10px 12px; margin-bottom: 18px; font-size: 12px; color: #991b1b; text-align: left; line-height: 1.45;">
+                <strong>⚠️ Strict Single-Attempt Rule:</strong> Clicking <em>"Yes, Close & Auto-Submit Exam"</em> will immediately finalize your assessment and lock your session permanently.
+            </div>
             <div class="exam-modal-actions">
                 <button type="button" class="btn-modal-cancel" id="btn-modal-cancel-exit">
                     Continue Test
                 </button>
                 <button type="button" class="btn-modal-danger" id="btn-modal-confirm-exit">
-                    Yes, Close Exam
+                    Yes, Close & Auto-Submit Exam
                 </button>
             </div>
         </div>

@@ -128,7 +128,15 @@
             localSubmissionResult = JSON.parse(sessionStorage.getItem('exam_submission_result') || 'null');
         } catch(_) {}
 
-        if (localSubmissionResult?.attemptNumber && localSubmissionResult.attemptNumber > 1) {
+        const closeReason = localSubmissionResult?.reason 
+            || sessionStorage.getItem(`exam_submission_reason_${candId}_${examCode}`)
+            || localStorage.getItem(`exam_submission_reason_${candId}_${examCode}`);
+
+        if (closeReason === 'USER_CLOSED_EXAM') {
+            document.getElementById('lbl-final-attempt-badge').innerHTML = `<span style="color:#dc2626; font-weight:800;">Auto-Submitted (Candidate Closed Exam)</span> (Locked)`;
+        } else if (closeReason === 'TIME_EXPIRED') {
+            document.getElementById('lbl-final-attempt-badge').innerHTML = `<span style="color:#d97706; font-weight:800;">Auto-Submitted (Time Expired)</span> (Locked)`;
+        } else if (localSubmissionResult?.attemptNumber && localSubmissionResult.attemptNumber > 1) {
             document.getElementById('lbl-final-attempt-badge').textContent = `Reattempt #${localSubmissionResult.attemptNumber} (Recorded)`;
             if (localSubmissionResult.reattemptReason) {
                 document.getElementById('row-final-reattempt-reason').style.display = 'flex';

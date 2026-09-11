@@ -103,10 +103,7 @@ class AssessmentEngine {
         const alreadySubmitted = await this.checkExistingSubmission();
         if (alreadySubmitted) {
             this.isSubmitting = true;
-            this.showToast('You have already submitted this assessment. Re-attempts are not permitted.', 'warning');
-            setTimeout(() => {
-                window.location.replace('completed.html');
-            }, 800);
+            this.showAlreadySubmittedModal();
             return;
         }
 
@@ -132,6 +129,56 @@ class AssessmentEngine {
         }
     }
 
+    showAlreadySubmittedModal() {
+        document.querySelectorAll('input, button, textarea, select').forEach(el => {
+            el.disabled = true;
+            el.setAttribute('readonly', 'true');
+        });
+
+        let modal = document.getElementById('__modal_already_submitted');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = '__modal_already_submitted';
+            modal.className = 'exam-modal-backdrop';
+            modal.style.zIndex = '999999';
+            modal.style.background = 'rgba(15, 23, 42, 0.95)';
+            modal.innerHTML = `
+                <div class="exam-modal-card" style="max-width: 500px; text-align: center; border: 2px solid #6366f1; background: #ffffff; padding: 32px 28px; border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);">
+                    <div style="font-size: 52px; margin-bottom: 12px;">🔒</div>
+                    <h2 style="font-size: 22px; font-weight: 800; color: #1e293b; margin-bottom: 8px;">Exam Already Auto-Submitted</h2>
+                    <p style="font-size: 14px; color: #64748b; line-height: 1.6; margin-bottom: 18px;">
+                        You have already completed or closed this assessment. Each candidate is permitted only <strong>one single attempt</strong> for this test. Re-entry into this exam is permanently locked.
+                    </p>
+                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px; margin-bottom: 22px; text-align: left; font-size: 13px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                            <span style="color: #64748b;">Candidate ID:</span>
+                            <strong style="color: #1e293b;">${this._escapeHtml(this.getCandidateId())}</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                            <span style="color: #64748b;">Exam Code:</span>
+                            <strong style="color: #4338ca;">${this._escapeHtml(this.examCode)}</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span style="color: #64748b;">Status:</span>
+                            <strong style="color: #15803d;">✓ Auto-Submitted & Locked in DB</strong>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 10px; justify-content: center;">
+                        <button type="button" id="btn-goto-completed-view" style="background: #4f46e5; color: #ffffff; border: none; padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                            <span>View Submission & Status</span>
+                            <span>→</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            document.getElementById('btn-goto-completed-view')?.addEventListener('click', () => {
+                window.location.replace('completed.html');
+            });
+        }
+        modal.classList.remove('hidden');
+    }
+
     async checkExistingSubmission() {
         const urlParams = new URLSearchParams(window.location.search);
         let isReattemptMode = urlParams.get('reattempt') === '1' || 
@@ -140,60 +187,72 @@ class AssessmentEngine {
 
         const candId = this.getCandidateId();
         const localKey = `exam_submitted_${candId}_${this.examCode}`;
+        const autoSubKey = `exam_auto_submitted_${candId}_${this.examCode}`;
         const timeExpiredKey = `exam_time_expired_${candId}_${this.examCode}`;
         const endKey = `exam_end_time_${candId}_${this.examCode}`;
         const warnKey = `exam_warnings_${candId}_${this.examCode}`;
         const secLockKey = `exam_section_lock_${candId}_${this.examCode}`;
 
+        // Check local markers first
+        const isLocallySubmitted = localStorage.getItem(localKey) === 'true' || 
+                                   sessionStorage.getItem(localKey) === 'true' ||
+                                   localStorage.getItem(autoSubKey) === 'true' ||
+                                   localStorage.getItem(`exam_submitted_${this.examCode}`) === 'true';
+
+        let isServerSubmitted = false;
+        let isReattemptAuthorized = false;
+        let adminReattemptReason = '';
+
         try {
             const res = await fetch(`${this.backendUrl}/api/exam/check-attempt/${candId}/${this.examCode}`);
             const data = await res.json();
             if (data && data.hasSubmitted) {
+                isServerSubmitted = true;
                 if (data.isReattemptAuthorized) {
                     // Admin has officially authorized a reattempt!
+                    isReattemptAuthorized = true;
                     isReattemptMode = true;
-                    if (data.reattemptReason) {
-                        sessionStorage.setItem(`reattempt_reason_${this.examCode}`, data.reattemptReason);
-                        sessionStorage.setItem('reattempt_reason', data.reattemptReason);
+                    adminReattemptReason = data.reattemptReason || '';
+                    if (adminReattemptReason) {
+                        sessionStorage.setItem(`reattempt_reason_${this.examCode}`, adminReattemptReason);
+                        sessionStorage.setItem('reattempt_reason', adminReattemptReason);
                     }
-                } else if (!isReattemptMode) {
-                    localStorage.setItem(localKey, 'true');
-                    sessionStorage.setItem(localKey, 'true');
-                    return true;
                 }
-            } else {
-                localStorage.removeItem(localKey);
-                sessionStorage.removeItem(localKey);
-                localStorage.removeItem(`exam_submitted_${this.examCode}`);
-                sessionStorage.removeItem(`exam_submitted_${this.examCode}`);
-                localStorage.removeItem(timeExpiredKey);
-                return false;
             }
         } catch (_) {}
 
-        if (isReattemptMode) {
+        if (isReattemptAuthorized || isReattemptMode) {
             console.log('🔄 [Assessment Engine] Authorized Reattempt session initialized. Resetting submission flags.');
             localStorage.removeItem(localKey);
             sessionStorage.removeItem(localKey);
             localStorage.removeItem(`exam_submitted_${this.examCode}`);
             sessionStorage.removeItem(`exam_submitted_${this.examCode}`);
+            localStorage.removeItem(autoSubKey);
+            sessionStorage.removeItem(autoSubKey);
             localStorage.removeItem(timeExpiredKey);
             sessionStorage.removeItem(timeExpiredKey);
             sessionStorage.removeItem(`is_reattempt_${this.examCode}`);
             sessionStorage.removeItem('is_reattempt');
-            if (urlParams.get('reattempt') === '1') {
+            if (urlParams.get('reattempt') === '1' || isReattemptAuthorized) {
                 localStorage.removeItem(endKey);
+                sessionStorage.removeItem(endKey);
                 localStorage.removeItem(warnKey);
+                sessionStorage.removeItem(warnKey);
                 localStorage.removeItem(secLockKey);
+                sessionStorage.removeItem(secLockKey);
                 this.warningCount = 0;
                 this.maxActiveSectionIndex = 0;
             }
             return false;
         }
 
-        return localStorage.getItem(localKey) === 'true' || sessionStorage.getItem(localKey) === 'true';
+        if (isServerSubmitted || isLocallySubmitted) {
+            localStorage.setItem(localKey, 'true');
+            sessionStorage.setItem(localKey, 'true');
+            return true;
+        }
 
-        return localStorage.getItem(localKey) === 'true' || sessionStorage.getItem(localKey) === 'true';
+        return false;
     }
 
     parseExamDateTimeRange(dateStr, timeStr) {
@@ -532,32 +591,6 @@ class AssessmentEngine {
         window.addEventListener('beforeunload', (e) => {
             this.saveCurrent();
         });
-    }
-
-    showExitModal() {
-        const modal = document.getElementById('modal-exit-confirm');
-        if (modal) {
-            const lblExam = document.getElementById('lbl-modal-exam-name');
-            if (lblExam && this.examDetails) lblExam.textContent = this.examDetails.title;
-            const lblTimer = document.getElementById('lbl-modal-time-left');
-            const timerElem = document.getElementById('lbl-exam-timer');
-            if (lblTimer && timerElem) lblTimer.textContent = timerElem.textContent;
-            modal.classList.remove('hidden');
-        }
-    }
-
-    hideExitModal() {
-        const modal = document.getElementById('modal-exit-confirm');
-        if (modal) modal.classList.add('hidden');
-    }
-
-    confirmExit() {
-        try { this.saveCurrent(); } catch (_) {}
-        if (window.electronAPI?.exitApp) {
-            window.electronAPI.exitApp();
-        } else {
-            window.close();
-        }
     }
 
     setupProctoringListeners() {
@@ -1004,13 +1037,7 @@ class AssessmentEngine {
     }
 
     confirmExit() {
-        this.saveCurrent();
-        this.hideExitModal();
-        if (window.electronAPI?.exitApp) {
-            window.electronAPI.exitApp();
-        } else {
-            window.location.href = 'instructions.html';
-        }
+        this.handleCandidateCloseExam();
     }
 
     showSubmitModal() {
@@ -3232,6 +3259,64 @@ class AssessmentEngine {
         }, 1200);
     }
 
+    async handleCandidateCloseExam() {
+        if (this.isSubmitting) return;
+        this.isSubmitting = true;
+        if (this.timerInterval) clearInterval(this.timerInterval);
+        if (this.autoSaveInterval) clearInterval(this.autoSaveInterval);
+
+        // 1. Immediately freeze and disable all user input controls so examination stops
+        document.querySelectorAll('input, button, textarea, select').forEach(el => {
+            el.disabled = true;
+            el.setAttribute('readonly', 'true');
+        });
+
+        this.hideExitModal();
+
+        // 2. Display unclosable auto-submitted modal overlay
+        let exitSubmittedModal = document.getElementById('__modal_exit_autosubmitted');
+        if (!exitSubmittedModal) {
+            exitSubmittedModal = document.createElement('div');
+            exitSubmittedModal.id = '__modal_exit_autosubmitted';
+            exitSubmittedModal.className = 'exam-modal-backdrop';
+            exitSubmittedModal.style.zIndex = '999999';
+            exitSubmittedModal.style.background = 'rgba(15, 23, 42, 0.95)';
+            exitSubmittedModal.innerHTML = `
+                <div class="exam-modal-card" style="max-width: 480px; text-align: center; border: 2px solid #ef4444; background: #ffffff; padding: 28px; border-radius: 16px;">
+                    <div style="font-size: 48px; margin-bottom: 12px;">🔒</div>
+                    <h2 style="font-size: 22px; font-weight: 800; color: #1e293b; margin-bottom: 8px;">Exam Closed & Auto-Submitted!</h2>
+                    <p style="font-size: 14px; color: #64748b; line-height: 1.6; margin-bottom: 20px;">
+                        You have closed the examination session. All your recorded answers and code solutions are being compiled, locked, and auto-submitted to the secure examination database. Re-attempts are not permitted.
+                    </p>
+                    <div style="background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); border-radius: 8px; padding: 12px; font-size: 13px; font-weight: 700; color: #dc2626; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                        <span>Auto-submitting and finalizing record in database...</span>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(exitSubmittedModal);
+        }
+        exitSubmittedModal.classList.remove('hidden');
+
+        // 3. Mark persistent state
+        const candId = this.candidate?.id || this.candidate?.student_id || 'CAND123456';
+        const localKey = `exam_submitted_${candId}_${this.examCode}`;
+        const autoSubKey = `exam_auto_submitted_${candId}_${this.examCode}`;
+        const reasonKey = `exam_submission_reason_${candId}_${this.examCode}`;
+
+        localStorage.setItem(localKey, 'true');
+        sessionStorage.setItem(localKey, 'true');
+        localStorage.setItem(autoSubKey, 'true');
+        sessionStorage.setItem(autoSubKey, 'true');
+        localStorage.setItem(reasonKey, 'USER_CLOSED_EXAM');
+        sessionStorage.setItem(reasonKey, 'USER_CLOSED_EXAM');
+        localStorage.setItem(`exam_submitted_${this.examCode}`, 'true');
+        sessionStorage.setItem(`exam_submitted_${this.examCode}`, 'true');
+
+        setTimeout(() => {
+            this.submitAssessment(true, 'USER_CLOSED_EXAM');
+        }, 1200);
+    }
+
     async submitAssessment(isAutoSubmit = false, reason = 'USER_SUBMIT') {
         this.isSubmitting = true;
         if (this.timerInterval) clearInterval(this.timerInterval);
@@ -3241,10 +3326,19 @@ class AssessmentEngine {
         const candId = this.candidate?.id || this.candidate?.student_id || 'CAND123456';
         const localKey = `exam_submitted_${candId}_${this.examCode}`;
         const genericKey = `exam_submitted_${this.examCode}`;
+        const autoSubKey = `exam_auto_submitted_${candId}_${this.examCode}`;
+        const reasonKey = `exam_submission_reason_${candId}_${this.examCode}`;
+
         localStorage.setItem(localKey, 'true');
         sessionStorage.setItem(localKey, 'true');
         localStorage.setItem(genericKey, 'true');
         sessionStorage.setItem(genericKey, 'true');
+        if (isAutoSubmit) {
+            localStorage.setItem(autoSubKey, 'true');
+            sessionStorage.setItem(autoSubKey, 'true');
+        }
+        localStorage.setItem(reasonKey, reason);
+        sessionStorage.setItem(reasonKey, reason);
 
         const currentStartMode = sessionStorage.getItem('exam_start_mode') || localStorage.getItem('exam_start_mode') || (this.candidate?.startMode) || 'dashboard';
         sessionStorage.setItem('exam_start_mode', currentStartMode);
@@ -3253,6 +3347,8 @@ class AssessmentEngine {
         let submitMsg = 'Submitting assessment to secure database...';
         if (reason === 'TIME_EXPIRED') {
             submitMsg = 'Examination time ended. Auto-submitting assessment to database...';
+        } else if (reason === 'USER_CLOSED_EXAM') {
+            submitMsg = 'Exam closed by candidate. Auto-submitting assessment to database...';
         } else if (isAutoSubmit) {
             submitMsg = 'Security violation limit reached. Auto-submitting to database...';
         }
@@ -3285,7 +3381,8 @@ class AssessmentEngine {
                 reattemptReason: reattemptReason,
                 submittedAt: new Date().toISOString(),
                 isResultsPublished: false,
-                reason: reason
+                reason: reason,
+                autoSubmitted: isAutoSubmit
             }));
             // Clear single-use reattempt keys once submitted
             sessionStorage.removeItem('is_reattempt_' + this.examCode);
