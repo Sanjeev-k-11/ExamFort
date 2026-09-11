@@ -148,8 +148,8 @@ class PrincipalController extends Controller
         $userRole = session('auth_user_role');
         $currentUser = User::findOrFail($userId);
 
-        if (!in_array(strtoupper($userRole), ['ADMIN', 'SUPERADMIN', 'PRINCIPAL', 'DEAN', 'DIRECTOR'])) {
-            return back()->with('error', 'Only Principal and Administrator can update the institutional Google Gemini API Key.');
+        if (!in_array(strtoupper($userRole), ['ADMIN', 'SUPERADMIN', 'PRINCIPAL', 'DEAN', 'DIRECTOR', 'TEACHER', 'PROCTOR', 'FACULTY'])) {
+            return back()->with('error', 'Unauthorized to update Google Gemini API Key.');
         }
 
         $request->validate([

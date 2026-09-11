@@ -103,20 +103,41 @@
             </p>
         </div>
 
-        <div>
-            @if(!empty($currentUser->gemini_api_key) || !empty($currentUser->organization->gemini_api_key))
-                <div style="background: #ecfdf5; border: 1px solid #a7f3d0; padding: 8px 16px; border-radius: 10px; display: flex; align-items: center; gap: 8px; color: #059669; font-size: 13px; font-weight: 600; box-shadow: 0 2px 6px rgba(16, 185, 129, 0.1);">
-                    <i data-lucide="check-circle" style="width: 16px; height: 16px;"></i>
-                    <span>Gemini API Key Active</span>
-                </div>
-            @else
-                <a href="{{ route('dashboard') }}" style="background: #fef2f2; border: 1px solid #fecaca; padding: 8px 16px; border-radius: 10px; display: inline-flex; align-items: center; gap: 8px; color: #dc2626; font-size: 13px; font-weight: 600; text-decoration: none;">
-                    <i data-lucide="alert-triangle" style="width: 16px; height: 16px;"></i>
-                    <span>Set Gemini Key in Dashboard</span>
-                </a>
-            @endif
         </div>
     </div>
+</div>
+
+<!-- GOOGLE GEMINI AI KEY INLINE CONFIGURATION -->
+<div class="glass-card" style="margin-bottom: 24px; padding: 16px 20px; background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(240, 249, 255, 0.85)); border: 1px solid rgba(14, 165, 233, 0.3);">
+    <form action="{{ route('principals.updateGeminiKey') }}" method="POST" style="display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap;">
+        @csrf
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, #4f46e5, #0284c7); color: white; display: flex; align-items: center; justify-content: center; font-size: 18px;">
+                ✨
+            </div>
+            <div>
+                <strong style="font-size: 14px; color: #0f172a; display: block;">Google Gemini API Key</strong>
+                <span style="font-size: 12px; color: var(--text-secondary);">
+                    @if(!empty($currentUser->gemini_api_key) || !empty($currentUser->organization->gemini_api_key))
+                        <span style="color: #059669; font-weight: 700;">✓ Active & Configured</span>
+                    @else
+                        <span style="color: #dc2626; font-weight: 700;">⚠️ Key Missing — paste your key below to generate papers</span>
+                    @endif
+                </span>
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 10px; align-items: center; flex: 1; max-width: 540px;">
+            <div style="flex: 1; position: relative;">
+                <input type="password" name="gemini_api_key" id="aiGenGeminiKeyInput" class="form-control mono" style="padding-left: 36px; font-size: 12.5px; height: 38px;" placeholder="Paste Google Gemini API Key (e.g. AIzaSy...)" value="{{ $currentUser->gemini_api_key ?? ($currentUser->organization->gemini_api_key ?? '') }}">
+                <i data-lucide="key" style="position: absolute; left: 12px; top: 11px; width: 14px; height: 14px; color: #4f46e5;"></i>
+            </div>
+            <button type="submit" class="quick-action-btn" style="background: linear-gradient(135deg, #10b981, #059669); font-size: 12.5px; padding: 8px 16px; white-space: nowrap;">
+                <i data-lucide="save" style="width: 14px; height: 14px;"></i>
+                <span>Save Key</span>
+            </button>
+        </div>
+    </form>
 </div>
 
 <!-- Generator Configuration Form -->

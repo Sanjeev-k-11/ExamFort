@@ -25,8 +25,53 @@
                 <i data-lucide="crown" style="width: 16px; height: 16px;"></i>
                 <span>Appoint Dean</span>
             </a>
+</div>
+
+<!-- GOOGLE GEMINI AI KEY CONFIGURATION CARD FOR ADMIN -->
+<div class="glass-card" style="margin-bottom: 28px; background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(240, 249, 255, 0.85)); border: 1px solid rgba(14, 165, 233, 0.3);">
+    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; margin-bottom: 16px;">
+        <div style="display: flex; align-items: center; gap: 14px;">
+            <div style="width: 46px; height: 46px; border-radius: 12px; background: linear-gradient(135deg, #4f46e5, #0284c7); color: white; display: flex; align-items: center; justify-content: center; font-size: 22px; box-shadow: 0 4px 12px rgba(14, 165, 233, 0.35);">
+                ✨
+            </div>
+            <div>
+                <h3 style="font-size: 16px; font-weight: 800; color: #0f172a;">Google Gemini AI Integration</h3>
+                <p style="font-size: 12.5px; color: var(--text-secondary); margin-top: 2px;">
+                    Powers AI Exam Question Paper Generation, AI Lesson Studios, Descriptive Essay Evaluation, and Placement Paper Setter.
+                </p>
+            </div>
+        </div>
+
+        <div>
+            @if(!empty($currentUser->gemini_api_key))
+                <span class="status-pill active" style="font-size: 12px; padding: 5px 14px; background: rgba(16, 185, 129, 0.15); color: #047857; border: 1px solid rgba(16, 185, 129, 0.35);">
+                    <i data-lucide="check-circle" style="width: 15px; height: 15px;"></i>
+                    <span>AI Engine Configured & Active</span>
+                </span>
+            @else
+                <span class="status-pill danger" style="font-size: 12px; padding: 5px 14px;">
+                    <i data-lucide="alert-triangle" style="width: 15px; height: 15px;"></i>
+                    <span>Gemini API Key Missing</span>
+                </span>
+            @endif
         </div>
     </div>
+
+    <form action="{{ route('principals.updateGeminiKey') }}" method="POST" style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+        @csrf
+        <div style="flex: 1; min-width: 320px; position: relative;">
+            <i data-lucide="key" style="position: absolute; left: 14px; top: 12px; width: 16px; height: 16px; color: #4f46e5;"></i>
+            <input type="password" name="gemini_api_key" id="adminGeminiKeyInput" class="form-control mono" style="padding-left: 40px; padding-right: 44px; font-size: 13px;" placeholder="Paste your Google Gemini API Key (e.g. AIzaSy...)" value="{{ $currentUser->gemini_api_key }}">
+            <button type="button" onclick="const el = document.getElementById('adminGeminiKeyInput'); el.type = el.type === 'password' ? 'text' : 'password';" style="position: absolute; right: 12px; top: 10px; background: none; border: none; color: var(--text-muted); cursor: pointer;">
+                <i data-lucide="eye" style="width: 16px; height: 16px;"></i>
+            </button>
+        </div>
+
+        <button type="submit" class="quick-action-btn" style="background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);">
+            <i data-lucide="save" style="width: 15px; height: 15px;"></i>
+            <span>Save Gemini Key</span>
+        </button>
+    </form>
 </div>
 
 <!-- Primary Governance Metrics Grid -->
