@@ -101,7 +101,8 @@
 
             @if($q->type === 'MCQ')
                 @php
-                    $isCorrect = (string)$ans === (string)$q->correct_answer;
+                    $mcqSelected = is_array($ans) ? ($ans['selectedOption'] ?? ($ans['option'] ?? ($ans['answer'] ?? null))) : $ans;
+                    $isCorrect = !empty($mcqSelected) && strtoupper(trim((string)$mcqSelected)) === strtoupper(trim((string)$q->correct_answer));
                 @endphp
                 <div style="background: rgba(248, 250, 252, 0.9); border: 1px solid #e2e8f0; border-radius: var(--radius-md); padding: 14px;">
                     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
@@ -111,7 +112,7 @@
                         </span>
                     </div>
                     <div style="font-size: 14px; font-weight: 700; color: #0f172a;">
-                        Option {{ $ans ?? 'NOT ATTEMPTED' }}
+                        Option {{ !empty($mcqSelected) ? $mcqSelected : 'NOT ATTEMPTED' }}
                         @if($q->correct_answer)
                             <span style="font-size: 12px; color: #64748b; font-weight: normal; margin-left: 10px;">
                                 (Answer Key: <strong>{{ $q->correct_answer }}</strong>)
@@ -120,19 +121,37 @@
                     </div>
                 </div>
             @elseif($q->type === 'CODING')
+                @php
+                    $codingCode = is_array($ans) ? ($ans['codeSolution'] ?? ($ans['code'] ?? ($ans['answer'] ?? null))) : $ans;
+                    $codingEval = $evaluation['codingDetails']['Q'.$q->question_number] ?? null;
+                @endphp
                 <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: var(--radius-md); padding: 16px;">
-                    <div style="font-size: 13px; font-weight: 700; color: #4f46e5; margin-bottom: 8px;">
-                        Candidate Submitted Code:
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <span style="font-size: 13px; font-weight: 700; color: #4f46e5;">Candidate Submitted Code:</span>
+                        @if($codingEval)
+                            <span style="font-size: 12px; font-weight: 700; color: #059669; background: #ecfdf5; padding: 2px 8px; border-radius: 4px;">
+                                Sandbox Score: {{ $codingEval['score'] ?? 0 }} pts
+                            </span>
+                        @endif
                     </div>
-                    <pre class="mono" style="background: #0f172a; padding: 14px; border-radius: 8px; color: #38bdf8; font-size: 12px; overflow-x: auto; max-height: 280px; white-space: pre-wrap;">{{ is_array($ans) ? json_encode($ans, JSON_PRETTY_PRINT) : ($ans ?? '// No code submitted') }}</pre>
+                    <pre class="mono" style="background: #0f172a; padding: 14px; border-radius: 8px; color: #38bdf8; font-size: 12px; overflow-x: auto; max-height: 280px; white-space: pre-wrap;">{{ !empty($codingCode) ? $codingCode : '// No code submitted' }}</pre>
                 </div>
             @elseif($q->type === 'PARAGRAPH')
+                @php
+                    $essayText = is_array($ans) ? ($ans['essayText'] ?? ($ans['text'] ?? ($ans['answer'] ?? null))) : $ans;
+                    $essayEval = $evaluation['essayDetails']['Q'.$q->question_number] ?? null;
+                @endphp
                 <div style="background: #fffbeb; border: 1px solid #fde68a; border-radius: var(--radius-md); padding: 16px;">
-                    <div style="font-size: 13px; font-weight: 700; color: #d97706; margin-bottom: 8px;">
-                        Candidate Written Essay Response:
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <span style="font-size: 13px; font-weight: 700; color: #d97706;">Candidate Written Essay Response:</span>
+                        @if($essayEval)
+                            <span style="font-size: 12px; font-weight: 700; color: #d97706; background: #fef3c7; padding: 2px 8px; border-radius: 4px;">
+                                Auto Rubric: {{ $essayEval['score'] ?? 0 }} pts
+                            </span>
+                        @endif
                     </div>
                     <div style="background: #ffffff; border: 1px solid #fed7aa; padding: 14px; border-radius: 8px; color: #1e293b; font-size: 13px; line-height: 1.6; white-space: pre-wrap;">
-                        {{ $ans ?? 'No paragraph submitted.' }}
+                        {{ !empty($essayText) ? $essayText : 'No paragraph submitted.' }}
                     </div>
                 </div>
             @endif

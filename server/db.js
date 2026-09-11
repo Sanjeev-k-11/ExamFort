@@ -90,7 +90,10 @@ class MySQLDatabaseService {
             this.pool = {
                 rawPool: rawPgPool,
                 query: async (sql, params = []) => {
-                    const { sql: finalSql, params: finalParams } = adaptQueryForPg(sql, params);
+                    let { sql: finalSql, params: finalParams } = adaptQueryForPg(sql, params);
+                    if (/^\s*INSERT\s+INTO/i.test(finalSql) && !/RETURNING/i.test(finalSql)) {
+                        finalSql += ' RETURNING id';
+                    }
                     const res = await rawPgPool.query(finalSql, finalParams);
                     const rows = res.rows || [];
                     rows.insertId = rows[0]?.id || res.rowCount || 0;
@@ -494,7 +497,8 @@ class MySQLDatabaseService {
             if (!code) return [];
 
             let [rows] = await this.pool.query(
-                `SELECT id, exam_code, question_number, type, title, question_text, entry_function, 
+                `SELECT id, exam_code, question_number, type, title, question_text, constraints,
+                        sample_input, sample_output, explanation, entry_function, 
                         options, coding_starter_code, reference_solution, random_input_schema, 
                         public_test_cases, hidden_test_cases, public_weightage_marks, 
                         hidden_weightage_marks, max_marks, rubric_json 
@@ -508,7 +512,8 @@ class MySQLDatabaseService {
                 const [pRows] = await this.pool.query('SELECT id, exam_code FROM placement_exams WHERE exam_code = ? OR id = ? LIMIT 1', [code, code]);
                 if (pRows.length > 0) {
                     const [pqRows] = await this.pool.query(
-                        `SELECT id, exam_code, question_number, type, title, question_text, entry_function, 
+                        `SELECT id, exam_code, question_number, type, title, question_text, constraints,
+                                sample_input, sample_output, explanation, entry_function, 
                                 options, coding_starter_code, reference_solution, random_input_schema, 
                                 public_test_cases, hidden_test_cases, public_weightage_marks, 
                                 hidden_weightage_marks, max_marks, rubric_json 
@@ -648,9 +653,9 @@ class MySQLDatabaseService {
                 };
             }
 
-            // 1. Evaluate MCQs directly against MySQL questions table
+            // 1. Evaluate MCQs directly against MySQL/Postgres questions table
             const [mcqs] = await this.pool.query(
-                'SELECT question_number, correct_answer, max_marks FROM questions WHERE exam_code = ? AND type = "MCQ"',
+                "SELECT question_number, correct_answer, max_marks FROM questions WHERE exam_code = ? AND type = 'MCQ'",
                 [code]
             );
 
@@ -664,7 +669,7 @@ class MySQLDatabaseService {
 
             // 2. Evaluate Coding Questions with Dynamic Sandbox Judge
             const [codingQuestions] = await this.pool.query(
-                'SELECT * FROM questions WHERE exam_code = ? AND type = "CODING"',
+                "SELECT * FROM questions WHERE exam_code = ? AND type = 'CODING'",
                 [code]
             );
 
@@ -692,7 +697,7 @@ class MySQLDatabaseService {
 
             // 3. Evaluate Paragraph / Essay Questions with Dynamic Rubric Evaluator
             const [essayQuestions] = await this.pool.query(
-                'SELECT * FROM questions WHERE exam_code = ? AND type = "PARAGRAPH"',
+                "SELECT * FROM questions WHERE exam_code = ? AND type = 'PARAGRAPH'",
                 [code]
             );
 
@@ -709,7 +714,7 @@ class MySQLDatabaseService {
             const answersJson = JSON.stringify(answers || {});
             const reportJson = JSON.stringify(evalReport);
 
-            // 4. Save to MySQL submissions table
+            // 4. Save to database submissions table
             const [insRes] = await this.pool.query(
                 `INSERT INTO submissions 
                  (candidate_id, exam_code, answers_json, mcq_score, coding_public_score, coding_hidden_score, essay_score, total_score, evaluation_report) 
@@ -720,7 +725,7 @@ class MySQLDatabaseService {
             // Clear candidate draft
             await this.pool.query('DELETE FROM candidate_drafts WHERE candidate_id = ? AND exam_code = ?', [candidateId, code]).catch(() => {});
 
-            // Record student activity in MySQL
+            // Record student activity in database
             try {
                 await this.pool.query(
                     `INSERT INTO student_activities (student_id, title, activity_title, description, score_info, score, status, badge, activity_type, type)
@@ -752,8 +757,8 @@ class MySQLDatabaseService {
                 `SELECT s.id, s.submission_timestamp, s.total_score, s.mcq_score, s.coding_public_score, s.coding_hidden_score 
                  FROM submissions s 
                  WHERE (s.candidate_id = ? 
-                    OR s.candidate_id = (SELECT student_id FROM users WHERE id = ? OR student_id = ? LIMIT 1)
-                    OR s.candidate_id = (SELECT id FROM users WHERE id = ? OR student_id = ? LIMIT 1))
+                    OR s.candidate_id = (SELECT student_id FROM users WHERE student_id = ? OR CAST(id AS VARCHAR) = ? LIMIT 1)
+                    OR s.candidate_id = (SELECT CAST(id AS VARCHAR) FROM users WHERE student_id = ? OR CAST(id AS VARCHAR) = ? LIMIT 1))
                    AND s.exam_code = ? 
                  ORDER BY s.submission_timestamp DESC LIMIT 1`,
                 [candidateId, candidateId, candidateId, candidateId, candidateId, examCode || 'NAT-2026-EXAM']

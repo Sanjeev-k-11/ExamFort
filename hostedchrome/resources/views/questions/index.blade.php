@@ -72,8 +72,8 @@
                             </span>
                         </div>
 
-                        <div style="font-size: 13.5px; color: #334155; margin-top: 10px; line-height: 1.5; white-space: pre-line;">
-                            {{ Str::limit($q->question_text, 180) }}
+                        <div style="font-size: 13.5px; color: #334155; margin-top: 10px; line-height: 1.55; white-space: pre-line;">
+                            {{ $q->question_text }}
                         </div>
 
                         @if($q->type === 'MCQ' && is_array($q->options))
@@ -88,11 +88,66 @@
                                 @endforeach
                             </div>
                         @elseif($q->type === 'CODING')
-                            <div style="margin-top: 10px; font-size: 12px; color: #64748b; display: flex; gap: 16px; flex-wrap: wrap;">
-                                <span>Entry: <code class="mono" style="color: #4f46e5; background: #eef2ff; padding: 2px 6px; border-radius: 4px;">{{ $q->entry_function ?? 'solve' }}()</code></span>
-                                <span>Public Cases: <strong style="color: #059669;">{{ is_array($q->public_test_cases) ? count($q->public_test_cases) : 0 }}</strong> ({{ $q->public_weightage_marks }} pts)</span>
-                                <span>Hidden Cases: <strong style="color: #d97706;">{{ is_array($q->hidden_test_cases) ? count($q->hidden_test_cases) : 0 }}</strong> ({{ $q->hidden_weightage_marks }} pts)</span>
+                            <div style="margin-top: 10px; font-size: 12px; color: #64748b; display: flex; gap: 16px; flex-wrap: wrap; align-items: center;">
+                                <span>Entry: <code class="mono" style="color: #4f46e5; background: #eef2ff; padding: 2px 6px; border-radius: 4px; font-weight: 700;">{{ $q->entry_function ?? 'solve' }}()</code></span>
+                                <span>Public Weightage: <strong style="color: #059669;">{{ $q->public_weightage_marks }} pts</strong></span>
+                                <span>Hidden Weightage: <strong style="color: #d97706;">{{ $q->hidden_weightage_marks }} pts</strong></span>
                             </div>
+
+                            @if(!empty($q->constraints))
+                                <div style="margin-top: 8px; font-size: 11.5px; background: #fffbeb; border: 1px solid #fde68a; border-radius: 6px; padding: 4px 10px; color: #92400e; display: inline-flex; align-items: center; gap: 6px;">
+                                    <strong>⚙️ Constraints:</strong>
+                                    <span>{{ is_array($q->constraints) ? implode(', ', $q->constraints) : $q->constraints }}</span>
+                                </div>
+                            @endif
+
+                            @php
+                                $publicCases = is_array($q->public_test_cases) ? $q->public_test_cases : (json_decode($q->public_test_cases, true) ?? []);
+                                if (empty($publicCases) && (!empty($q->sample_input) || !empty($q->sample_output))) {
+                                    $publicCases = [[
+                                        'input' => $q->sample_input ?? '',
+                                        'expected' => $q->sample_output ?? ''
+                                    ]];
+                                }
+                            @endphp
+
+                            @if(!empty($publicCases))
+                                <div style="margin-top: 10px; display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 8px;">
+                                    @foreach($publicCases as $idx => $tc)
+                                        @php
+                                            $inDisplay = '';
+                                            if (isset($tc['input'])) {
+                                                $inDisplay = is_array($tc['input']) ? json_encode($tc['input']) : (string)$tc['input'];
+                                            } elseif (isset($tc['nums']) && isset($tc['target'])) {
+                                                $numsArr = is_array($tc['nums']) ? $tc['nums'] : [$tc['nums']];
+                                                $inDisplay = 'nums = [' . implode(', ', $numsArr) . '], target = ' . $tc['target'];
+                                            } elseif (isset($tc['arr'])) {
+                                                $arrItems = is_array($tc['arr']) ? $tc['arr'] : [$tc['arr']];
+                                                $inDisplay = 'arr = [' . implode(', ', $arrItems) . ']';
+                                            } elseif (isset($tc['stdin'])) {
+                                                $inDisplay = (string)$tc['stdin'];
+                                            } else {
+                                                $filtered = array_diff_key($tc, array_flip(['id', 'desc', 'expected', 'expected_output', 'output', 'isHidden']));
+                                                $inDisplay = !empty($filtered) ? json_encode($filtered) : '(Standard Input)';
+                                            }
+
+                                            $expVal = $tc['expected'] ?? ($tc['expected_output'] ?? ($tc['output'] ?? ''));
+                                            $outDisplay = is_array($expVal) ? json_encode($expVal) : (string)$expVal;
+                                        @endphp
+                                        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px 10px; font-size: 11.5px;">
+                                            <div style="font-weight: 700; color: #4f46e5; margin-bottom: 4px;">📋 Test Case {{ $idx + 1 }} (Public)</div>
+                                            <div style="margin-bottom: 4px;">
+                                                <strong style="color: #64748b; font-size: 10.5px;">INPUT:</strong>
+                                                <code class="mono" style="display: block; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; padding: 3px 6px; color: #0f172a; margin-top: 2px;">{{ $inDisplay ?: '(empty)' }}</code>
+                                            </div>
+                                            <div>
+                                                <strong style="color: #64748b; font-size: 10.5px;">EXPECTED OUTPUT:</strong>
+                                                <code class="mono" style="display: block; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 4px; padding: 3px 6px; color: #15803d; font-weight: 700; margin-top: 2px;">{{ $outDisplay ?: '(empty)' }}</code>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @endif
                         @endif
                     </div>
                 </div>

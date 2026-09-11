@@ -37,7 +37,26 @@ class Submission extends Model
 
     public function candidate()
     {
-        return $this->belongsTo(User::class, 'candidate_id', 'id');
+        return $this->belongsTo(User::class, 'candidate_id', 'student_id')
+            ->withDefault(function ($user, $submission) {
+                return User::where('id', $submission->candidate_id)
+                    ->orWhere('student_id', $submission->candidate_id)
+                    ->first() ?? new User([
+                        'id' => $submission->candidate_id,
+                        'student_id' => $submission->candidate_id,
+                        'full_name' => 'Candidate (' . $submission->candidate_id . ')',
+                        'email' => $submission->candidate_id . '@examfort.local'
+                    ]);
+            });
+    }
+
+    public function getCandidateNameAttribute(): string
+    {
+        if ($this->candidate && !empty($this->candidate->full_name)) {
+            return $this->candidate->full_name;
+        }
+        $user = User::where('student_id', $this->candidate_id)->orWhere('id', $this->candidate_id)->first();
+        return $user?->full_name ?? ('Candidate ' . $this->candidate_id);
     }
 
     public function exam()

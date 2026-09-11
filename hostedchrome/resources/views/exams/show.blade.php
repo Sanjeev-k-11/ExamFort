@@ -65,49 +65,61 @@
 
 <!-- Metrics Bar -->
 <div class="metrics-grid" style="margin-bottom: 28px;">
-    <div class="metric-card" style="--accent-gradient: linear-gradient(90deg, #6366f1, #3b82f6); --accent-color: #4f46e5;">
+    <a href="#questions-section" class="metric-card" style="--accent-gradient: linear-gradient(90deg, #6366f1, #3b82f6); --accent-color: #4f46e5; text-decoration: none; cursor: pointer; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); display: flex; align-items: center; gap: 16px;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 12px 24px -8px rgba(99, 102, 241, 0.25)';" onmouseout="this.style.transform='none'; this.style.boxShadow='none';">
         <div class="metric-icon-box" style="color: #4f46e5; background: #eef2ff;">
             <i data-lucide="help-circle" style="width: 24px; height: 24px;"></i>
         </div>
         <div class="metric-info">
             <div class="metric-value">{{ $questionsCount }}</div>
-            <div class="metric-label">Questions in Paper</div>
+            <div class="metric-label" style="display: flex; align-items: center; gap: 4px;">
+                <span>Questions in Paper</span>
+                <i data-lucide="arrow-down-right" style="width: 14px; height: 14px; opacity: 0.7;"></i>
+            </div>
         </div>
-    </div>
+    </a>
 
-    <div class="metric-card" style="--accent-gradient: linear-gradient(90deg, #10b981, #06b6d4); --accent-color: #059669;">
+    <a href="{{ route('exams.edit', $exam->exam_code) }}" class="metric-card" style="--accent-gradient: linear-gradient(90deg, #10b981, #06b6d4); --accent-color: #059669; text-decoration: none; cursor: pointer; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); display: flex; align-items: center; gap: 16px;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 12px 24px -8px rgba(16, 185, 129, 0.25)';" onmouseout="this.style.transform='none'; this.style.boxShadow='none';">
         <div class="metric-icon-box" style="color: #059669; background: #ecfdf5;">
             <i data-lucide="clock" style="width: 24px; height: 24px;"></i>
         </div>
         <div class="metric-info">
             <div class="metric-value">{{ $exam->duration_minutes }}m</div>
-            <div class="metric-label">Duration ({{ $exam->total_marks }} Marks)</div>
+            <div class="metric-label" style="display: flex; align-items: center; gap: 4px;">
+                <span>Duration ({{ $exam->total_marks }} Marks)</span>
+                <i data-lucide="edit-3" style="width: 13px; height: 13px; opacity: 0.7;"></i>
+            </div>
         </div>
-    </div>
+    </a>
 
-    <div class="metric-card" style="--accent-gradient: linear-gradient(90deg, #f59e0b, #ec4899); --accent-color: #d97706;">
+    <a href="#submissions-section" class="metric-card" style="--accent-gradient: linear-gradient(90deg, #f59e0b, #ec4899); --accent-color: #d97706; text-decoration: none; cursor: pointer; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); display: flex; align-items: center; gap: 16px;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 12px 24px -8px rgba(245, 158, 11, 0.25)';" onmouseout="this.style.transform='none'; this.style.boxShadow='none';">
         <div class="metric-icon-box" style="color: #d97706; background: #fffbeb;">
             <i data-lucide="users" style="width: 24px; height: 24px;"></i>
         </div>
         <div class="metric-info">
             <div class="metric-value">{{ $submissionsCount }}</div>
-            <div class="metric-label">Submissions (Avg: {{ number_format($avgScore, 1) }} pts)</div>
+            <div class="metric-label" style="display: flex; align-items: center; gap: 4px;">
+                <span>Submissions (Avg: {{ number_format($avgScore, 1) }} pts)</span>
+                <i data-lucide="arrow-down-right" style="width: 14px; height: 14px; opacity: 0.7;"></i>
+            </div>
         </div>
-    </div>
+    </a>
 
-    <div class="metric-card" style="--accent-gradient: linear-gradient(90deg, #ef4444, #f97316); --accent-color: #dc2626;">
+    <a href="{{ route('violations.index', ['exam_code' => $exam->exam_code]) }}" class="metric-card" style="--accent-gradient: linear-gradient(90deg, #ef4444, #f97316); --accent-color: #dc2626; text-decoration: none; cursor: pointer; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); display: flex; align-items: center; gap: 16px;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 12px 24px -8px rgba(239, 68, 68, 0.25)';" onmouseout="this.style.transform='none'; this.style.boxShadow='none';">
         <div class="metric-icon-box" style="color: #dc2626; background: #fef2f2;">
             <i data-lucide="shield-alert" style="width: 24px; height: 24px;"></i>
         </div>
         <div class="metric-info">
             <div class="metric-value">{{ $exam->violations->count() }}</div>
-            <div class="metric-label">Violations Logged</div>
+            <div class="metric-label" style="display: flex; align-items: center; gap: 4px;">
+                <span>Violations Logged</span>
+                <i data-lucide="external-link" style="width: 13px; height: 13px; opacity: 0.7;"></i>
+            </div>
         </div>
-    </div>
+    </a>
 </div>
 
 <!-- Questions Bank for This Exam -->
-<div class="glass-card" style="margin-bottom: 32px;">
+<div id="questions-section" class="glass-card" style="margin-bottom: 32px; scroll-margin-top: 24px;">
     <div class="card-header-flex">
         <div>
             <div class="card-title">
@@ -153,8 +165,8 @@
                                 </span>
                             </div>
 
-                            <div style="font-size: 13px; color: #334155; margin-top: 8px; line-height: 1.5; white-space: pre-line;">
-                                {{ Str::limit($q->question_text, 140) }}
+                            <div style="font-size: 13.5px; color: #334155; margin-top: 8px; line-height: 1.55; white-space: pre-line;">
+                                {{ $q->question_text }}
                             </div>
 
                             @if($q->type === 'MCQ' && is_array($q->options))
@@ -169,11 +181,78 @@
                                     @endforeach
                                 </div>
                             @elseif($q->type === 'CODING')
-                                <div style="margin-top: 10px; font-size: 12px; color: #64748b; display: flex; gap: 16px; flex-wrap: wrap;">
-                                    <span>Entry Function: <code class="mono" style="color: #4f46e5; background: #f1f5f9; padding: 2px 6px; border-radius: 4px;">{{ $q->entry_function ?? 'solve' }}()</code></span>
-                                    <span>Public Weightage: <strong style="color: #059669;">{{ $q->public_weightage_marks }} pts</strong></span>
-                                    <span>Hidden Weightage: <strong style="color: #d97706;">{{ $q->hidden_weightage_marks }} pts</strong></span>
+                                <div style="margin-top: 10px; font-size: 12px; color: #64748b; display: flex; gap: 16px; flex-wrap: wrap; align-items: center;">
+                                    <span>Entry Function: <code class="mono" style="color: #4f46e5; background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-weight: 700;">{{ $q->entry_function ?? 'solve' }}()</code></span>
+                                    <span>Public Weightage: <strong style="color: #059669;">{{ $q->public_weightage_marks ?? 10 }} pts</strong></span>
+                                    <span>Hidden Weightage: <strong style="color: #d97706;">{{ $q->hidden_weightage_marks ?? 40 }} pts</strong></span>
                                 </div>
+
+                                @if(!empty($q->constraints))
+                                    <div style="margin-top: 10px; font-size: 12px; background: #fffbeb; border: 1px solid #fde68a; border-radius: 6px; padding: 6px 12px; color: #92400e; display: inline-flex; align-items: center; gap: 6px;">
+                                        <strong>⚙️ Constraints:</strong>
+                                        <span>{{ is_array($q->constraints) ? implode(', ', $q->constraints) : $q->constraints }}</span>
+                                    </div>
+                                @endif
+
+                                @php
+                                    $publicCases = is_array($q->public_test_cases) ? $q->public_test_cases : (json_decode($q->public_test_cases, true) ?? []);
+                                    if (empty($publicCases) && (!empty($q->sample_input) || !empty($q->sample_output))) {
+                                        $publicCases = [[
+                                            'input' => $q->sample_input ?? '',
+                                            'expected' => $q->sample_output ?? ''
+                                        ]];
+                                    }
+                                @endphp
+
+                                @if(!empty($publicCases))
+                                    <div style="margin-top: 12px; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 10px;">
+                                        @foreach($publicCases as $idx => $tc)
+                                            @php
+                                                $inDisplay = '';
+                                                if (isset($tc['input'])) {
+                                                    $inDisplay = is_array($tc['input']) ? json_encode($tc['input']) : (string)$tc['input'];
+                                                } elseif (isset($tc['nums']) && isset($tc['target'])) {
+                                                    $numsArr = is_array($tc['nums']) ? $tc['nums'] : [$tc['nums']];
+                                                    $inDisplay = 'nums = [' . implode(', ', $numsArr) . '], target = ' . $tc['target'];
+                                                } elseif (isset($tc['arr'])) {
+                                                    $arrItems = is_array($tc['arr']) ? $tc['arr'] : [$tc['arr']];
+                                                    $inDisplay = 'arr = [' . implode(', ', $arrItems) . ']';
+                                                } elseif (isset($tc['stdin'])) {
+                                                    $inDisplay = (string)$tc['stdin'];
+                                                } else {
+                                                    $filtered = array_diff_key($tc, array_flip(['id', 'desc', 'expected', 'expected_output', 'output', 'isHidden']));
+                                                    $inDisplay = !empty($filtered) ? json_encode($filtered) : '(Standard Input)';
+                                                }
+
+                                                $expVal = $tc['expected'] ?? ($tc['expected_output'] ?? ($tc['output'] ?? ''));
+                                                $outDisplay = is_array($expVal) ? json_encode($expVal) : (string)$expVal;
+                                            @endphp
+                                            <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; font-size: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
+                                                <div style="font-weight: 700; color: #4f46e5; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between;">
+                                                    <span>📋 Test Case {{ $idx + 1 }} (Public)</span>
+                                                    <span style="font-size: 10.5px; font-weight: 600; color: #059669; background: #ecfdf5; padding: 1px 6px; border-radius: 4px;">Public Test</span>
+                                                </div>
+                                                <div style="margin-bottom: 6px; color: #334155;">
+                                                    <strong style="color: #64748b; font-size: 11px; text-transform: uppercase;">Input:</strong>
+                                                    <code class="mono" style="display: block; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; padding: 5px 8px; color: #0f172a; margin-top: 2px; white-space: pre-wrap; word-break: break-word;">{{ $inDisplay ?: '(empty)' }}</code>
+                                                </div>
+                                                <div style="color: #334155;">
+                                                    <strong style="color: #64748b; font-size: 11px; text-transform: uppercase;">Expected Output:</strong>
+                                                    <code class="mono" style="display: block; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 4px; padding: 5px 8px; color: #15803d; margin-top: 2px; font-weight: 700; white-space: pre-wrap; word-break: break-word;">{{ $outDisplay ?: '(empty)' }}</code>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @endif
+
+                                @php
+                                    $hiddenCases = is_array($q->hidden_test_cases) ? $q->hidden_test_cases : (json_decode($q->hidden_test_cases, true) ?? []);
+                                @endphp
+                                @if(!empty($hiddenCases))
+                                    <div style="margin-top: 8px; font-size: 11.5px; color: #64748b; display: flex; align-items: center; gap: 6px;">
+                                        <span>🔒 <strong>{{ count($hiddenCases) }} Confidential Hidden Edge Cases</strong> configured for grading ({{ $q->hidden_weightage_marks ?? 40 }} pts)</span>
+                                    </div>
+                                @endif
                             @endif
                         </div>
                     </div>
@@ -209,7 +288,7 @@
 
 <!-- Candidate Submissions for This Exam -->
 @if($canViewResults)
-<div class="glass-card">
+<div id="submissions-section" class="glass-card" style="scroll-margin-top: 24px;">
     <div class="card-header-flex">
         <div class="card-title">
             <i data-lucide="check-circle-2" style="color: #059669; width: 22px; height: 22px;"></i>

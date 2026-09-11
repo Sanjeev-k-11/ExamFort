@@ -1876,6 +1876,57 @@ class AssessmentEngine {
             desc = raw;
         }
 
+        if (examples.length === 0) {
+            if (q.sample_input || q.sample_output) {
+                examples.push({
+                    input: q.sample_input || '(empty)',
+                    output: q.sample_output || '(empty)'
+                });
+            }
+            let pubCases = q.public_test_cases || q.test_cases;
+            if (typeof pubCases === 'string') {
+                try { pubCases = JSON.parse(pubCases); } catch(_) {}
+            }
+            if (Array.isArray(pubCases) && pubCases.length > 0) {
+                pubCases.forEach((tc) => {
+                    let inStr = '';
+                    if (tc.input !== undefined) {
+                        inStr = typeof tc.input === 'object' ? JSON.stringify(tc.input) : String(tc.input);
+                    } else if (tc.nums !== undefined && tc.target !== undefined) {
+                        const arr = Array.isArray(tc.nums) ? tc.nums : [tc.nums];
+                        inStr = `nums = [${arr.join(', ')}], target = ${tc.target}`;
+                    } else if (tc.arr !== undefined) {
+                        const arr = Array.isArray(tc.arr) ? tc.arr : [tc.arr];
+                        inStr = `arr = [${arr.join(', ')}]`;
+                    } else if (tc.stdin !== undefined) {
+                        inStr = String(tc.stdin);
+                    } else {
+                        const clone = { ...tc };
+                        delete clone.id; delete clone.desc; delete clone.expected; delete clone.expected_output; delete clone.output; delete clone.isHidden;
+                        inStr = Object.keys(clone).length > 0 ? JSON.stringify(clone) : '(Standard Input)';
+                    }
+
+                    let outStr = '';
+                    const exp = tc.expected !== undefined ? tc.expected : (tc.expected_output !== undefined ? tc.expected_output : tc.output);
+                    if (exp !== undefined) {
+                        outStr = typeof exp === 'object' ? JSON.stringify(exp) : String(exp);
+                    } else {
+                        outStr = '(Expected Result)';
+                    }
+
+                    examples.push({ input: inStr, output: outStr });
+                });
+            }
+        }
+
+        if (constraints.length === 0 && q.constraints) {
+            if (Array.isArray(q.constraints)) {
+                constraints = q.constraints;
+            } else if (typeof q.constraints === 'string') {
+                constraints = q.constraints.split(/[\n,;]+/).map(c => c.trim()).filter(Boolean);
+            }
+        }
+
         desc = desc
             .replace(/`([^`]+)`/g, '<code>$1</code>')
             .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')

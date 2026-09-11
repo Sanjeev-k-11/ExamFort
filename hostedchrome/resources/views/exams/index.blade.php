@@ -60,19 +60,19 @@
                     </form>
                 </div>
 
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 16px 0; background: rgba(248, 250, 252, 0.9); padding: 12px; border-radius: 10px; border: 1px solid #e2e8f0; text-align: center;">
-                    <div>
-                        <div style="font-size: 11px; font-weight: 600; color: #64748b; text-transform: uppercase;">Questions</div>
-                        <div style="font-size: 17px; font-weight: 800; color: #0f172a;">{{ $exam->questions_count }}</div>
-                    </div>
-                    <div style="border-left: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0;">
-                        <div style="font-size: 11px; font-weight: 600; color: #64748b; text-transform: uppercase;">Duration</div>
-                        <div style="font-size: 17px; font-weight: 800; color: #4f46e5;">{{ $exam->duration_minutes }}m</div>
-                    </div>
-                    <div>
-                        <div style="font-size: 11px; font-weight: 600; color: #64748b; text-transform: uppercase;">Submissions</div>
-                        <div style="font-size: 17px; font-weight: 800; color: #059669;">{{ $exam->submissions_count }}</div>
-                    </div>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 16px 0; background: rgba(248, 250, 252, 0.95); padding: 8px; border-radius: 12px; border: 1px solid #e2e8f0; text-align: center;">
+                    <a href="{{ route('exams.show', $exam->exam_code) }}#questions-section" style="text-decoration: none; color: inherit; display: block; padding: 6px 4px; border-radius: 8px; transition: all 0.2s ease;" onmouseover="this.style.background='#eef2ff'; this.style.transform='translateY(-2px)';" onmouseout="this.style.background='transparent'; this.style.transform='none';" title="View Question Bank">
+                        <div style="font-size: 10.5px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.03em;">Questions</div>
+                        <div style="font-size: 16px; font-weight: 800; color: #0f172a; margin-top: 2px;">{{ $exam->questions_count }}</div>
+                    </a>
+                    <a href="{{ route('exams.show', $exam->exam_code) }}" style="text-decoration: none; color: inherit; display: block; padding: 6px 4px; border-radius: 8px; border-left: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; transition: all 0.2s ease;" onmouseover="this.style.background='#ecfdf5'; this.style.transform='translateY(-2px)';" onmouseout="this.style.background='transparent'; this.style.transform='none';" title="View Exam Overview">
+                        <div style="font-size: 10.5px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.03em;">Duration</div>
+                        <div style="font-size: 16px; font-weight: 800; color: #4f46e5; margin-top: 2px;">{{ $exam->duration_minutes }}m</div>
+                    </a>
+                    <a href="{{ route('exams.show', $exam->exam_code) }}#submissions-section" style="text-decoration: none; color: inherit; display: block; padding: 6px 4px; border-radius: 8px; transition: all 0.2s ease;" onmouseover="this.style.background='#fffbeb'; this.style.transform='translateY(-2px)';" onmouseout="this.style.background='transparent'; this.style.transform='none';" title="View Submissions & Grading">
+                        <div style="font-size: 10.5px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.03em;">Submissions</div>
+                        <div style="font-size: 16px; font-weight: 800; color: #059669; margin-top: 2px;">{{ $exam->submissions_count }}</div>
+                    </a>
                 </div>
 
                 <div style="font-size: 12px; color: #475569; margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
