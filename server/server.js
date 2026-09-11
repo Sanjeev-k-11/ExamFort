@@ -382,7 +382,7 @@ function computeBiometricSimilarity(liveFeatures, regFeatures, clientMatchScore)
     return Math.round(combinedServer * 10) / 10;
 }
 
-// 4B2. Live Face Verification & Biometric Profile Photo Storage (Cloudinary + database)
+// 4B2. Live Face Verification ONLY (Compare against registered profile photo, never store/overwrite)
 app.post('/api/user/face-verify', async (req, res) => {
     try {
         const { candidateId, imageBase64, examCode, clientBiometricScore } = req.body;
@@ -390,7 +390,7 @@ app.post('/api/user/face-verify', async (req, res) => {
             return res.status(400).json({ success: false, message: 'candidateId and imageBase64 snapshot are required.' });
         }
 
-        console.log(`📸 [Face Verify] Processing biometric capture for candidate: ${candidateId}, Exam: ${examCode || 'N/A'}`);
+        console.log(`📸 [Face Verify] Biometric verification check for candidate: ${candidateId}, Exam: ${examCode || 'N/A'}`);
 
         // 1. Validate image quality & face presence (reject pitch black or covered camera)
         const quality = analyzeImageQuality(imageBase64);
@@ -432,7 +432,7 @@ app.post('/api/user/face-verify', async (req, res) => {
                     regFeatures = extractFaceFeatures(regBuffer);
                 }
             } catch (fetchErr) {
-                console.warn('⚠️ [Cloudinary Image Fetch Warning]:', fetchErr.message);
+                console.warn('⚠️ [Profile Image Fetch Warning]:', fetchErr.message);
             }
         } else {
             regFeatures = extractFaceFeatures(existingAvatar);
@@ -466,44 +466,20 @@ app.post('/api/user/face-verify', async (req, res) => {
                 success: false,
                 verified: false,
                 matchScore,
+                avatarUrl: existingAvatar,
                 message: verificationMessage
             });
         }
 
-        let finalImageUrl = imageBase64;
-        let storageProvider = 'database_BASE64';
+        console.log(`✅ [Face Match Passed]: Candidate ${candidateId} verified with score: ${matchScore}%`);
 
-        // Upload to Cloudinary if credentials are configured
-        if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET) {
-            try {
-                const uploadRes = await cloudinary.uploader.upload(imageBase64, {
-                    folder: 'examfort_candidates',
-                    public_id: `face_${candidateId}_${Date.now()}`,
-                    overwrite: true,
-                    resource_type: 'image'
-                });
-                if (uploadRes && uploadRes.secure_url) {
-                    finalImageUrl = uploadRes.secure_url;
-                    storageProvider = 'CLOUDINARY';
-                    console.log(`☁️ [Cloudinary] Stored verified photo: ${finalImageUrl}`);
-                }
-            } catch (cErr) {
-                console.warn('⚠️ [Cloudinary Upload Warning]:', cErr.message, '— falling back to database storage.');
-            }
-        }
-
-        // Persist verified verification activity log without changing user's master avatar
-        const saveRes = await db.saveVerifiedFace(candidateId, finalImageUrl);
-
+        // DO NOT STORE OR OVERWRITE ANYTHING - STRICTLY VERIFY ONLY
         return res.status(200).json({
             success: true,
             verified: true,
             matchScore,
-            storage: storageProvider,
-            snapshotUrl: finalImageUrl,
             avatarUrl: existingAvatar,
-            message: verificationMessage,
-            profile: saveRes.profile
+            message: verificationMessage
         });
     } catch (err) {
         console.error('❌ [Face Verify Error]:', err);
