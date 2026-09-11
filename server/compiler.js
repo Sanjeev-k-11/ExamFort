@@ -141,6 +141,7 @@ class EnterpriseMultiLanguageCompiler {
             const results = [];
             let allPassed = true;
             let totalRuntime = 0;
+            let combinedStdout = '';
             if (testCases.length === 0) {
                 const tStart = Date.now();
                 const runRes = await this.executeCompiledArtifact(lang, workDir, compileResult.target, '', tStart);
@@ -219,7 +220,15 @@ class EnterpriseMultiLanguageCompiler {
                 const srcPath = path.join(workDir, 'main.cpp');
                 const binName = process.platform === 'win32' ? 'main.exe' : 'main.out';
                 const binPath = path.join(workDir, binName);
-                fs.writeFileSync(srcPath, code, 'utf8');
+                
+                let finalCode = code;
+                if (!code.includes('#include')) {
+                    finalCode = `#include <iostream>\n#include <vector>\n#include <string>\n#include <algorithm>\n#include <map>\n#include <set>\n#include <queue>\n#include <stack>\n#include <cmath>\n#include <climits>\nusing namespace std;\n\n` + code;
+                } else if (!code.includes('namespace std') && !code.includes('std::')) {
+                    finalCode = `using namespace std;\n` + code;
+                }
+
+                fs.writeFileSync(srcPath, finalCode, 'utf8');
                 try {
                     // Fast, reliable C++20 compilation for both Linux (Render/Docker) and Windows
                     execSync(`g++ "${srcPath}" -O3 -std=c++20 -Wall -o "${binPath}"`, {
@@ -240,7 +249,13 @@ class EnterpriseMultiLanguageCompiler {
                 const srcPath = path.join(workDir, 'main.c');
                 const binName = process.platform === 'win32' ? 'main.exe' : 'main.out';
                 const binPath = path.join(workDir, binName);
-                fs.writeFileSync(srcPath, code, 'utf8');
+
+                let finalCode = code;
+                if (!code.includes('#include')) {
+                    finalCode = `#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <math.h>\n#include <stdbool.h>\n\n` + code;
+                }
+
+                fs.writeFileSync(srcPath, finalCode, 'utf8');
                 try {
                     execSync(`gcc "${srcPath}" -O3 -std=c17 -Wall -lm -o "${binPath}"`, {
                         cwd: workDir,

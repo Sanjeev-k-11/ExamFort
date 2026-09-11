@@ -258,14 +258,6 @@ class AssessmentEngine {
             const data = await res.json();
             if (data.success && data.exam) {
                 this.examDetails = data.exam;
-                if (data.exam.face_verification_required !== false) {
-                    const isVerified = sessionStorage.getItem(`face_verified_${this.examCode}`) === 'true';
-                    if (!isVerified) {
-                        alert('⚠️ Biometric Face Verification Required: You must complete live camera face verification before accessing this examination.');
-                        window.location.replace(`instructions.html?code=${this.examCode}`);
-                        return false;
-                    }
-                }
             }
         } catch (_) {}
         return true;
