@@ -125,7 +125,14 @@
 
                                 const warnKey = `exam_warnings_${candId}_${examCode}`;
                                 const fallbackWarnKey = `exam_warnings_${examCode}`;
-                                const savedWarnings = parseInt(localStorage.getItem(warnKey) || sessionStorage.getItem(warnKey) || localStorage.getItem(fallbackWarnKey) || '0', 10);
+                                const savedWarnings = parseInt(
+                                    localStorage.getItem('exam_active_warnings_count') ||
+                                    sessionStorage.getItem('exam_active_warnings_count') ||
+                                    localStorage.getItem(warnKey) || 
+                                    sessionStorage.getItem(warnKey) || 
+                                    localStorage.getItem(fallbackWarnKey) || '0', 
+                                    10
+                                );
                                 if (!isNaN(savedWarnings) && savedWarnings > 0) {
                                     const wEl = document.getElementById('lbl-header-warnings');
                                     if (wEl) {
@@ -136,7 +143,14 @@
 
                                 const endKey = `exam_end_time_${candId}_${examCode}`;
                                 const fallbackEndKey = `exam_end_time_${examCode}`;
-                                const endTime = parseInt(localStorage.getItem(endKey) || sessionStorage.getItem(endKey) || localStorage.getItem(fallbackEndKey) || '0', 10);
+                                const endTime = parseInt(
+                                    localStorage.getItem('exam_active_target_end_time') ||
+                                    sessionStorage.getItem('exam_active_target_end_time') ||
+                                    localStorage.getItem(endKey) || 
+                                    sessionStorage.getItem(endKey) || 
+                                    localStorage.getItem(fallbackEndKey) || '0', 
+                                    10
+                                );
                                 if (endTime && endTime > Date.now()) {
                                     const rem = Math.max(0, Math.floor((endTime - Date.now()) / 1000));
                                     const hrs = Math.floor(rem / 3600);

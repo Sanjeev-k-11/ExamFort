@@ -47,6 +47,8 @@ class AssessmentEngine {
         const warnKey = `exam_warnings_${candId}_${this.examCode}`;
         const fallbackWarnKey = `exam_warnings_${this.examCode}`;
         const savedWarnings = parseInt(
+            localStorage.getItem('exam_active_warnings_count') ||
+            sessionStorage.getItem('exam_active_warnings_count') ||
             localStorage.getItem(warnKey) || 
             sessionStorage.getItem(warnKey) || 
             localStorage.getItem(fallbackWarnKey) || 
@@ -60,6 +62,8 @@ class AssessmentEngine {
         const secLockKey = `exam_section_lock_${candId}_${this.examCode}`;
         const fallbackSecKey = `exam_section_lock_${this.examCode}`;
         const savedSecIndex = parseInt(
+            localStorage.getItem('exam_active_section_lock') ||
+            sessionStorage.getItem('exam_active_section_lock') ||
             localStorage.getItem(secLockKey) || 
             sessionStorage.getItem(secLockKey) || 
             localStorage.getItem(fallbackSecKey) || 
@@ -218,7 +222,15 @@ class AssessmentEngine {
 
         // If this is an active exam that is currently in progress (targetEndTime is in future),
         // refreshing the page MUST NOT wipe the timer or warnings!
-        const existingEndTime = parseInt(localStorage.getItem(endKey) || sessionStorage.getItem(endKey) || localStorage.getItem(fallbackEndKey) || '0', 10);
+        const existingEndTime = parseInt(
+            localStorage.getItem('exam_active_target_end_time') ||
+            sessionStorage.getItem('exam_active_target_end_time') ||
+            localStorage.getItem(endKey) || 
+            sessionStorage.getItem(endKey) || 
+            localStorage.getItem(fallbackEndKey) || 
+            '0', 
+            10
+        );
         const isExamCurrentlyActive = existingEndTime > Date.now();
 
         // Check local markers
@@ -261,6 +273,13 @@ class AssessmentEngine {
             sessionStorage.removeItem(timeExpiredKey);
             sessionStorage.removeItem(`is_reattempt_${this.examCode}`);
             sessionStorage.removeItem('is_reattempt');
+
+            localStorage.removeItem('exam_active_target_end_time');
+            sessionStorage.removeItem('exam_active_target_end_time');
+            localStorage.removeItem('exam_active_warnings_count');
+            sessionStorage.removeItem('exam_active_warnings_count');
+            localStorage.removeItem('exam_active_section_lock');
+            sessionStorage.removeItem('exam_active_section_lock');
 
             localStorage.removeItem(endKey);
             sessionStorage.removeItem(endKey);
@@ -797,6 +816,8 @@ class AssessmentEngine {
         const warnKey = `exam_warnings_${candId}_${this.examCode}`;
         const fallbackWarnKey = `exam_warnings_${this.examCode}`;
         try {
+            localStorage.setItem('exam_active_warnings_count', this.warningCount.toString());
+            sessionStorage.setItem('exam_active_warnings_count', this.warningCount.toString());
             localStorage.setItem(warnKey, this.warningCount.toString());
             sessionStorage.setItem(warnKey, this.warningCount.toString());
             localStorage.setItem(fallbackWarnKey, this.warningCount.toString());
@@ -1705,6 +1726,8 @@ class AssessmentEngine {
         const secLockKey = `exam_section_lock_${candId}_${this.examCode}`;
         const fallbackSecKey = `exam_section_lock_${this.examCode}`;
         try {
+            localStorage.setItem('exam_active_section_lock', this.maxActiveSectionIndex.toString());
+            sessionStorage.setItem('exam_active_section_lock', this.maxActiveSectionIndex.toString());
             localStorage.setItem(secLockKey, this.maxActiveSectionIndex.toString());
             sessionStorage.setItem(secLockKey, this.maxActiveSectionIndex.toString());
             localStorage.setItem(fallbackSecKey, this.maxActiveSectionIndex.toString());
@@ -1906,7 +1929,15 @@ class AssessmentEngine {
         const candId = this.getCandidateId();
         const endKey = `exam_end_time_${candId}_${this.examCode}`;
         const fallbackEndKey = `exam_end_time_${this.examCode}`;
-        const existingEnd = parseInt(localStorage.getItem(endKey) || sessionStorage.getItem(endKey) || localStorage.getItem(fallbackEndKey) || '0', 10);
+        const existingEnd = parseInt(
+            localStorage.getItem('exam_active_target_end_time') ||
+            sessionStorage.getItem('exam_active_target_end_time') ||
+            localStorage.getItem(endKey) || 
+            sessionStorage.getItem(endKey) || 
+            localStorage.getItem(fallbackEndKey) || 
+            '0', 
+            10
+        );
         if (!existingEnd || isNaN(existingEnd)) {
             this.timerSeconds = (details.duration_minutes || 120) * 60;
             this.startTimer();
@@ -3325,6 +3356,8 @@ class AssessmentEngine {
         const fallbackEndKey = `exam_end_time_${this.examCode}`;
 
         let targetEndTime = parseInt(
+            localStorage.getItem('exam_active_target_end_time') ||
+            sessionStorage.getItem('exam_active_target_end_time') ||
             localStorage.getItem(endKey) || 
             sessionStorage.getItem(endKey) || 
             localStorage.getItem(fallbackEndKey) || 
@@ -3345,10 +3378,17 @@ class AssessmentEngine {
         if (!targetEndTime || isNaN(targetEndTime)) {
             targetEndTime = now + (this.timerSeconds * 1000);
             try {
+                localStorage.setItem('exam_active_target_end_time', targetEndTime.toString());
+                sessionStorage.setItem('exam_active_target_end_time', targetEndTime.toString());
                 localStorage.setItem(endKey, targetEndTime.toString());
                 sessionStorage.setItem(endKey, targetEndTime.toString());
                 localStorage.setItem(fallbackEndKey, targetEndTime.toString());
                 sessionStorage.setItem(fallbackEndKey, targetEndTime.toString());
+            } catch (_) {}
+        } else {
+            try {
+                localStorage.setItem('exam_active_target_end_time', targetEndTime.toString());
+                sessionStorage.setItem('exam_active_target_end_time', targetEndTime.toString());
             } catch (_) {}
         }
 
@@ -3551,10 +3591,22 @@ class AssessmentEngine {
                 reason: reason,
                 autoSubmitted: isAutoSubmit
             }));
-            // Clear single-use reattempt keys once submitted
+            // Clear single-use reattempt and active session keys once submitted
             sessionStorage.removeItem('is_reattempt_' + this.examCode);
+            localStorage.removeItem('exam_active_target_end_time');
+            sessionStorage.removeItem('exam_active_target_end_time');
+            localStorage.removeItem('exam_active_warnings_count');
+            sessionStorage.removeItem('exam_active_warnings_count');
+            localStorage.removeItem('exam_active_section_lock');
+            sessionStorage.removeItem('exam_active_section_lock');
             window.location.replace('completed.html');
         } catch (_) {
+            localStorage.removeItem('exam_active_target_end_time');
+            sessionStorage.removeItem('exam_active_target_end_time');
+            localStorage.removeItem('exam_active_warnings_count');
+            sessionStorage.removeItem('exam_active_warnings_count');
+            localStorage.removeItem('exam_active_section_lock');
+            sessionStorage.removeItem('exam_active_section_lock');
             window.location.replace('completed.html');
         }
     }
