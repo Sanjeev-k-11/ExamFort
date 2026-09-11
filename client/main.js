@@ -273,13 +273,19 @@ function startKeyboardSentinel() {
                         const pid = dataMap.pid || '';
                         
                         if (mainWindow && !mainWindow.isDestroyed()) {
+                            let vType = 'UNAUTHORIZED_SCREEN_OVERLAY';
+                            if (/auto-typing|synthetic|magic/i.test(reason)) {
+                                vType = 'UNAUTHORIZED_AUTO_TYPING';
+                            } else if (/text extractor|ocr/i.test(reason)) {
+                                vType = 'UNAUTHORIZED_TEXT_EXTRACTOR';
+                            }
                             mainWindow.webContents.send('security:violation', {
-                                type: 'UNAUTHORIZED_SCREEN_OVERLAY',
+                                type: vType,
                                 process: pName,
                                 pid: pid,
                                 reason: reason,
                                 title: title,
-                                details: `${reason} detected from "${pName}.exe" (${title || 'Hidden Window'}). Process terminated immediately by Aegis Sentinel.`
+                                details: `${reason} detected from "${pName}.exe" (${title || 'Automated Tool'}). Process terminated immediately by Aegis Sentinel.`
                             });
                         }
                     }
@@ -332,11 +338,13 @@ function startTopmostOverlayScanner() {
                         [WinChecker]::GetWindowText($hWnd, $sb, 256);
                         $wTitle = $sb.ToString().ToLower();
                         $isOCR = $wTitle -match 'text extractor|ocr|screen clip|snipping|capture2text|textshot|snipast|crop and lock|magnifier';
-                        if ($isTopmost -or ($isLayered -and $isTrans) -or $isOCR) {
+                        $isAutoType = $wTitle -match 'autotype|magictype|ghosttype|cheattyper|hackertype|tinytask|jitbit|pulover|macrorecorder|autohotkey|ahk|autoit|beeftext|textexpander|murgee|typingsimulator|codepaster';
+                        if ($isTopmost -or ($isLayered -and $isTrans) -or $isOCR -or $isAutoType) {
                             try {
                                 $proc = Get-Process -Id $pidVal -ErrorAction SilentlyContinue;
                                 if ($proc -and $proc.ProcessName -notmatch '^(explorer|dwm|system|lsass|services|svchost|powershell|pwsh|cmd|conhost|taskmgr|antigravity|code)$') {
-                                    Write-Output "FOUND_OVERLAY:$pidVal:$($proc.ProcessName):$($sb.ToString()):$($isOCR)";
+                                    $tag = if ($isAutoType) { "AutoType" } elseif ($isOCR) { "OCR" } else { "Overlay" };
+                                    Write-Output "FOUND_OVERLAY:$pidVal:$($proc.ProcessName):$($sb.ToString()):$tag";
                                 }
                             } catch {}
                         }
@@ -345,13 +353,15 @@ function startTopmostOverlayScanner() {
                 return $true;
             }, [IntPtr]::Zero) | Out-Null
 
-            # Also scan for background Text Extractor / OCR processes
-            $ocrProcs = Get-Process -ErrorAction SilentlyContinue | Where-Object {
-                $_.ProcessName -match '^(powertoys\.textextractor|capture2text|textshot|easyscreenocr|screenclippinghost|snippingtool|snipaste|snipast|lightshot|greenshot|sharex|tesseract|paddleocr|easyocr|blackbox|screentotext)$'
+            # Also scan for background Text Extractor, OCR, Auto-Typer, and Macro processes
+            $badProcs = Get-Process -ErrorAction SilentlyContinue | Where-Object {
+                $_.ProcessName -match '^(powertoys\.textextractor|capture2text|textshot|easyscreenocr|screenclippinghost|snippingtool|snipaste|snipast|lightshot|greenshot|sharex|tesseract|paddleocr|easyocr|blackbox|screentotext|autotyper|magictyper|magictyping|ghosttyper|hackertyper|cheattyper|fastkeys|keytext|tinytask|jitbit|pulover|macrorecorder|autohotkey|ahk|autoit3|autoit|clavier|beeftext|textexpander|phraseexpress|murgee|keyspider|codepaster|typingsimulator)$'
             };
-            if ($ocrProcs) {
-                foreach ($op in $ocrProcs) {
-                    Write-Output "FOUND_OVERLAY:$($op.Id):$($op.ProcessName):Background OCR Tool:True";
+            if ($badProcs) {
+                foreach ($op in $badProcs) {
+                    $pnm = $op.ProcessName.ToLower();
+                    $tag = if ($pnm -match 'autotype|magictype|ghosttype|cheattyper|hackertype|tinytask|jitbit|pulover|macrorecorder|autohotkey|ahk|autoit|beeftext|textexpander|murgee|typingsimulator|codepaster') { "AutoType" } else { "OCR" };
+                    Write-Output "FOUND_OVERLAY:$($op.Id):$($op.ProcessName):Background $tag Tool:$tag";
                 }
             }
         `;
@@ -361,21 +371,27 @@ function startTopmostOverlayScanner() {
                 const lines = stdout.split(/\r?\n/);
                 for (const line of lines) {
                     if (line.startsWith('FOUND_OVERLAY:')) {
-                        const [, pid, procName, title, isOCR] = line.split(':');
+                        const [, pid, procName, title, tag] = line.split(':');
                         if (procName) {
-                            console.warn(`[Security] Continuous Watcher killed unauthorized overlay / text extractor process: ${procName} (PID: ${pid})`);
+                            console.warn(`[Security] Continuous Watcher killed unauthorized tool process: ${procName} (PID: ${pid}, Type: ${tag})`);
                             exec(`taskkill /F /PID ${pid} 2>nul`);
                             exec(`taskkill /F /IM ${procName}.exe 2>nul`);
                             if (mainWindow && !mainWindow.isDestroyed() && !mainWindow._allowClose) {
-                                const isTextExt = isOCR === 'True' || /text extractor|ocr|screen clip|snipping|capture2text|textshot|snipast/i.test(procName + ' ' + title);
+                                let vType = 'UNAUTHORIZED_SCREEN_OVERLAY';
+                                let vDesc = `Topmost/Layered Window detected from "${procName}.exe" (${title || 'Overlay'}). Offending process killed by system.`;
+                                if (tag === 'AutoType' || /autotype|magictype|ghosttype|cheattyper|hackertype|tinytask|jitbit|pulover|macrorecorder|autohotkey|ahk|autoit|beeftext|textexpander|murgee|typingsimulator|codepaster/i.test(procName + ' ' + title)) {
+                                    vType = 'UNAUTHORIZED_AUTO_TYPING';
+                                    vDesc = `Unauthorized Magic Auto-Typer / Macro Typing Script detected from "${procName}.exe" (${title || 'Macro Script'}). Offending process killed by system.`;
+                                } else if (tag === 'OCR' || /text extractor|ocr|screen clip|snipping|capture2text|textshot|snipast/i.test(procName + ' ' + title)) {
+                                    vType = 'UNAUTHORIZED_TEXT_EXTRACTOR';
+                                    vDesc = `Unauthorized Screen Text Extractor / OCR Tool detected from "${procName}.exe" (${title || 'OCR Process'}). Offending process killed by system.`;
+                                }
                                 mainWindow.webContents.send('security:violation', {
-                                    type: isTextExt ? 'UNAUTHORIZED_TEXT_EXTRACTOR' : 'UNAUTHORIZED_SCREEN_OVERLAY',
+                                    type: vType,
                                     process: procName,
                                     pid: pid,
                                     title: title,
-                                    details: isTextExt 
-                                        ? `Unauthorized Screen Text Extractor / OCR Tool detected from "${procName}.exe" (${title || 'OCR Process'}). Offending process killed by system.`
-                                        : `Topmost/Layered Window detected from "${procName}.exe" (${title || 'Overlay'}). Offending process killed by system.`
+                                    details: vDesc
                                 });
                             }
                         }

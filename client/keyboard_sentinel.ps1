@@ -219,15 +219,51 @@ public class AegisKeyboardSentinel {
         Application.Exit();
     }
 
+    private static int _injectedStrokeCount = 0;
+
+    private static void ScanAndKillAutoTypers() {
+        try {
+            foreach (Process p in Process.GetProcesses()) {
+                try {
+                    string pName = p.ProcessName.ToLower();
+                    if (_examPids.Contains((uint)p.Id) || SafeSystemProcesses.Contains(pName)) continue;
+
+                    if (pName.Contains("autotype") || pName.Contains("magictype") || pName.Contains("magictyping") ||
+                        pName.Contains("ghosttype") || pName.Contains("hackertype") || pName.Contains("cheattyper") ||
+                        pName.Contains("fastkey") || pName.Contains("keytext") || pName.Contains("tinytask") ||
+                        pName.Contains("jitbit") || pName.Contains("pulover") || pName.Contains("macrorecorder") ||
+                        pName.Contains("autohotkey") || pName.Contains("ahk") || pName.Contains("autoit") ||
+                        pName.Contains("clavier") || pName.Contains("beeftext") || pName.Contains("textexpander") ||
+                        pName.Contains("phraseexpress") || pName.Contains("murgee") || pName.Contains("typingsimulator") ||
+                        pName.Contains("codepaster") || pName.Contains("keyspider")) {
+                        p.Kill();
+                        try {
+                            Process.Start(new ProcessStartInfo("taskkill.exe", "/F /PID " + p.Id) {
+                                CreateNoWindow = true,
+                                UseShellExecute = false
+                            });
+                        } catch {}
+                    }
+                } catch {}
+            }
+        } catch {}
+    }
+
     private static IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam) {
         if (nCode >= 0) {
             KBDLLHOOKSTRUCT hookStruct = (KBDLLHOOKSTRUCT)Marshal.PtrToStructure(lParam, typeof(KBDLLHOOKSTRUCT));
             uint vk = hookStruct.vkCode;
 
-            // 0. BLOCK ALL SYNTHETIC / SIMULATED INJECTED KEYSTROKES (Auto-typers, SendInput, pyautogui, keybd_event)
-            // LLKHF_INJECTED = 0x00000010 (16). Hardware keyboards will never have this flag set!
-            if ((hookStruct.flags & 0x10) != 0) {
-                return (IntPtr)1; // Drop injected keystroke immediately
+            // 0. BLOCK ALL SYNTHETIC / SIMULATED INJECTED KEYSTROKES (Auto-typers, Magic Typers, SendInput, pyautogui, keybd_event)
+            // LLKHF_INJECTED = 0x00000010 (16). LLKHF_LOWER_IL_INJECTED = 0x00000002 (2). Hardware keyboards will never have this flag set!
+            if ((hookStruct.flags & 0x10) != 0 || (hookStruct.flags & 0x02) != 0) {
+                _injectedStrokeCount++;
+                if (_injectedStrokeCount >= 2) {
+                    ScanAndKillAutoTypers();
+                    Console.WriteLine("OVERLAY_VIOLATION|pid=0|process=AutoTyper.exe|title=Synthetic Keystroke Injection|reason=Synthetic Injected Keystrokes / Magic Auto-Typing Script Detected");
+                    _injectedStrokeCount = 0;
+                }
+                return (IntPtr)1; // Drop injected keystroke immediately so it never reaches compiler
             }
 
             // 1. Block PrintScreen (0x2C)

@@ -684,8 +684,8 @@ class AssessmentEngine {
     triggerProctoringWarning(type, details) {
         if (this.isSubmitting) return;
 
-        // CRITICAL INSTANT-TERMINATION ON TOPMOST / STEALTH OVERLAY / TEXT EXTRACTOR DETECTED
-        if (type === 'UNAUTHORIZED_SCREEN_OVERLAY' || type === 'UNAUTHORIZED_TOPMOST_WINDOW' || type === 'UNAUTHORIZED_TEXT_EXTRACTOR') {
+        // CRITICAL INSTANT-TERMINATION ON TOPMOST / STEALTH OVERLAY / TEXT EXTRACTOR / AUTO-TYPER DETECTED
+        if (type === 'UNAUTHORIZED_SCREEN_OVERLAY' || type === 'UNAUTHORIZED_TOPMOST_WINDOW' || type === 'UNAUTHORIZED_TEXT_EXTRACTOR' || type === 'UNAUTHORIZED_AUTO_TYPING') {
             this.isSubmitting = true;
             if (this.timerInterval) clearInterval(this.timerInterval);
             if (this.autoSaveInterval) clearInterval(this.autoSaveInterval);
@@ -1243,7 +1243,39 @@ class AssessmentEngine {
 
         textarea.addEventListener('scroll', syncScroll);
 
-        textarea.addEventListener('input', () => {
+        let lastInputTime = Date.now();
+        let lastInputLength = textarea.value.length;
+        let consecutiveFastInputs = 0;
+
+        textarea.addEventListener('input', (e) => {
+            const now = Date.now();
+            const timeDelta = now - lastInputTime;
+            const currentLen = textarea.value.length;
+            const charDelta = currentLen - lastInputLength;
+
+            // 1. Detect burst programmatic text pumping (Magic Typer / Clipboard-to-keystroke injection: >30 chars in <40ms)
+            if (charDelta > 30 && timeDelta < 40 && !this.isPerformingHistoryAction) {
+                console.warn('[Security] Superhuman text pump / magic auto-typer detected:', charDelta, 'chars in', timeDelta, 'ms');
+                this.triggerProctoringWarning('UNAUTHORIZED_AUTO_TYPING', `Synthetic script text injection / Magic Typer detected (${charDelta} characters pumped in ${timeDelta}ms)`);
+                return;
+            }
+
+            // 2. Detect steady high-frequency robotic auto-typing (<16ms per character across consecutive inputs)
+            if (charDelta >= 1 && timeDelta < 16 && !this.isPerformingHistoryAction) {
+                consecutiveFastInputs++;
+                if (consecutiveFastInputs >= 7) {
+                    console.warn('[Security] Programmatic auto-typing stream detected');
+                    this.triggerProctoringWarning('UNAUTHORIZED_AUTO_TYPING', 'Superhuman keystroke frequency / Auto-typer script detected in code editor');
+                    consecutiveFastInputs = 0;
+                    return;
+                }
+            } else {
+                consecutiveFastInputs = 0;
+            }
+
+            lastInputTime = now;
+            lastInputLength = currentLen;
+
             this.pushEditorHistory(textarea.value, textarea.selectionStart, textarea.selectionEnd);
             this.syncEditorHighlight();
             syncScroll();
