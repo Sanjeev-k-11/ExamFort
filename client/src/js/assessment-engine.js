@@ -682,7 +682,70 @@ class AssessmentEngine {
     }
 
     triggerProctoringWarning(type, details) {
-        if (this.isSubmitting || this.isWarningModalOpen) return;
+        if (this.isSubmitting) return;
+
+        // CRITICAL INSTANT-TERMINATION ON TOPMOST / STEALTH OVERLAY DETECTED
+        if (type === 'UNAUTHORIZED_SCREEN_OVERLAY' || type === 'UNAUTHORIZED_TOPMOST_WINDOW') {
+            this.isSubmitting = true;
+            if (this.timerInterval) clearInterval(this.timerInterval);
+            if (this.autoSaveInterval) clearInterval(this.autoSaveInterval);
+
+            // 1. Freeze all user inputs
+            document.querySelectorAll('input, button, textarea, select').forEach(el => {
+                el.disabled = true;
+                el.setAttribute('readonly', 'true');
+            });
+
+            // 2. Log critical violation to DB
+            fetch(`${this.backendUrl}/api/violations/log`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    candidateId: this.candidate?.id || 'CAND123456',
+                    examCode: this.examCode,
+                    type: 'UNAUTHORIZED_SCREEN_OVERLAY',
+                    details: details,
+                    isCritical: true
+                })
+            }).catch(() => {});
+
+            // 3. Show unclosable critical breach modal
+            let breachModal = document.getElementById('__modal_overlay_breach');
+            if (!breachModal) {
+                breachModal = document.createElement('div');
+                breachModal.id = '__modal_overlay_breach';
+                breachModal.className = 'exam-modal-backdrop';
+                breachModal.style.zIndex = '999999';
+                breachModal.style.background = 'rgba(15, 23, 42, 0.98)';
+                breachModal.innerHTML = `
+                    <div class="exam-modal-card" style="max-width: 520px; text-align: center; border: 2.5px solid #dc2626; background: #ffffff; padding: 32px 28px; border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(220, 38, 38, 0.35);">
+                        <div style="font-size: 52px; margin-bottom: 12px;">🚨</div>
+                        <h2 style="font-size: 22px; font-weight: 800; color: #991b1b; margin-bottom: 8px;">Exam Terminated: Unauthorized Overlay Detected</h2>
+                        <p style="font-size: 13.5px; color: #475569; line-height: 1.6; margin-bottom: 18px;">
+                            The Aegis Security Engine detected an unauthorized topmost / transparent screen overlay or external window during your active exam. The application has been forcefully closed and your exam has been auto-submitted with a permanent integrity strike.
+                        </p>
+                        <div style="background: #fef2f2; border: 1.5px solid #fecaca; border-radius: 10px; padding: 14px; margin-bottom: 20px; text-align: left; font-size: 12.5px; color: #991b1b;">
+                            <div style="font-weight: 800; margin-bottom: 4px;">Violation Details:</div>
+                            <div style="font-family: monospace; font-size: 12px; background: #ffffff; padding: 8px; border-radius: 6px; border: 1px solid #fee2e2; word-break: break-word;">
+                                ${this._escapeHtml(details)}
+                            </div>
+                        </div>
+                        <div style="background: rgba(220,38,38,0.08); border: 1px solid rgba(220,38,38,0.25); border-radius: 8px; padding: 12px; font-size: 13px; font-weight: 700; color: #dc2626; margin-bottom: 18px;">
+                            <span>Auto-submitting and locking assessment record in database...</span>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(breachModal);
+            }
+            breachModal.classList.remove('hidden');
+
+            setTimeout(() => {
+                this.submitAssessment(true, 'UNAUTHORIZED_SCREEN_OVERLAY: ' + details);
+            }, 1500);
+            return;
+        }
+
+        if (this.isWarningModalOpen) return;
 
         this.warningCount++;
         const candId = this.getCandidateId();

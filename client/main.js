@@ -257,6 +257,33 @@ function startKeyboardSentinel() {
                 if (str.includes('KEYBOARD_SENTINEL_ACTIVE')) {
                     console.log('[Security] Aegis Keyboard Sentinel is LIVE & ACTIVE.');
                 }
+                const lines = str.split(/\r?\n/);
+                for (const line of lines) {
+                    if (line.startsWith('OVERLAY_VIOLATION|')) {
+                        console.warn('[Security] OVERLAY VIOLATION DETECTED BY SENTINEL:', line);
+                        const parts = line.split('|');
+                        const dataMap = {};
+                        for (const part of parts.slice(1)) {
+                            const [k, ...v] = part.split('=');
+                            if (k) dataMap[k.trim()] = v.join('=').trim();
+                        }
+                        const pName = dataMap.process || 'Unknown Process';
+                        const reason = dataMap.reason || 'Topmost/Layered Overlay Detected';
+                        const title = dataMap.title || '';
+                        const pid = dataMap.pid || '';
+                        
+                        if (mainWindow && !mainWindow.isDestroyed()) {
+                            mainWindow.webContents.send('security:violation', {
+                                type: 'UNAUTHORIZED_SCREEN_OVERLAY',
+                                process: pName,
+                                pid: pid,
+                                reason: reason,
+                                title: title,
+                                details: `${reason} detected from "${pName}.exe" (${title || 'Hidden Window'}). Process terminated immediately by Aegis Sentinel.`
+                            });
+                        }
+                    }
+                }
             });
 
             keyboardSentinelProc.on('exit', (code) => {
@@ -269,7 +296,85 @@ function startKeyboardSentinel() {
     }
 }
 
+let overlayScannerInterval = null;
+function startTopmostOverlayScanner() {
+    if (process.platform !== 'win32' || overlayScannerInterval) return;
+
+    overlayScannerInterval = setInterval(() => {
+        if (!mainWindow || mainWindow.isDestroyed() || mainWindow._allowClose) return;
+
+        const psCmd = `
+            $selfPid = ${process.pid};
+            Add-Type -TypeDefinition @"
+            using System;
+            using System.Runtime.InteropServices;
+            using System.Text;
+            public class WinChecker {
+                [DllImport("user32.dll")] public static extern bool EnumWindows(EnumWindowsProc lpEnumFunc, IntPtr lParam);
+                [DllImport("user32.dll")] public static extern int GetWindowLong(IntPtr hWnd, int nIndex);
+                [DllImport("user32.dll")] public static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
+                [DllImport("user32.dll")] public static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
+                [DllImport("user32.dll")] public static extern bool IsWindowVisible(IntPtr hWnd);
+                public delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
+            }
+"@;
+            [WinChecker]::EnumWindows({
+                param($hWnd, $lParam)
+                if ([WinChecker]::IsWindowVisible($hWnd)) {
+                    $pidVal = 0;
+                    [WinChecker]::GetWindowThreadProcessId($hWnd, [ref]$pidVal);
+                    if ($pidVal -gt 4 -and $pidVal -ne $selfPid) {
+                        $exStyle = [WinChecker]::GetWindowLong($hWnd, -20);
+                        $isTopmost = ($exStyle -band 0x00000008) -ne 0;
+                        $isLayered = ($exStyle -band 0x00080000) -ne 0;
+                        $isTrans = ($exStyle -band 0x00000020) -ne 0;
+                        if ($isTopmost -or ($isLayered -and $isTrans)) {
+                            try {
+                                $proc = Get-Process -Id $pidVal -ErrorAction SilentlyContinue;
+                                if ($proc -and $proc.ProcessName -notmatch '^(explorer|dwm|system|lsass|services|svchost|powershell|pwsh|cmd|conhost|taskmgr|antigravity|code)$') {
+                                    $sb = New-Object System.Text.StringBuilder 256;
+                                    [WinChecker]::GetWindowText($hWnd, $sb, 256);
+                                    Write-Output "FOUND_OVERLAY:$pidVal:$($proc.ProcessName):$($sb.ToString())";
+                                }
+                            } catch {}
+                        }
+                    }
+                }
+                return $true;
+            }, [IntPtr]::Zero) | Out-Null
+        `;
+
+        exec(`powershell -NoProfile -WindowStyle Hidden -Command "${psCmd.replace(/\r?\n/g, ' ')}"`, { timeout: 2500 }, (err, stdout) => {
+            if (stdout && stdout.includes('FOUND_OVERLAY:')) {
+                const lines = stdout.split(/\r?\n/);
+                for (const line of lines) {
+                    if (line.startsWith('FOUND_OVERLAY:')) {
+                        const [, pid, procName, title] = line.split(':');
+                        if (procName) {
+                            console.warn(`[Security] Continuous Watcher killed topmost overlay process: ${procName} (PID: ${pid})`);
+                            exec(`taskkill /F /PID ${pid} 2>nul`);
+                            if (mainWindow && !mainWindow.isDestroyed() && !mainWindow._allowClose) {
+                                mainWindow.webContents.send('security:violation', {
+                                    type: 'UNAUTHORIZED_SCREEN_OVERLAY',
+                                    process: procName,
+                                    pid: pid,
+                                    title: title,
+                                    details: `Topmost/Layered Window detected from "${procName}.exe" (${title || 'Overlay'}). Offending process killed by system.`
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }, 1800);
+}
+
 function stopKeyboardSentinel() {
+    if (overlayScannerInterval) {
+        clearInterval(overlayScannerInterval);
+        overlayScannerInterval = null;
+    }
     if (keyboardSentinelProc) {
         try {
             keyboardSentinelProc.kill();
@@ -449,6 +554,7 @@ function createWindow() {
     toggleTouchpadGestures(false);
     clipCursorToSafeBounds(false);
     startActiveWindowSentinel();
+    startTopmostOverlayScanner();
 
     const overlayEnforcerInterval = setInterval(() => {
         if (mainWindow && !mainWindow.isDestroyed() && !mainWindow._allowClose) {

@@ -362,27 +362,47 @@ public class AegisKeyboardSentinel {
                     bool isForeignTopmost = (exStyle & WS_EX_TOPMOST) != 0;
                     bool isStealthOverlay = isVisible && ((exStyle & WS_EX_LAYERED) != 0 || (exStyle & WS_EX_TRANSPARENT) != 0 || (exStyle & WS_EX_TOOLWINDOW) != 0 || (exStyle & WS_EX_NOACTIVATE) != 0);
 
-                    if (isKnownCheatOrOverlay || isForeignTopmost || isStealthOverlay) {
+                    string violationReason = "";
+                    if (isKnownCheatOrOverlay) {
+                        violationReason = "Blacklisted Cheat / Assistant Overlay Signature (" + titleStr + ")";
+                    } else if (isForeignTopmost && isStealthOverlay) {
+                        violationReason = "Topmost Layered Transparent Overlay (HWND_TOPMOST + WS_EX_LAYERED)";
+                    } else if (isForeignTopmost) {
+                        violationReason = "Topmost Window Property Detected (HWND_TOPMOST / WS_EX_TOPMOST)";
+                    } else if (isStealthOverlay) {
+                        violationReason = "Stealth Layered / Click-through Overlay (WS_EX_LAYERED / WS_EX_TRANSPARENT)";
+                    }
+
+                    if (!string.IsNullOrEmpty(violationReason)) {
                         // 1. Strip Topmost & Layered attributes immediately
                         SetWindowLong(hWnd, GWL_EXSTYLE, exStyle & ~WS_EX_TOPMOST & ~WS_EX_LAYERED & ~WS_EX_TRANSPARENT);
 
                         // 2. Push to Bottom Z-Order (HWND_BOTTOM = 1)
                         SetWindowPos(hWnd, (IntPtr)1, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS);
 
-                        // 3. Hide & Force Close
+                        // 3. Hide & Force Close Window
                         ShowWindow(hWnd, 0); // SW_HIDE
                         PostMessage(hWnd, 0x0010, IntPtr.Zero, IntPtr.Zero); // WM_CLOSE
 
-                        // 4. Terminate process if not a critical Windows core component
+                        string procName = "Unknown";
                         try {
                             if (pid > 4) {
                                 Process p = Process.GetProcessById((int)pid);
-                                string pName = p.ProcessName.ToLower();
-                                if (!SafeSystemProcesses.Contains(pName)) {
+                                procName = p.ProcessName;
+                                if (!SafeSystemProcesses.Contains(procName)) {
                                     p.Kill();
+                                    try {
+                                        Process.Start(new ProcessStartInfo("taskkill.exe", "/F /PID " + pid) {
+                                            CreateNoWindow = true,
+                                            UseShellExecute = false
+                                        });
+                                    } catch {}
                                 }
                             }
                         } catch {}
+
+                        // Print structured event to stdout for Electron Main process
+                        Console.WriteLine("OVERLAY_VIOLATION|pid=" + pid + "|process=" + procName + "|title=" + title.ToString().Replace("|", "_") + "|reason=" + violationReason);
 
                         // 5. Instantly pull ExamFort back to absolute foreground
                         if (_examHwnd != IntPtr.Zero) {
