@@ -2,7 +2,7 @@
 
 class ExamFortApp {
     constructor() {
-        this.backendUrl = window.EXAMFORT_ENV?.API_BASE_URL || 'http://localhost:5000';
+        this.backendUrl = window.EXAMFORT_ENV?.API_BASE_URL || 'https://examfort-d6q1.onrender.com';
         this.currentScreen = 'system-check';
         this.candidate = {
             id: '123',

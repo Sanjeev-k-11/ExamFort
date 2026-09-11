@@ -2,7 +2,7 @@
 
 class AssessmentEngine {
     constructor() {
-        this.backendUrl = window.EXAMFORT_ENV?.API_BASE_URL || 'http://localhost:5000';
+        this.backendUrl = window.EXAMFORT_ENV?.API_BASE_URL || 'https://examfort-d6q1.onrender.com';
         const urlParams = new URLSearchParams(window.location.search);
         this.examCode = urlParams.get('code') || sessionStorage.getItem('target_exam_code') || window.EXAMFORT_ENV?.DEFAULT_EXAM_CODE || 'NAT-2026-EXAM';
         
