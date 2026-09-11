@@ -279,7 +279,27 @@ class ExamController extends Controller
         }
         $candidateIds = array_unique(array_filter($candidateIds));
 
+        $allowReattempt = $request->boolean('allow_reattempt');
+        $reason = trim($request->input('reattempt_reason', '')) ?: 'Faculty Authorized Score Improvement Re-test';
+        $authByName = $currentUser ? ($currentUser->full_name . ' (' . $currentUser->role . ')') : 'Exam Controller / Admin';
+
         if (!empty($candidateIds)) {
+            // If reattempt is authorized, record official authorization in database
+            if ($allowReattempt) {
+                foreach ($candidateIds as $cId) {
+                    try {
+                        \Illuminate\Support\Facades\DB::table('exam_reattempt_authorizations')->insert([
+                            'candidate_id' => (string)$cId,
+                            'exam_code' => $exam_code,
+                            'reattempt_reason' => $reason,
+                            'authorized_by' => $authByName,
+                            'status' => 'ACTIVE',
+                            'created_at' => now(),
+                        ]);
+                    } catch (\Exception $e) {}
+                }
+            }
+
             // Only perform hard delete if explicitly requested with hard_reset_submissions
             if ($request->boolean('hard_reset_submissions')) {
                 Submission::where('exam_code', $exam_code)
@@ -289,7 +309,8 @@ class ExamController extends Controller
 
             $count = count($candidateIds);
             $dateInfo = $request->exam_date ? " to {$request->exam_date}" : "";
-            return back()->with('success', "Successfully rescheduled / authorized reattempt for {$count} candidate(s){$dateInfo}. Historical attempts are preserved for cross-attempt score comparison.");
+            $authMsg = $allowReattempt ? " with reattempt reason: \"{$reason}\"" : "";
+            return back()->with('success', "Successfully rescheduled / authorized reattempt for {$count} candidate(s){$dateInfo}{$authMsg}. Historical attempts are preserved for cross-attempt score comparison.");
         }
 
         $request->validate([
@@ -306,11 +327,25 @@ class ExamController extends Controller
             'status' => $status,
         ]);
 
+        if ($allowReattempt) {
+            try {
+                \Illuminate\Support\Facades\DB::table('exam_reattempt_authorizations')->insert([
+                    'candidate_id' => 'ALL',
+                    'exam_code' => $exam_code,
+                    'reattempt_reason' => $reason,
+                    'authorized_by' => $authByName,
+                    'status' => 'ACTIVE',
+                    'created_at' => now(),
+                ]);
+            } catch (\Exception $e) {}
+        }
+
         if ($request->boolean('hard_reset_submissions')) {
             Submission::where('exam_code', $exam_code)->delete();
         }
 
-        return back()->with('success', "Exam {$exam->exam_code} has been successfully rescheduled for all candidates to {$exam->exam_date} ({$exam->exam_time}). Historical attempts remain preserved.");
+        $authMsg = $allowReattempt ? " (Reattempts officially authorized with reason: \"{$reason}\")" : "";
+        return back()->with('success', "Exam {$exam->exam_code} has been successfully rescheduled for all candidates to {$exam->exam_date} ({$exam->exam_time}){$authMsg}. Historical attempts remain preserved.");
     }
 
     public function destroy($exam_code)

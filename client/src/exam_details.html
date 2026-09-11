@@ -345,17 +345,22 @@
                             <span>→</span>
                         </a>
 
-                        <!-- Multi-Attempt Scorecard & Reattempt Trigger -->
+                        <!-- Multi-Attempt Scorecard & Admin Authorization Status -->
                         <div id="container-attempt-history" style="display: none; margin-top: 14px; background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 14px;">
                             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
                                 <span style="font-size: 12px; font-weight: 700; color: #475569;">Your Attempt History:</span>
                                 <span id="lbl-attempt-badge-count" style="font-size: 11px; font-weight: 800; color: #4f46e5; background: #eef2ff; padding: 2px 8px; border-radius: 6px;">1 Attempt</span>
                             </div>
                             <div id="list-attempt-scores" style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px;"></div>
-                            <button type="button" id="btn-reattempt-exam" class="btn-proceed-instructions" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white; border: none; margin-top: 4px; box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);" onclick="openReattemptModal()">
-                                <span>🔄 Reattempt Examination</span>
-                                <span>→</span>
-                            </button>
+                            
+                            <div id="box-admin-auth-msg" style="display: none; background: #f0fdf4; border: 1px solid #86efac; border-radius: 8px; padding: 10px; font-size: 12px; color: #166534; margin-top: 4px; line-height: 1.4;">
+                                <span>🔄 <strong>Reattempt Authorized by Admin</strong></span>
+                                <span id="lbl-detail-auth-reason" style="display: block; font-size: 11px; color: #15803d; margin-top: 2px;"></span>
+                            </div>
+
+                            <div id="box-admin-lock-msg" style="display: none; background: #ffffff; border: 1px dashed #cbd5e1; border-radius: 8px; padding: 10px; font-size: 11.5px; color: #64748b; margin-top: 4px; line-height: 1.4; text-align: center;">
+                                🔒 <strong>Reattempt Policy:</strong> Only the Exam Controller / Faculty can authorize a reattempt. If you faced a technical or network issue, please contact your faculty.
+                            </div>
                         </div>
                     </div>
 
@@ -681,22 +686,44 @@
             const isExpired = (statusUpper === 'COMPLETED') || (end ? (now > end) : false);
 
             if (hasSubmitted) {
-                if (badge) {
-                    badge.className = 'exam-badge-completed';
-                    badge.textContent = candidateAttemptData && candidateAttemptData.attemptCount > 1 
-                        ? `Attempted (${candidateAttemptData.attemptCount}x) ✓`
-                        : 'Completed ✓';
-                }
-                if (btnProceed) {
-                    btnProceed.className = 'btn-proceed-instructions btn-proceed-completed';
-                    btnProceed.innerHTML = '<span>View Submission Summary</span> <span>✓</span>';
-                    btnProceed.href = 'completed.html';
-                    btnProceed.style.filter = 'none';
-                    btnProceed.style.opacity = '0.95';
-                    btnProceed.style.pointerEvents = 'auto';
+                const isReattemptAuthorized = candidateAttemptData && !!candidateAttemptData.isReattemptAuthorized;
+                const reattemptReason = candidateAttemptData ? candidateAttemptData.reattemptReason : '';
+
+                if (isReattemptAuthorized) {
+                    if (badge) {
+                        badge.className = 'exam-badge-upcoming';
+                        badge.style.background = '#eef2ff';
+                        badge.style.color = '#4338ca';
+                        badge.textContent = '🔄 Reattempt Authorized by Admin ✓';
+                    }
+                    if (btnProceed) {
+                        btnProceed.className = 'btn-proceed-instructions';
+                        btnProceed.style.background = 'linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)';
+                        btnProceed.style.color = '#ffffff';
+                        btnProceed.innerHTML = '<span>Proceed to Reattempt Assessment</span> <span>→</span>';
+                        btnProceed.href = `instructions.html?code=${encodeURIComponent(targetExamCode)}&reattempt=1`;
+                        btnProceed.style.filter = 'none';
+                        btnProceed.style.opacity = '1';
+                        btnProceed.style.pointerEvents = 'auto';
+                    }
+                } else {
+                    if (badge) {
+                        badge.className = 'exam-badge-completed';
+                        badge.textContent = candidateAttemptData && candidateAttemptData.attemptCount > 1 
+                            ? `Attempted (${candidateAttemptData.attemptCount}x) ✓`
+                            : 'Completed ✓';
+                    }
+                    if (btnProceed) {
+                        btnProceed.className = 'btn-proceed-instructions btn-proceed-completed';
+                        btnProceed.innerHTML = '<span>View Submission Summary</span> <span>✓</span>';
+                        btnProceed.href = 'completed.html';
+                        btnProceed.style.filter = 'none';
+                        btnProceed.style.opacity = '0.95';
+                        btnProceed.style.pointerEvents = 'auto';
+                    }
                 }
 
-                // Render attempt history & show Reattempt Button
+                // Render attempt history
                 if (containerHistory && listScores) {
                     containerHistory.style.display = 'block';
                     const attempts = candidateAttemptData?.attempts || [];
@@ -719,9 +746,24 @@
                         `).join('');
                     } else {
                         listScores.innerHTML = `
-                            <div style="font-size: 12px; color: #64748b;">Assessment previously submitted. You may reattempt if required.</div>
+                            <div style="font-size: 12px; color: #64748b;">Assessment previously submitted.</div>
                         `;
                     }
+                }
+
+                // Toggle Admin authorization banner vs locked note
+                const boxAuth = document.getElementById('box-admin-auth-msg');
+                const boxLock = document.getElementById('box-admin-lock-msg');
+                if (isReattemptAuthorized) {
+                    if (boxAuth) {
+                        boxAuth.style.display = 'block';
+                        const lblR = document.getElementById('lbl-detail-auth-reason');
+                        if (lblR) lblR.textContent = `Official Reason: "${reattemptReason || 'Faculty Authorized Score Improvement Re-test'}"`;
+                    }
+                    if (boxLock) boxLock.style.display = 'none';
+                } else {
+                    if (boxAuth) boxAuth.style.display = 'none';
+                    if (boxLock) boxLock.style.display = 'block';
                 }
             } else if (isFuture) {
                 if (badge) {

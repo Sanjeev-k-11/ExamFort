@@ -526,15 +526,30 @@
                 </div>
             </div>
 
-            <!-- Reattempt / Reset Options -->
-            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 14px; margin-bottom: 20px;">
-                <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; margin-bottom: 0;">
-                    <input type="checkbox" name="allow_reattempt" value="1" style="margin-top: 3px; accent-color: #4f46e5;">
+            <!-- Reattempt Authorization & Official Reason (Admin-Only) -->
+            <div style="background: #f0fdf4; border: 1.5px solid #86efac; border-radius: 12px; padding: 14px 16px; margin-bottom: 20px;">
+                <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; margin-bottom: 10px;">
+                    <input type="checkbox" name="allow_reattempt" id="chk_modal_allow_reattempt" value="1" checked style="margin-top: 3px; accent-color: #16a34a; width: 16px; height: 16px;">
                     <div>
-                        <span style="font-size: 13px; font-weight: 700; color: #0f172a; display: block;">Allow Fresh Reattempt / Reset Submission</span>
-                        <span style="font-size: 11.5px; color: #64748b;">If checked, candidates can take the test again and state their reason for reattempt.</span>
+                        <span style="font-size: 13.5px; font-weight: 800; color: #166534; display: block;">Authorize Official Candidate Reattempt</span>
+                        <span style="font-size: 11.5px; color: #15803d;">Grants access for candidate(s) to retake this exam. Historical attempts are preserved for side-by-side comparison.</span>
                     </div>
                 </label>
+
+                <div id="container-admin-reason-field" style="margin-top: 10px; border-top: 1px solid #bbf7d0; padding-top: 10px;">
+                    <label style="display: block; font-size: 12px; font-weight: 700; color: #166534; margin-bottom: 4px;">
+                        Official Authorization Reason <span style="color: #dc2626;">*</span>
+                    </label>
+                    <input type="text" name="reattempt_reason" id="txt_admin_reattempt_reason" class="form-control" placeholder="e.g. Power / Network Outage during 1st attempt" value="Power / Network Outage during 1st attempt" style="padding: 8px 12px; font-size: 13px; border: 1.5px solid #86efac; border-radius: 8px; width: 100%; box-sizing: border-box; background: #ffffff;">
+
+                    <!-- Quick Reason Presets -->
+                    <div style="display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap;">
+                        <button type="button" class="btn-reschedule-preset" style="background:#ffffff; font-size:11px; color:#15803d; border-color:#86efac;" onclick="setAdminReasonPreset('Power / Network Outage during 1st attempt')">⚡ Network Outage</button>
+                        <button type="button" class="btn-reschedule-preset" style="background:#ffffff; font-size:11px; color:#15803d; border-color:#86efac;" onclick="setAdminReasonPreset('Technical Browser Crash / Hardware Glitch')">💻 Technical Glitch</button>
+                        <button type="button" class="btn-reschedule-preset" style="background:#ffffff; font-size:11px; color:#15803d; border-color:#86efac;" onclick="setAdminReasonPreset('Faculty Authorized Score Improvement Re-test')">🎓 Faculty Approved</button>
+                        <button type="button" class="btn-reschedule-preset" style="background:#ffffff; font-size:11px; color:#15803d; border-color:#86efac;" onclick="setAdminReasonPreset('Accidental Premature Submission')">⚠️ Early Submission</button>
+                    </div>
+                </div>
             </div>
 
             <!-- Action Buttons -->
@@ -589,6 +604,11 @@
 </style>
 
 <script>
+    function setAdminReasonPreset(reason) {
+        const input = document.getElementById('txt_admin_reattempt_reason');
+        if (input) input.value = reason;
+    }
+
     function openRescheduleModal() {
         const m = document.getElementById('rescheduleModal');
         if (m) {

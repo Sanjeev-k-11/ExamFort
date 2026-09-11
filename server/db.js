@@ -237,6 +237,29 @@ class MySQLDatabaseService {
                             activity_type VARCHAR(50) DEFAULT 'EXAM',
                             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                         );
+                        CREATE TABLE IF NOT EXISTS exam_reattempt_authorizations (
+                            id SERIAL PRIMARY KEY,
+                            candidate_id VARCHAR(50) NOT NULL,
+                            exam_code VARCHAR(50) NOT NULL,
+                            reattempt_reason TEXT NOT NULL,
+                            authorized_by VARCHAR(100) DEFAULT 'Faculty Admin',
+                            status VARCHAR(20) DEFAULT 'ACTIVE',
+                            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                            consumed_at TIMESTAMP NULL
+                        );
+                    `).catch(() => {});
+                } else {
+                    await this.pool.query(`
+                        CREATE TABLE IF NOT EXISTS \`exam_reattempt_authorizations\` (
+                            \`id\` INT AUTO_INCREMENT PRIMARY KEY,
+                            \`candidate_id\` VARCHAR(50) NOT NULL,
+                            \`exam_code\` VARCHAR(50) NOT NULL,
+                            \`reattempt_reason\` TEXT NOT NULL,
+                            \`authorized_by\` VARCHAR(100) DEFAULT 'Faculty Admin',
+                            \`status\` VARCHAR(20) DEFAULT 'ACTIVE',
+                            \`created_at\` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                            \`consumed_at\` TIMESTAMP NULL
+                        ) ENGINE=InnoDB;
                     `).catch(() => {});
                 }
 
@@ -815,6 +838,21 @@ class MySQLDatabaseService {
             // Clear candidate draft
             await this.pool.query('DELETE FROM candidate_drafts WHERE candidate_id = ? AND exam_code = ?', [candidateId, code]).catch(() => {});
 
+            // Consume active reattempt authorization
+            try {
+                await this.pool.query(
+                    `UPDATE exam_reattempt_authorizations 
+                     SET status = 'CONSUMED', consumed_at = CURRENT_TIMESTAMP 
+                     WHERE (candidate_id = ? 
+                        OR candidate_id = (SELECT student_id FROM users WHERE student_id = ? OR CAST(id AS VARCHAR) = ? LIMIT 1)
+                        OR candidate_id = (SELECT CAST(id AS VARCHAR) FROM users WHERE student_id = ? OR CAST(id AS VARCHAR) = ? LIMIT 1)
+                        OR candidate_id = 'ALL')
+                       AND exam_code = ? 
+                       AND status = 'ACTIVE'`,
+                    [candidateId, candidateId, candidateId, candidateId, candidateId, code]
+                );
+            } catch (_) {}
+
             // Record student activity in database
             try {
                 const actTitle = currentAttemptNumber > 1 
@@ -850,9 +888,35 @@ class MySQLDatabaseService {
     }
 
     async checkCandidateAttempt(candidateId, examCode) {
-        if (!this.pool) return { success: true, hasSubmitted: false };
+        if (!this.pool) return { success: true, hasSubmitted: false, isReattemptAuthorized: false };
         try {
             const code = examCode || 'NAT-2026-EXAM';
+
+            // Check if Admin/Faculty has authorized a reattempt
+            let isReattemptAuthorized = false;
+            let reattemptAuthReason = null;
+            let authorizedBy = null;
+
+            try {
+                const [authRows] = await this.pool.query(
+                    `SELECT id, reattempt_reason, authorized_by, created_at 
+                     FROM exam_reattempt_authorizations 
+                     WHERE (candidate_id = ? 
+                        OR candidate_id = (SELECT student_id FROM users WHERE student_id = ? OR CAST(id AS VARCHAR) = ? LIMIT 1)
+                        OR candidate_id = (SELECT CAST(id AS VARCHAR) FROM users WHERE student_id = ? OR CAST(id AS VARCHAR) = ? LIMIT 1)
+                        OR candidate_id = 'ALL')
+                       AND exam_code = ? 
+                       AND status = 'ACTIVE' 
+                     ORDER BY id DESC LIMIT 1`,
+                    [candidateId, candidateId, candidateId, candidateId, candidateId, code]
+                );
+                if (authRows && authRows.length > 0) {
+                    isReattemptAuthorized = true;
+                    reattemptAuthReason = authRows[0].reattempt_reason;
+                    authorizedBy = authRows[0].authorized_by;
+                }
+            } catch (_) {}
+
             const [rows] = await this.pool.query(
                 `SELECT s.id, s.attempt_number, s.reattempt_reason, s.submission_timestamp, s.total_score, s.mcq_score, s.coding_public_score, s.coding_hidden_score, s.essay_score 
                  FROM submissions s 
@@ -884,6 +948,9 @@ class MySQLDatabaseService {
                 return {
                     success: true,
                     hasSubmitted: true,
+                    isReattemptAuthorized,
+                    reattemptReason: reattemptAuthReason,
+                    authorizedBy,
                     attemptCount: attempts.length,
                     attempts,
                     firstAttempt,
@@ -894,10 +961,10 @@ class MySQLDatabaseService {
                     totalScore: latestAttempt.totalScore
                 };
             }
-            return { success: true, hasSubmitted: false, attemptCount: 0, attempts: [] };
+            return { success: true, hasSubmitted: false, isReattemptAuthorized, reattemptReason: reattemptAuthReason, authorizedBy, attemptCount: 0, attempts: [] };
         } catch (err) {
             console.error('❌ Error checking candidate attempt:', err.message);
-            return { success: true, hasSubmitted: false, attemptCount: 0, attempts: [] };
+            return { success: true, hasSubmitted: false, isReattemptAuthorized: false, attemptCount: 0, attempts: [] };
         }
     }
 

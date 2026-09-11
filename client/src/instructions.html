@@ -230,17 +230,19 @@
 
                     
                     <div id="section-already-submitted" style="display: none; margin-top: auto;">
-                        <div style="background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 12px; font-size: 12px; color: #065f46; font-weight: 700; margin-bottom: 12px; line-height: 1.4;">
+                        <div style="background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 12px; font-size: 12px; color: #065f46; font-weight: 700; margin-bottom: 8px; line-height: 1.4;">
                             ✓ You have already submitted this exam.
+                        </div>
+                        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; font-size: 11.5px; color: #64748b; margin-bottom: 12px; line-height: 1.4;">
+                            🔒 <strong>Reattempt Policy:</strong> Reattempts must be authorized by your faculty/examination controller with an official reason. If you experienced a network or power interruption, request your proctor to authorize a reattempt.
                         </div>
                         <div style="display: flex; gap: 8px; flex-direction: column;">
                             <a href="completed.html" class="btn-start-exam-main btn-already-completed" style="text-align: center; text-decoration: none;">
                                 <span>View Submission & Attempts</span>
                                 <span>✓</span>
                             </a>
-                            <button type="button" onclick="openReattemptModal()" class="btn-start-exam-main" style="background: #6366f1; text-align: center; font-size: 13px; padding: 11px; border: none; cursor: pointer; color: #ffffff; display: flex; align-items: center; justify-content: center; gap: 8px; border-radius: 10px; font-weight: 700;">
-                                <span>Request / Start Reattempt</span>
-                                <span>🔄</span>
+                            <button type="button" class="btn-start-exam-main" style="background: #f1f5f9; color: #94a3b8; border: 1px solid #cbd5e1; cursor: not-allowed; text-align: center; font-size: 12.5px; padding: 10px; border-radius: 10px; font-weight: 700;" disabled>
+                                <span>Reattempt Requires Admin Authorization 🔒</span>
                             </button>
                         </div>
                     </div>
@@ -529,37 +531,51 @@
                 }
             }).catch(() => {});
 
-        // 3. STRICT SINGLE-ATTEMPT & EXPIRATION / FUTURE DATE CHECK
+        // 3. STRICT SINGLE-ATTEMPT & ADMIN REATTEMPT AUTHORIZATION CHECK
         async function checkAttemptStatus() {
             const subKey = `exam_submitted_${cid}_${targetExamCode}`;
             const isSubmittedLocally = localStorage.getItem(subKey) === 'true' || sessionStorage.getItem(subKey) === 'true';
 
-            // Check if current session is an intentional reattempt
-            const isReattemptMode = sessionStorage.getItem(`is_reattempt_${targetExamCode}`) === 'true' || urlParams.get('reattempt') === '1';
-            const reattemptReason = sessionStorage.getItem(`reattempt_reason_${targetExamCode}`) || sessionStorage.getItem('reattempt_reason') || '';
-
-            if (isReattemptMode) {
-                const banner = document.getElementById('section-reattempt-banner');
-                if (banner) {
-                    banner.style.display = 'block';
-                    if (reattemptReason && document.getElementById('lbl-reattempt-reason-text')) {
-                        document.getElementById('lbl-reattempt-reason-text').textContent = reattemptReason;
-                    }
-                }
-                const btnLbl = document.getElementById('lbl-start-btn-text');
-                if (btnLbl) btnLbl.textContent = 'Start Reattempt Assessment';
-            }
-
             let hasSubmitted = isSubmittedLocally;
+            let isReattemptAuthorized = false;
+            let adminReattemptReason = '';
+            let authorizedBy = '';
+
             try {
                 const res = await fetch(`${baseUrl}/api/exam/check-attempt/${cid}/${targetExamCode}`);
                 const data = await res.json();
                 if (data && data.hasSubmitted) {
                     hasSubmitted = true;
-                    localStorage.setItem(subKey, 'true');
-                    sessionStorage.setItem(subKey, 'true');
+                    isReattemptAuthorized = !!data.isReattemptAuthorized;
+                    adminReattemptReason = data.reattemptReason || '';
+                    authorizedBy = data.authorizedBy || 'Faculty Admin';
+
+                    if (isReattemptAuthorized) {
+                        // Admin has authorized reattempt -> activate session
+                        sessionStorage.setItem(`is_reattempt_${targetExamCode}`, 'true');
+                        sessionStorage.setItem(`reattempt_reason_${targetExamCode}`, adminReattemptReason);
+                        sessionStorage.setItem('reattempt_reason', adminReattemptReason);
+                    } else {
+                        // Reattempt not authorized by admin -> clear local reattempt keys
+                        sessionStorage.removeItem(`is_reattempt_${targetExamCode}`);
+                    }
                 }
             } catch (_) {}
+
+            const isReattemptMode = isReattemptAuthorized;
+            const reattemptReason = adminReattemptReason;
+
+            if (isReattemptMode) {
+                const banner = document.getElementById('section-reattempt-banner');
+                if (banner) {
+                    banner.style.display = 'block';
+                    if (document.getElementById('lbl-reattempt-reason-text')) {
+                        document.getElementById('lbl-reattempt-reason-text').textContent = reattemptReason || 'Authorized by Admin';
+                    }
+                }
+                const btnLbl = document.getElementById('lbl-start-btn-text');
+                if (btnLbl) btnLbl.textContent = 'Start Reattempt Assessment';
+            }
 
             let isFuture = false;
             let isExpired = false;
@@ -644,120 +660,7 @@
             proceedToAssessment();
         }
 
-        // Reattempt Modal Handlers
-        function openReattemptModal() {
-            const m = document.getElementById('reattemptModal');
-            if (m) m.style.display = 'flex';
-        }
-
-        function closeReattemptModal() {
-            const m = document.getElementById('reattemptModal');
-            if (m) m.style.display = 'none';
-        }
-
-        function setReattemptPreset(text) {
-            const txt = document.getElementById('txt-reattempt-reason');
-            if (txt) txt.value = text;
-        }
-
-        function confirmAndStartReattempt() {
-            const reasonInput = document.getElementById('txt-reattempt-reason');
-            const reason = reasonInput ? reasonInput.value.trim() : '';
-
-            if (!reason) {
-                alert('Please state your reason for reattempting this examination before proceeding.');
-                if (reasonInput) reasonInput.focus();
-                return;
-            }
-
-            // Save reattempt context in sessionStorage
-            sessionStorage.setItem('is_reattempt_' + targetExamCode, 'true');
-            sessionStorage.setItem('reattempt_reason_' + targetExamCode, reason);
-            sessionStorage.setItem('reattempt_reason', reason);
-
-            // Remove submitted lock for this reattempt session
-            const subKey = `exam_submitted_${cid}_${targetExamCode}`;
-            sessionStorage.removeItem(subKey);
-            localStorage.removeItem(subKey);
-
-            closeReattemptModal();
-
-            // Unlock the agreement checklist and start button immediately
-            const banner = document.getElementById('section-reattempt-banner');
-            if (banner) {
-                banner.style.display = 'block';
-                if (document.getElementById('lbl-reattempt-reason-text')) {
-                    document.getElementById('lbl-reattempt-reason-text').textContent = reason;
-                }
-            }
-
-            document.getElementById('section-already-submitted').style.display = 'none';
-            document.getElementById('section-agreement').style.display = 'block';
-            
-            const btnLbl = document.getElementById('lbl-start-btn-text');
-            if (btnLbl) btnLbl.textContent = 'Start Reattempt Assessment';
-
-            // Auto-check agreement for fast start
-            const chk = document.getElementById('chk-agree');
-            if (chk) {
-                chk.checked = true;
-                const btnStart = document.getElementById('btn-start-exam');
-                if (btnStart) btnStart.disabled = false;
-            }
-        }
-
         document.getElementById('btn-footer-exit')?.addEventListener('click', exitApplication);
     </script>
-
-    <!-- Candidate Reattempt Reason Modal Dialog -->
-    <div id="reattemptModal" style="display: none; position: fixed; inset: 0; z-index: 9999; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(8px); align-items: center; justify-content: center; padding: 16px;">
-        <div style="background: #ffffff; width: 100%; max-width: 520px; border-radius: 20px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35); border: 1px solid #e2e8f0; overflow: hidden; animation: modalPop 0.25s cubic-bezier(0.16, 1, 0.3, 1);">
-            <div style="padding: 20px 24px; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);">
-                <div style="display: flex; align-items: center; gap: 12px;">
-                    <div style="width: 40px; height: 40px; border-radius: 10px; background: #fef3c7; color: #d97706; display: flex; align-items: center; justify-content: center; font-size: 20px; border: 1px solid #fde68a;">
-                        🔄
-                    </div>
-                    <div>
-                        <h3 style="font-size: 17px; font-weight: 800; color: #92400e; margin: 0;">Reattempt Examination</h3>
-                        <p style="font-size: 12px; color: #b45309; margin: 2px 0 0 0;">Exam: <span id="lbl-modal-exam-code" style="font-weight: 700;">NAT-2026-EXAM</span></p>
-                    </div>
-                </div>
-                <button type="button" onclick="closeReattemptModal()" style="background: transparent; border: none; font-size: 22px; color: #94a3b8; cursor: pointer;">&times;</button>
-            </div>
-
-            <div style="padding: 24px;">
-                <p style="font-size: 13.5px; color: #334155; margin-top: 0; margin-bottom: 14px; line-height: 1.5;">
-                    Please state your <strong>reason for reattempting</strong> this examination. Your reason will be permanently recorded alongside your reattempt score for institutional faculty and proctor verification.
-                </p>
-
-                <!-- Quick Preset Pills -->
-                <div style="margin-bottom: 14px;">
-                    <span style="font-size: 11.5px; font-weight: 700; color: #64748b; display: block; margin-bottom: 6px;">QUICK SELECT REASON:</span>
-                    <div style="display: flex; flex-wrap: wrap; gap: 6px;">
-                        <button type="button" onclick="setReattemptPreset('Power / Network Outage during 1st attempt')" style="background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 20px; padding: 4px 10px; font-size: 11.5px; color: #334155; cursor: pointer; font-weight: 600;">⚡ Network/Power Outage</button>
-                        <button type="button" onclick="setReattemptPreset('Technical Browser Crash / Hardware Glitch')" style="background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 20px; padding: 4px 10px; font-size: 11.5px; color: #334155; cursor: pointer; font-weight: 600;">💻 Technical Crash</button>
-                        <button type="button" onclick="setReattemptPreset('Faculty Authorized Score Improvement Re-test')" style="background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 20px; padding: 4px 10px; font-size: 11.5px; color: #334155; cursor: pointer; font-weight: 600;">🎓 Faculty Authorized</button>
-                        <button type="button" onclick="setReattemptPreset('Accidental Premature Submission')" style="background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 20px; padding: 4px 10px; font-size: 11.5px; color: #334155; cursor: pointer; font-weight: 600;">⚠️ Early Submission</button>
-                    </div>
-                </div>
-
-                <div style="margin-bottom: 18px;">
-                    <label for="txt-reattempt-reason" style="display: block; font-size: 12.5px; font-weight: 700; color: #0f172a; margin-bottom: 6px;">
-                        Reason Description <span style="color: #ef4444;">*</span>
-                    </label>
-                    <textarea id="txt-reattempt-reason" rows="3" placeholder="e.g. Lost internet connection at 25 minutes remaining, faculty permitted reattempt..." style="width: 100%; box-sizing: border-box; border: 1.5px solid #cbd5e1; border-radius: 10px; padding: 10px 12px; font-family: inherit; font-size: 13px; color: #0f172a; resize: vertical; outline: none; transition: border-color 0.15s;" onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#cbd5e1'"></textarea>
-                </div>
-
-                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px; font-size: 12px; color: #64748b; line-height: 1.4; margin-bottom: 20px;">
-                    📌 <strong>Note:</strong> Starting a reattempt will initiate a clean new evaluation session. Your initial attempt record and scores will remain safely archived for comparison.
-                </div>
-
-                <div style="display: flex; justify-content: flex-end; gap: 10px;">
-                    <button type="button" onclick="closeReattemptModal()" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px 18px; font-size: 13px; font-weight: 700; cursor: pointer;">Cancel</button>
-                    <button type="button" onclick="confirmAndStartReattempt()" style="background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%); color: #ffffff; border: none; border-radius: 8px; padding: 10px 22px; font-size: 13px; font-weight: 800; cursor: pointer; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);">Confirm & Start Reattempt →</button>
-                </div>
-            </div>
-        </div>
-    </div>
 </body>
 </html>
