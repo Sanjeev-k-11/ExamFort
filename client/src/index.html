@@ -10,7 +10,33 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
     
-    
+    <script>
+        (function() {
+            try {
+                if (window.location.search.includes('logout=1')) {
+                    localStorage.removeItem('examfort_session');
+                    localStorage.removeItem('exam_candidate');
+                    localStorage.removeItem('examfort_user');
+                    sessionStorage.clear();
+                    return;
+                }
+                const raw = localStorage.getItem('examfort_session');
+                if (raw) {
+                    const session = JSON.parse(raw);
+                    const is24hValid = session && session.candidate && session.expiresAt && (Date.now() < session.expiresAt);
+                    if (is24hValid) {
+                        sessionStorage.setItem('exam_candidate', JSON.stringify(session.candidate));
+                        sessionStorage.setItem('examfort_user', JSON.stringify(session.candidate));
+                        if (session.candidate.startMode === 'access_code') {
+                            window.location.replace(`exam_details.html?code=${encodeURIComponent(session.candidate.examCode || 'NAT-2026-EXAM')}`);
+                        } else {
+                            window.location.replace('dashboard.html');
+                        }
+                    }
+                }
+            } catch (_) {}
+        })();
+    </script>
     <style>
         :root {
             --bg-page: #f8fafc;

@@ -29,7 +29,7 @@ class ExamFortApp {
     }
 
     static get SESSION_KEY() { return 'examfort_session'; }
-    static get SESSION_EXPIRY_MS() { return 2 * 24 * 60 * 60 * 1000; } 
+    static get SESSION_EXPIRY_MS() { return 24 * 60 * 60 * 1000; } // 24 Hours validity
 
     saveSession(candidate) {
         const session = {
@@ -38,6 +38,8 @@ class ExamFortApp {
             expiresAt: Date.now() + ExamFortApp.SESSION_EXPIRY_MS
         };
         localStorage.setItem(ExamFortApp.SESSION_KEY, JSON.stringify(session));
+        localStorage.setItem('exam_candidate', JSON.stringify(candidate));
+        localStorage.setItem('examfort_user', JSON.stringify(candidate));
     }
 
     loadSession() {
@@ -568,14 +570,37 @@ class ExamFortApp {
             return;
         }
 
-        this.showToast('Authenticating...', 'info');
+        const btn = document.getElementById('btn-submit-signin');
+        const btnTxt = document.getElementById('txt-signin-btn');
+        if (btn) btn.disabled = true;
+        if (btnTxt) btnTxt.textContent = 'AUTHENTICATING...';
+
+        this.showToast('Authenticating credentials with secure server...', 'info');
 
         try {
-            const res = await fetch(`${this.backendUrl}/api/auth/login`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId, password })
-            });
+            let res;
+            try {
+                res = await fetch(`${this.backendUrl}/api/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId, password })
+                });
+            } catch (netErr) {
+                // If current backend failed (e.g. localhost unreachable), fallback to cloud
+                const cloudUrl = 'https://examfort-d6q1.onrender.com';
+                if (this.backendUrl !== cloudUrl) {
+                    console.warn(`[Auth] Primary backend (${this.backendUrl}) unreachable, falling back to ${cloudUrl}`);
+                    this.backendUrl = cloudUrl;
+                    if (window.EXAMFORT_ENV) window.EXAMFORT_ENV.API_BASE_URL = cloudUrl;
+                    res = await fetch(`${this.backendUrl}/api/auth/login`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ userId, password })
+                    });
+                } else {
+                    throw netErr;
+                }
+            }
 
             const data = await res.json();
 
@@ -601,16 +626,21 @@ class ExamFortApp {
                 if (data.token) sessionStorage.setItem('examfort_token', data.token);
                 
                 this.saveSession(this.candidate);
-                this.showToast(`Welcome ${this.candidate.name}! Authentication verified.`, 'success');
+                this.showToast(`Welcome ${this.candidate.name}! Access verified.`, 'success');
+                if (btnTxt) btnTxt.textContent = 'OPENING DASHBOARD...';
+                
                 setTimeout(() => {
-                    
                     window.location.href = './dashboard.html';
-                }, 1200);
+                }, 500);
             } else {
+                if (btn) btn.disabled = false;
+                if (btnTxt) btnTxt.textContent = 'SIGN IN';
                 this.showToast(data.message || 'Invalid credentials.', 'error');
             }
         } catch (err) {
-            this.showToast('Could not connect to authentication server.', 'error');
+            if (btn) btn.disabled = false;
+            if (btnTxt) btnTxt.textContent = 'SIGN IN';
+            this.showToast('Could not connect to authentication server. Please check your internet connection.', 'error');
         }
     }
 
@@ -625,14 +655,36 @@ class ExamFortApp {
             return;
         }
 
+        const btn = document.getElementById('btn-submit-access-code');
+        const btnTxt = document.getElementById('txt-access-btn');
+        if (btn) btn.disabled = true;
+        if (btnTxt) btnTxt.textContent = 'VERIFYING...';
+
         this.showToast('Verifying access code...', 'info');
 
         try {
-            const res = await fetch(`${this.backendUrl}/api/auth/verify-access-code`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ fullName: name, accessCode: codeDigits })
-            });
+            let res;
+            try {
+                res = await fetch(`${this.backendUrl}/api/auth/verify-access-code`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ fullName: name, accessCode: codeDigits })
+                });
+            } catch (netErr) {
+                const cloudUrl = 'https://examfort-d6q1.onrender.com';
+                if (this.backendUrl !== cloudUrl) {
+                    console.warn(`[AccessCode] Primary backend (${this.backendUrl}) unreachable, falling back to ${cloudUrl}`);
+                    this.backendUrl = cloudUrl;
+                    if (window.EXAMFORT_ENV) window.EXAMFORT_ENV.API_BASE_URL = cloudUrl;
+                    res = await fetch(`${this.backendUrl}/api/auth/verify-access-code`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ fullName: name, accessCode: codeDigits })
+                    });
+                } else {
+                    throw netErr;
+                }
+            }
 
             const data = await res.json();
 
@@ -657,14 +709,19 @@ class ExamFortApp {
                 this.saveSession(this.candidate);
 
                 this.showToast(`Access Granted for ${this.candidate.name}! Loading Exam Details...`, 'success');
+                if (btnTxt) btnTxt.textContent = 'LOADING EXAM...';
                 setTimeout(() => {
                     window.location.href = `exam_details.html?code=${encodeURIComponent(this.candidate.examCode)}`;
-                }, 1000);
+                }, 500);
             } else {
+                if (btn) btn.disabled = false;
+                if (btnTxt) btnTxt.textContent = 'CONTINUE';
                 this.showToast(data.message || 'Access Code not found in database.', 'error');
             }
         } catch (err) {
-            this.showToast('Could not connect to server.', 'error');
+            if (btn) btn.disabled = false;
+            if (btnTxt) btnTxt.textContent = 'CONTINUE';
+            this.showToast('Could not connect to server. Please check your network.', 'error');
         }
     }
 
