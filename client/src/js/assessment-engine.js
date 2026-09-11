@@ -1111,6 +1111,25 @@ class AssessmentEngine {
             this.pushEditorHistory(textarea.value, textarea.selectionStart, textarea.selectionEnd);
             this.syncEditorHighlight();
             syncScroll();
+            // Instantly sync active coding answer into state and local storage
+            const q = this.questions[this.currentIndex];
+            if (q && q.type === 'CODING') {
+                this.answers[q.question_number] = this.answers[q.question_number] || {};
+                this.answers[q.question_number].type = 'CODING';
+                this.answers[q.question_number].codes = this.answers[q.question_number].codes || {};
+                this.answers[q.question_number].codes[this.selectedLanguage] = textarea.value;
+                this.answers[q.question_number].codeSolution = textarea.value;
+                this.answers[q.question_number].language = this.selectedLanguage;
+                if (textarea.value.trim().length > 0) {
+                    this.answers[q.question_number].status = 'ANSWERED';
+                }
+                try {
+                    const key = this.getDraftStorageKey();
+                    localStorage.setItem(key, JSON.stringify(this.answers));
+                    localStorage.setItem(`exam_draft_backup_${this.examCode}`, JSON.stringify(this.answers));
+                } catch (_) {}
+                this.updatePalette();
+            }
         });
 
         textarea.addEventListener('keydown', (e) => {
@@ -1850,6 +1869,9 @@ class AssessmentEngine {
             }
         });
 
+        // Immediately load any locally cached draft from prior session BEFORE first render
+        this.loadDraftLocal();
+
         const qCountEl = document.getElementById('lbl-header-questions-count');
         if (qCountEl) qCountEl.textContent = `1 / ${this.questions.length}`;
 
@@ -2229,6 +2251,7 @@ class AssessmentEngine {
     }
 
     selectMCQOption(qNum, key) {
+        this.answers[qNum] = this.answers[qNum] || {};
         this.answers[qNum].selectedOption = key;
         this.answers[qNum].status = 'ANSWERED';
 
@@ -2236,7 +2259,7 @@ class AssessmentEngine {
             c.classList.toggle('selected', c.getAttribute('data-key') === key);
         });
 
-        this.updatePalette();
+        this.saveCurrent();
     }
 
     // ========================================================
@@ -2620,27 +2643,81 @@ class AssessmentEngine {
     // ========================================================
     // 8. NAVIGATION, PALETTE & PROGRESS
     // ========================================================
+    getCandidateId() {
+        return this.candidate?.id || this.candidate?.student_id || this.candidate?.userId || 'CAND123456';
+    }
+
+    getDraftStorageKey() {
+        const candId = this.getCandidateId();
+        return `exam_draft_${candId}_${this.examCode}`;
+    }
+
+    loadDraftLocal() {
+        try {
+            const key = this.getDraftStorageKey();
+            const genericKey = `exam_draft_backup_${this.examCode}`;
+            const raw = localStorage.getItem(key) || localStorage.getItem(genericKey);
+            if (raw) {
+                const parsed = JSON.parse(raw);
+                if (parsed && typeof parsed === 'object' && Object.keys(parsed).length > 0) {
+                    console.log('⚡ [Local Draft Instant Recovery] Restored from localStorage cache:', parsed);
+                    Object.keys(parsed).forEach(qNum => {
+                        if (this.answers[qNum]) {
+                            this.answers[qNum] = { ...this.answers[qNum], ...parsed[qNum] };
+                        } else {
+                            this.answers[qNum] = parsed[qNum];
+                        }
+                    });
+                }
+            }
+        } catch (e) {
+            console.warn('Local draft load error:', e);
+        }
+    }
+
+    // ========================================================
+    // 8. NAVIGATION, PALETTE & PROGRESS
+    // ========================================================
     saveCurrent() {
         const q = this.questions[this.currentIndex];
         if (!q) return;
 
         if (q.type === 'CODING') {
-            const code = document.getElementById('txt-code-solution')?.value;
+            const textarea = document.getElementById('txt-code-solution');
+            const code = textarea ? textarea.value : undefined;
             if (code !== undefined && code !== null) {
                 this.answers[q.question_number] = this.answers[q.question_number] || {};
+                this.answers[q.question_number].type = 'CODING';
                 this.answers[q.question_number].codes = this.answers[q.question_number].codes || {};
                 this.answers[q.question_number].codes[this.selectedLanguage] = code;
                 this.answers[q.question_number].codeSolution = code;
                 this.answers[q.question_number].language = this.selectedLanguage;
-                this.answers[q.question_number].status = 'ANSWERED';
+                if (code.trim().length > 0) {
+                    this.answers[q.question_number].status = 'ANSWERED';
+                }
             }
         } else if (q.type === 'PARAGRAPH') {
-            const essay = document.getElementById('txt-essay-solution')?.value;
-            if (essay) {
+            const essayInput = document.getElementById('txt-essay-solution');
+            const essay = essayInput ? essayInput.value : undefined;
+            if (essay !== undefined && essay !== null) {
+                this.answers[q.question_number] = this.answers[q.question_number] || {};
+                this.answers[q.question_number].type = 'PARAGRAPH';
                 this.answers[q.question_number].essayText = essay;
-                if (essay.trim().length > 5) this.answers[q.question_number].status = 'ANSWERED';
+                if (essay.trim().length > 5) {
+                    this.answers[q.question_number].status = 'ANSWERED';
+                }
             }
         }
+
+        // Instantly write snapshot to persistent localStorage
+        try {
+            const key = this.getDraftStorageKey();
+            const genericKey = `exam_draft_backup_${this.examCode}`;
+            const payload = JSON.stringify(this.answers);
+            localStorage.setItem(key, payload);
+            localStorage.setItem(genericKey, payload);
+        } catch (_) {}
+
         this.updatePalette();
     }
 
@@ -2761,13 +2838,15 @@ class AssessmentEngine {
         this.autoSaveInterval = setInterval(() => {
             this.autoSaveDraft();
         }, 5000);
-        console.log('⏱️ [Auto-Save Engine] 5-second continuous MySQL draft saver running.');
+        console.log('⏱️ [Auto-Save Engine] 5-second continuous draft saver running.');
     }
 
     async autoSaveDraft() {
         this.saveCurrent();
-        const candId = this.candidate?.id || this.candidate?.student_id || '123';
+        const candId = this.getCandidateId();
         if (!candId || Object.keys(this.answers).length === 0) return;
+
+        const autoSaveBadge = document.getElementById('lbl-autosave-status');
 
         try {
             const res = await fetch(`${this.backendUrl}/api/exam/save-draft`, {
@@ -2781,25 +2860,31 @@ class AssessmentEngine {
             });
             const data = await res.json();
             if (data && data.success) {
-                const autoSaveBadge = document.getElementById('lbl-autosave-status');
                 if (autoSaveBadge) {
-                    autoSaveBadge.innerHTML = '🟢 Draft Saved (MySQL)';
+                    autoSaveBadge.innerHTML = '🟢 Auto-Saved (5s synced)';
                     autoSaveBadge.style.opacity = '1';
-                    setTimeout(() => {
-                        if (autoSaveBadge) autoSaveBadge.style.opacity = '0.75';
-                    }, 1200);
+                }
+            } else {
+                if (autoSaveBadge) {
+                    autoSaveBadge.innerHTML = '💾 Saved Locally';
+                    autoSaveBadge.style.opacity = '1';
                 }
             }
-        } catch (_) {}
+        } catch (_) {
+            if (autoSaveBadge) {
+                autoSaveBadge.innerHTML = '💾 Saved Locally';
+                autoSaveBadge.style.opacity = '1';
+            }
+        }
     }
 
     async loadDraft() {
-        const candId = this.candidate?.id || this.candidate?.student_id || '123';
+        const candId = this.getCandidateId();
         try {
             const res = await fetch(`${this.backendUrl}/api/exam/get-draft/${candId}/${this.examCode}`);
             const data = await res.json();
             if (data && data.success && data.answers && Object.keys(data.answers).length > 0) {
-                console.log('📥 [Draft Recovery] Restoring candidate draft answers from MySQL:', data.answers);
+                console.log('📥 [Draft Cloud Recovery] Restoring candidate draft answers from DB:', data.answers);
                 Object.keys(data.answers).forEach(qNum => {
                     if (this.answers[qNum]) {
                         this.answers[qNum] = { ...this.answers[qNum], ...data.answers[qNum] };
@@ -2807,9 +2892,13 @@ class AssessmentEngine {
                         this.answers[qNum] = data.answers[qNum];
                     }
                 });
+                try {
+                    const key = this.getDraftStorageKey();
+                    localStorage.setItem(key, JSON.stringify(this.answers));
+                } catch (_) {}
                 this.updatePalette();
                 this.renderCurrentQuestion();
-                this.showToast('Restored your latest saved code and answers from database backup.', 'info');
+                this.showToast('Restored your latest saved code and answers from secure cloud backup.', 'info');
             }
         } catch (err) {
             console.warn('Draft load warning:', err);

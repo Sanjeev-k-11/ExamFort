@@ -247,6 +247,13 @@ class MySQLDatabaseService {
                             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                             consumed_at TIMESTAMP NULL
                         );
+                        CREATE TABLE IF NOT EXISTS candidate_drafts (
+                            id SERIAL PRIMARY KEY,
+                            candidate_id VARCHAR(100) NOT NULL,
+                            exam_code VARCHAR(100) NOT NULL,
+                            answers_json TEXT NOT NULL,
+                            last_saved_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                        );
                     `).catch(() => {});
                 } else {
                     await this.pool.query(`
@@ -259,6 +266,13 @@ class MySQLDatabaseService {
                             \`status\` VARCHAR(20) DEFAULT 'ACTIVE',
                             \`created_at\` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                             \`consumed_at\` TIMESTAMP NULL
+                        ) ENGINE=InnoDB;
+                        CREATE TABLE IF NOT EXISTS \`candidate_drafts\` (
+                            \`id\` INT AUTO_INCREMENT PRIMARY KEY,
+                            \`candidate_id\` VARCHAR(100) NOT NULL,
+                            \`exam_code\` VARCHAR(100) NOT NULL,
+                            \`answers_json\` LONGTEXT NOT NULL,
+                            \`last_saved_at\` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
                         ) ENGINE=InnoDB;
                     `).catch(() => {});
                 }
@@ -1162,17 +1176,28 @@ class MySQLDatabaseService {
     // ==========================================
 
     async saveDraft(candidateId, examCode, answers) {
-        if (!this.pool) return { success: false, message: 'MySQL offline' };
+        if (!this.pool) return { success: false, message: 'Database offline' };
         try {
+            const eCode = examCode || 'NAT-2026-EXAM';
             const answersJson = JSON.stringify(answers || {});
-            await this.pool.query(
-                `INSERT INTO candidate_drafts (candidate_id, exam_code, answers_json) 
-                 VALUES (?, ?, ?) 
-                 ON DUPLICATE KEY UPDATE answers_json = VALUES(answers_json), last_saved_at = CURRENT_TIMESTAMP`,
-                [candidateId, examCode || 'NAT-2026-EXAM', answersJson]
+            const [existing] = await this.pool.query(
+                'SELECT id FROM candidate_drafts WHERE candidate_id = ? AND exam_code = ? LIMIT 1',
+                [candidateId, eCode]
             );
+            if (existing && existing.length > 0) {
+                await this.pool.query(
+                    'UPDATE candidate_drafts SET answers_json = ?, last_saved_at = CURRENT_TIMESTAMP WHERE candidate_id = ? AND exam_code = ?',
+                    [answersJson, candidateId, eCode]
+                );
+            } else {
+                await this.pool.query(
+                    'INSERT INTO candidate_drafts (candidate_id, exam_code, answers_json) VALUES (?, ?, ?)',
+                    [candidateId, eCode, answersJson]
+                );
+            }
             return { success: true, savedAt: new Date().toISOString() };
         } catch (err) {
+            console.error('saveDraft error:', err);
             return { success: false, message: err.message };
         }
     }

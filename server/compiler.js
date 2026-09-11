@@ -223,25 +223,26 @@ class EnterpriseMultiLanguageCompiler {
                 
                 // Always ensure standard competitive headers and namespace are present so min/max/sort/climits never fail
                 let finalCode = code;
-                const standardPreamble = `#include <iostream>\n#include <vector>\n#include <string>\n#include <algorithm>\n#include <map>\n#include <set>\n#include <queue>\n#include <stack>\n#include <cmath>\n#include <climits>\n#include <numeric>\n#include <utility>\nusing namespace std;\n\n`;
-
-                if (!code.includes('#include <algorithm>')) {
-                    finalCode = `#include <algorithm>\n#include <cmath>\n#include <climits>\n` + finalCode;
-                }
-                if (!code.includes('#include <iostream>')) {
-                    finalCode = `#include <iostream>\n` + finalCode;
-                }
-                if (!code.includes('#include <vector>')) {
-                    finalCode = `#include <vector>\n` + finalCode;
-                }
-                if (!code.includes('using namespace std') && !code.includes('std::')) {
-                    finalCode = `using namespace std;\n` + finalCode;
+                if (!code.includes('<bits/stdc++.h>')) {
+                    if (!code.includes('#include <algorithm>')) {
+                        finalCode = `#include <algorithm>\n#include <cmath>\n#include <climits>\n` + finalCode;
+                    }
+                    if (!code.includes('#include <iostream>')) {
+                        finalCode = `#include <iostream>\n` + finalCode;
+                    }
+                    if (!code.includes('#include <vector>')) {
+                        finalCode = `#include <vector>\n` + finalCode;
+                    }
+                    if (!code.includes('using namespace std') && !code.includes('std::')) {
+                        finalCode = `using namespace std;\n` + finalCode;
+                    }
                 }
 
                 fs.writeFileSync(srcPath, finalCode, 'utf8');
                 try {
-                    // Fast, reliable C++ compilation with -O2 -std=c++17
-                    execSync(`g++ "${srcPath}" -O2 -std=c++17 -Wall -o "${binPath}"`, {
+                    // Fast, reliable C++ compilation with -O2 -std=c++17 and static linking
+                    const staticFlags = process.platform === 'win32' ? '-static -static-libgcc -static-libstdc++' : '';
+                    execSync(`g++ "${srcPath}" -O2 -std=c++17 ${staticFlags} -Wall -o "${binPath}"`, {
                         cwd: workDir,
                         timeout: 20000,
                         stdio: 'pipe'
@@ -267,7 +268,8 @@ class EnterpriseMultiLanguageCompiler {
 
                 fs.writeFileSync(srcPath, finalCode, 'utf8');
                 try {
-                    execSync(`gcc "${srcPath}" -O3 -std=c17 -Wall -lm -o "${binPath}"`, {
+                    const staticFlags = process.platform === 'win32' ? '-static -static-libgcc' : '';
+                    execSync(`gcc "${srcPath}" -O3 -std=c17 ${staticFlags} -Wall -lm -o "${binPath}"`, {
                         cwd: workDir,
                         timeout: 10000,
                         stdio: 'pipe'
