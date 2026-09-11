@@ -1019,11 +1019,26 @@
             setFeedback('info', '⚡ Matching live face landmarks against registered profile photo...');
 
             try {
-                // 2. Compute local Canvas-based high-precision structural similarity
-                const registeredAvatar = cand?.avatar_url || '';
+                // 2. Guarantee candidate's registered institutional profile photo is loaded from database
+                let registeredAvatar = cand?.avatar_url || '';
+                if (!registeredAvatar && cid) {
+                    try {
+                        const profRes = await fetch(`${baseUrl}/api/user/profile/${cid}`);
+                        const profData = await profRes.json();
+                        const p = profData.profile || profData;
+                        if (p && p.avatar_url) {
+                            registeredAvatar = p.avatar_url;
+                            if (cand) {
+                                cand.avatar_url = p.avatar_url;
+                                sessionStorage.setItem('exam_candidate', JSON.stringify(cand));
+                            }
+                        }
+                    } catch (_) {}
+                }
+
                 const clientScore = await computeBiometricFaceMatch(canvas, registeredAvatar);
 
-                // 3. Send snapshot to backend Cloudinary & MySQL face-verify endpoint
+                // 3. Send snapshot strictly for verification (Backend compares against database avatar, never overwrites)
                 const res = await fetch(`${baseUrl}/api/user/face-verify`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
