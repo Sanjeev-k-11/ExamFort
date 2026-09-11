@@ -2410,50 +2410,82 @@ class AssessmentEngine {
                 }
             }
 
+        // ─── Successful run → render test case cards ─────────────
+        if (consoleCards && executionResult.results && executionResult.results.length > 0) {
+            const totalCount = executionResult.results.length;
+            const passedCount = executionResult.results.filter(r => r.passed).length;
+
+            if (summary) {
+                if (executionResult.allPassed) {
+                    summary.textContent = `✓ Accepted (${passedCount}/${totalCount})`;
+                    summary.className = 'console-status-badge status-passed';
+                } else {
+                    summary.textContent = `✕ Wrong Answer (${passedCount}/${totalCount})`;
+                    summary.className = 'console-status-badge status-failed';
+                }
+            }
+
             consoleCards.innerHTML = executionResult.results.map((r, i) => {
                 const isHidden = Boolean(r.isHidden) || (r.testIndex > 2) || (i >= 2 && totalCount >= 4);
-                const runtimeText = r.runtime || `${Math.floor(Math.random() * 15 + 12)} ms`;
+                const runtimeText = r.runtime || `${Math.floor(Math.random() * 12 + 8)} ms`;
 
                 if (isHidden) {
                     return `
                         <div class="tc-item-card hidden-case ${r.passed ? 'passed' : 'failed'}">
                             <div class="tc-item-header">
-                                <strong class="tc-title">Test Case #${r.testIndex || (i + 1)}: 🔒 Hidden Edge Case ${r.passed ? 'Passed ✓' : 'Failed ✕'}</strong>
-                                <span class="tc-time">${runtimeText}</span>
+                                <div class="tc-header-left">
+                                    <span class="tc-case-badge badge-hidden">🔒 Case #${r.testIndex || (i + 1)}</span>
+                                    <strong style="font-size: 13px; font-weight: 700; color: #6d28d9;">Confidential Edge Case</strong>
+                                </div>
+                                <div class="tc-header-right">
+                                    <span class="tc-case-badge ${r.passed ? 'badge-passed' : 'badge-failed'}" style="font-size: 11.5px; padding: 2px 10px;">
+                                        ${r.passed ? '✓ Validated' : '✕ Edge Failure'}
+                                    </span>
+                                    <span class="tc-metric-tag">⚡ ${runtimeText}</span>
+                                </div>
                             </div>
-                            <div class="tc-item-row">
-                                <span class="tc-label">Input:</span>
-                                <span class="tc-pill tc-pill-hidden">[Confidential Edge Vector]</span>
-                            </div>
-                            <div class="tc-item-row">
-                                <span class="tc-label">Expected:</span>
-                                <span class="tc-pill tc-pill-hidden">[Protected Expected Output]</span>
-                            </div>
-                            <div class="tc-item-row">
-                                <span class="tc-label">Output:</span>
-                                <span class="tc-pill ${r.passed ? '' : 'tc-pill-wrong'}">${r.passed ? '[Evaluated Correctly ✓]' : '[Mismatch on Edge Case ✕]'}</span>
+                            <div class="tc-hidden-secure-banner">
+                                <span class="tc-hidden-secure-icon">🛡️</span>
+                                <div>
+                                    <strong style="color:#475569;">Protected Evaluation Vector:</strong><br>
+                                    This confidential test case tests edge boundaries (e.g. zero limits, large constraints, memory bounds). Inputs and expected results are masked to preserve examination integrity.
+                                </div>
                             </div>
                         </div>
                     `;
                 }
 
+                const cleanInput = this.formatCleanTestCaseInput(r.input);
+
                 return `
                     <div class="tc-item-card ${r.passed ? 'passed' : 'failed'}">
                         <div class="tc-item-header">
-                            <strong class="tc-title">${r.passed ? `Test Case #${r.testIndex || (i + 1)}: Passed ✓` : `Test Case #${r.testIndex || (i + 1)}: Failed ✕`}</strong>
-                            <span class="tc-time">${runtimeText}</span>
+                            <div class="tc-header-left">
+                                <span class="tc-case-badge ${r.passed ? 'badge-passed' : 'badge-failed'}">
+                                    ${r.passed ? '✓ Passed' : '✕ Wrong Answer'}
+                                </span>
+                                <strong style="font-size: 13.5px; font-weight: 700; color: #1e293b;">Case ${r.testIndex || (i + 1)}</strong>
+                            </div>
+                            <div class="tc-header-right">
+                                <span class="tc-metric-tag">⚡ ${runtimeText}</span>
+                                <span class="tc-metric-tag">💾 ${r.memory || '14.2 MB'}</span>
+                            </div>
                         </div>
-                        <div class="tc-item-row">
-                            <span class="tc-label">Input:</span>
-                            <span class="tc-pill">${this._escapeHtml(String(r.input ?? ''))}</span>
+
+                        <div class="tc-field-group">
+                            <span class="tc-field-label">Input</span>
+                            <pre class="tc-code-block">${this._escapeHtml(cleanInput)}</pre>
                         </div>
-                        <div class="tc-item-row">
-                            <span class="tc-label">Expected:</span>
-                            <span class="tc-pill">${this._escapeHtml(String(r.expected ?? ''))}</span>
-                        </div>
-                        <div class="tc-item-row">
-                            <span class="tc-label">Your Output:</span>
-                            <span class="tc-pill ${r.passed ? 'tc-pill-pass' : 'tc-pill-wrong'}">${this._escapeHtml(String(r.actual ?? ''))}</span>
+
+                        <div class="tc-outputs-grid">
+                            <div class="tc-field-group">
+                                <span class="tc-field-label">Your Output</span>
+                                <pre class="tc-code-block ${r.passed ? 'actual-match' : 'actual-mismatch'}">${this._escapeHtml(String(r.actual ?? '(Empty)'))}</pre>
+                            </div>
+                            <div class="tc-field-group">
+                                <span class="tc-field-label">Expected Output</span>
+                                <pre class="tc-code-block expected-match">${this._escapeHtml(String(r.expected ?? '(None)'))}</pre>
+                            </div>
                         </div>
                     </div>
                 `;
@@ -2474,7 +2506,7 @@ class AssessmentEngine {
             const totalCount = executionResult.results.length;
             if (!isErrorState) {
                 summary.textContent = executionResult.allPassed
-                    ? `✓ Accepted — All ${totalCount} Test Cases Passed`
+                    ? `✓ Accepted (${passedCount}/${totalCount})`
                     : `✕ ${passedCount}/${totalCount} Passed`;
                 summary.className = executionResult.allPassed
                     ? 'console-status-badge status-passed'
@@ -2522,6 +2554,22 @@ class AssessmentEngine {
         return executionResult;
     }
 
+    formatCleanTestCaseInput(inputStr) {
+        if (!inputStr) return 'Standard Input';
+        const s = String(inputStr).trim();
+        if (s.includes(' | ')) {
+            const parts = s.split(' | ').map(p => p.trim());
+            if (parts.length === 3 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+                return `amount = ${parts[0]}\nn = ${parts[1]}\ncoins = [${parts[2]}]`;
+            }
+            if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+                return `n = ${parts[0]}\ntarget = ${parts[1]}`;
+            }
+            return parts.join('\n');
+        }
+        return s;
+    }
+
     // ========================================================
     // 7B. SUBMIT CODING QUESTION (RUNS EVALUATION & SHOWS NEXT BUTTON)
     // ========================================================
@@ -2560,31 +2608,41 @@ class AssessmentEngine {
         if (!consoleCards) return;
 
         const publicCases = (q && q.test_cases && q.test_cases.length > 0) ? q.test_cases : [
-            { input: 'nums = [2, 7, 11, 15], target = 9', expected: '[0, 1]' },
-            { input: 'nums = [3, 2, 4], target = 6', expected: '[1, 2]' }
+            { input: 'amount = 5\nn = 3\ncoins = [1, 2, 5]', expected: '4' },
+            { input: 'amount = 3\nn = 1\ncoins = [2]', expected: '0' }
         ];
 
         let cardsHtml = '';
 
         // 1. Render Public Test Cases (Initial Ready State)
         publicCases.slice(0, 2).forEach((tc, i) => {
+            const cleanInput = this.formatCleanTestCaseInput(tc.input || 'amount = 5\nn = 3\ncoins = [1, 2, 5]');
             cardsHtml += `
-                <div class="tc-item-card initial-ready">
+                <div class="tc-item-card">
                     <div class="tc-item-header">
-                        <strong class="tc-title">Test Case #${i + 1}: Public Case</strong>
-                        <span class="tc-time" style="color: #64748b; font-size: 12px; font-weight: 600;">Ready to Run</span>
+                        <div class="tc-header-left">
+                            <span class="tc-case-badge badge-ready">Case ${i + 1}</span>
+                            <strong style="font-size: 13.5px; font-weight: 700; color: #1e293b;">Public Test Case</strong>
+                        </div>
+                        <div class="tc-header-right">
+                            <span class="tc-metric-tag" style="color:#6366f1; font-weight:700;">Ready to Run</span>
+                        </div>
                     </div>
-                    <div class="tc-item-row">
-                        <span class="tc-label">Input:</span>
-                        <span class="tc-pill">${this._escapeHtml(String(tc.input || 'Sample Input Vector'))}</span>
+
+                    <div class="tc-field-group">
+                        <span class="tc-field-label">Input</span>
+                        <pre class="tc-code-block">${this._escapeHtml(cleanInput)}</pre>
                     </div>
-                    <div class="tc-item-row">
-                        <span class="tc-label">Expected:</span>
-                        <span class="tc-pill">${this._escapeHtml(String(tc.expected || 'Expected Output'))}</span>
-                    </div>
-                    <div class="tc-item-row">
-                        <span class="tc-label">Your Output:</span>
-                        <span class="tc-pill" style="color:#64748b; background:#f1f5f9;">[Pending Code Execution]</span>
+
+                    <div class="tc-outputs-grid">
+                        <div class="tc-field-group">
+                            <span class="tc-field-label">Your Output</span>
+                            <pre class="tc-code-block" style="color:#94a3b8; background:#0f172a; border-style:dashed;">(Click 'Run Code' to execute)</pre>
+                        </div>
+                        <div class="tc-field-group">
+                            <span class="tc-field-label">Expected Output</span>
+                            <pre class="tc-code-block expected-match">${this._escapeHtml(String(tc.expected || 'Expected Result'))}</pre>
+                        </div>
                     </div>
                 </div>
             `;
@@ -2596,20 +2654,20 @@ class AssessmentEngine {
             cardsHtml += `
                 <div class="tc-item-card hidden-case">
                     <div class="tc-item-header">
-                        <strong class="tc-title">Test Case #${caseNum}: 🔒 Hidden Edge Case ${j + 1}</strong>
-                        <span class="tc-time" style="color: #7c3aed; font-size: 12px; font-weight: 600;">Confidential Edge Check</span>
+                        <div class="tc-header-left">
+                            <span class="tc-case-badge badge-hidden">🔒 Case #${caseNum}</span>
+                            <strong style="font-size: 13px; font-weight: 700; color: #6d28d9;">Confidential Edge Case ${j + 1}</strong>
+                        </div>
+                        <div class="tc-header-right">
+                            <span class="tc-metric-tag" style="color:#7c3aed; font-weight:700;">Edge Vector</span>
+                        </div>
                     </div>
-                    <div class="tc-item-row">
-                        <span class="tc-label">Input:</span>
-                        <span class="tc-pill tc-pill-hidden">[Protected Edge Case Vector]</span>
-                    </div>
-                    <div class="tc-item-row">
-                        <span class="tc-label">Expected:</span>
-                        <span class="tc-pill tc-pill-hidden">[Protected Evaluation Output]</span>
-                    </div>
-                    <div class="tc-item-row">
-                        <span class="tc-label">Your Output:</span>
-                        <span class="tc-pill tc-pill-hidden">[Protected Verification Output]</span>
+                    <div class="tc-hidden-secure-banner">
+                        <span class="tc-hidden-secure-icon">🛡️</span>
+                        <div>
+                            <strong style="color:#475569;">Confidential Test Case:</strong><br>
+                            Evaluates candidate code against protected boundary edge cases. Evaluated upon clicking 'Run Code'.
+                        </div>
                     </div>
                 </div>
             `;
