@@ -552,10 +552,7 @@ class MySQLDatabaseService {
         if (!this.pool) return { success: false, exams: [] };
         try {
             const [exams] = await this.pool.query(
-                `SELECT * FROM exams 
-                 WHERE category != 'Campus Placement' 
-                   AND exam_code NOT IN (SELECT exam_code FROM placement_exams)
-                 ORDER BY id ASC`
+                `SELECT * FROM exams ORDER BY id ASC`
             );
 
             const [submissions] = await this.pool.query(
@@ -1046,18 +1043,14 @@ class MySQLDatabaseService {
         }
     }
 
-    async saveVerifiedFace(candidateId, avatarUrl) {
+    async saveVerifiedFace(candidateId, snapshotUrl) {
         if (!this.pool) return { success: false, message: 'MySQL offline' };
         try {
-            await this.pool.query(
-                `UPDATE users SET avatar_url = ? WHERE id = ? OR student_id = ?`,
-                [avatarUrl, candidateId, candidateId]
-            );
-
+            // Log verification event into audit trail without overwriting master institutional avatar_url
             try {
                 await this.pool.query(
                     `INSERT INTO student_activities (student_id, title, activity_title, description, activity_type, type, badge) 
-                     VALUES (?, 'Face Verification Completed', 'Face Verification Completed', 'Live biometric face snapshot verified and updated in profile.', 'VERIFICATION', 'VERIFICATION', '🛡️ Verified')`,
+                     VALUES (?, 'Biometric Identity Verified', 'Biometric Identity Verified', 'Live webcam facial biometrics matched with registered institutional profile.', 'VERIFICATION', 'VERIFICATION', '🛡️ Verified')`,
                     [candidateId]
                 );
             } catch (_) {}
@@ -1065,7 +1058,7 @@ class MySQLDatabaseService {
             const profileRes = await this.getUserProfile(candidateId);
             return { success: true, profile: profileRes.profile };
         } catch (err) {
-            console.error('❌ Error saving verified face:', err.message);
+            console.error('❌ Error recording verified face:', err.message);
             return { success: false, message: err.message };
         }
     }

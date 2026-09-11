@@ -471,14 +471,24 @@
                 }
 
                 let year, month, day;
-                const isoMatch = String(dateStr).trim().match(/^(\d{4})[/-](\d{1,2})[/-](\d{1,2})/);
+                const cleanDate = String(dateStr).trim();
+
+                // 1. ISO format: YYYY-MM-DD or YYYY/MM/DD
+                const isoMatch = cleanDate.match(/^(\d{4})[/-](\d{1,2})[/-](\d{1,2})/);
+                // 2. DD-MM-YYYY or DD/MM/YYYY
+                const dmyMatch = cleanDate.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})/);
+
                 if (isoMatch) {
                     year = parseInt(isoMatch[1], 10);
                     month = parseInt(isoMatch[2], 10) - 1;
                     day = parseInt(isoMatch[3], 10);
+                } else if (dmyMatch) {
+                    day = parseInt(dmyMatch[1], 10);
+                    month = parseInt(dmyMatch[2], 10) - 1;
+                    year = parseInt(dmyMatch[3], 10);
                 } else {
                     const months = { jan:0, feb:1, mar:2, apr:3, may:4, jun:5, jul:6, aug:7, sep:8, oct:9, nov:10, dec:11 };
-                    const tokens = String(dateStr).trim().split(/[\s,/-]+/);
+                    const tokens = cleanDate.split(/[\s,/-]+/);
                     let foundMonth = -1;
                     let numbers = [];
                     for (const t of tokens) {
@@ -494,7 +504,7 @@
                         year = numbers.find(n => n > 1900) || new Date().getFullYear();
                         day = numbers.find(n => n <= 31 && n !== year) || 1;
                     } else {
-                        const temp = new Date(dateStr);
+                        const temp = new Date(cleanDate);
                         if (!isNaN(temp.getTime())) {
                             year = temp.getFullYear();
                             month = temp.getMonth();

@@ -132,7 +132,7 @@ class ExamController extends Controller
             'duration_minutes' => $request->duration_minutes,
             'total_marks' => $request->total_marks,
             'description' => $request->description,
-            'exam_date' => $request->exam_date ?? date('d M Y'),
+            'exam_date' => $this->normalizeDate($request->exam_date),
             'exam_time' => $request->exam_time ?? '10:00 AM - 12:00 PM',
             'status' => $request->status,
             'is_results_published' => $request->has('is_results_published') ? 1 : 0,
@@ -199,7 +199,7 @@ class ExamController extends Controller
             'duration_minutes' => $request->duration_minutes,
             'total_marks' => $request->total_marks,
             'description' => $request->description,
-            'exam_date' => $request->exam_date,
+            'exam_date' => $this->normalizeDate($request->exam_date),
             'exam_time' => $request->exam_time,
             'status' => $request->status,
             'is_results_published' => $request->has('is_results_published') ? 1 : 0,
@@ -260,5 +260,12 @@ class ExamController extends Controller
 
         $msg = $exam->is_results_published ? 'Exam results published to all candidates.' : 'Exam results unpublished.';
         return back()->with('success', $msg);
+    }
+
+    private function normalizeDate($dateStr)
+    {
+        if (!$dateStr) return date('d M Y');
+        $ts = strtotime($dateStr);
+        return $ts ? date('d M Y', $ts) : $dateStr;
     }
 }

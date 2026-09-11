@@ -366,17 +366,17 @@
                         <h3 class="dash-card-title">Upcoming Exams</h3>
                         <a href="exams.html" class="dash-card-link">View All →</a>
                     </div>
-                    <div class="upcoming-exams-list">
-                        
-                        <div class="upcoming-exam-item" id="card-primary-exam">
+                    <div class="upcoming-exams-list" id="container-upcoming-exams-wrapper">
+                        <!-- Featured Dynamic Exam Card (Shown only if an active or upcoming exam exists) -->
+                        <div class="upcoming-exam-item" id="card-primary-exam" style="display: none;">
                             <div class="ue-left">
-                                <div class="ue-icon">📅</div>
+                                <div class="ue-icon" id="lbl-exam-icon">📅</div>
                                 <div class="ue-info">
-                                    <strong id="lbl-exam-title">Aptitude & Coding Assessment Test</strong>
-                                    <span id="lbl-exam-schedule">31 May 2025 • 10:00 AM - 12:00 PM</span>
+                                    <strong id="lbl-exam-title">Loading Assessment...</strong>
+                                    <span id="lbl-exam-schedule">Checking schedule...</span>
                                 </div>
                             </div>
-                            <a href="instructions.html" class="btn-start-soon btn-start-active" id="btn-start-primary">Start Exam</a>
+                            <a href="#" class="btn-start-soon" id="btn-start-primary" style="display: none;">Start Exam</a>
                         </div>
                         
                         <div id="extra-exams-list"></div>
@@ -557,11 +557,11 @@
                         <h3 class="dash-card-title">Quick Actions</h3>
                     </div>
                     <div class="quick-actions-grid">
-                        <a class="qa-btn" href="instructions.html">
+                        <a class="qa-btn" href="exams.html">
                             <span class="qa-icon" style="color: #4f46e5;">☑️</span>
                             <div class="qa-text">
                                 <strong>Take a Test</strong>
-                                <span>Start a new test</span>
+                                <span>Browse assessment catalog</span>
                             </div>
                         </a>
 
@@ -793,14 +793,24 @@
                 }
 
                 let year, month, day;
-                const isoMatch = String(dateStr).trim().match(/^(\d{4})[/-](\d{1,2})[/-](\d{1,2})/);
+                const cleanDate = String(dateStr).trim();
+
+                // 1. ISO format: YYYY-MM-DD or YYYY/MM/DD
+                const isoMatch = cleanDate.match(/^(\d{4})[/-](\d{1,2})[/-](\d{1,2})/);
+                // 2. DD-MM-YYYY or DD/MM/YYYY
+                const dmyMatch = cleanDate.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})/);
+
                 if (isoMatch) {
                     year = parseInt(isoMatch[1], 10);
                     month = parseInt(isoMatch[2], 10) - 1;
                     day = parseInt(isoMatch[3], 10);
+                } else if (dmyMatch) {
+                    day = parseInt(dmyMatch[1], 10);
+                    month = parseInt(dmyMatch[2], 10) - 1;
+                    year = parseInt(dmyMatch[3], 10);
                 } else {
                     const months = { jan:0, feb:1, mar:2, apr:3, may:4, jun:5, jul:6, aug:7, sep:8, oct:9, nov:10, dec:11 };
-                    const tokens = String(dateStr).trim().split(/[\s,/-]+/);
+                    const tokens = cleanDate.split(/[\s,/-]+/);
                     let foundMonth = -1;
                     let numbers = [];
                     for (const t of tokens) {
@@ -816,7 +826,7 @@
                         year = numbers.find(n => n > 1900) || new Date().getFullYear();
                         day = numbers.find(n => n <= 31 && n !== year) || 1;
                     } else {
-                        const temp = new Date(dateStr);
+                        const temp = new Date(cleanDate);
                         if (!isNaN(temp.getTime())) {
                             year = temp.getFullYear();
                             month = temp.getMonth();
@@ -846,7 +856,7 @@
             }
         }
 
-        // Fetch Live Exam Details from MySQL & Automatically Feature Latest/Next Pending Exam
+        // Fetch Live Exam Details from MySQL & Feature Next Active/Upcoming Exam
         let currentExamData = null;
         let currentExamHasSubmitted = false;
         let currentExamIsExpired = false;
@@ -854,6 +864,11 @@
         
         async function loadDashboardExam() {
             try {
+                if (!candId) {
+                    renderUpcomingExamsView();
+                    return;
+                }
+
                 // 1. Fetch Complete Exams Catalog for candidate
                 const allRes = await fetch(`${baseUrl}/api/user/exams/${candId}`);
                 const allData = await allRes.json();
@@ -861,7 +876,7 @@
                 if (allData.success && Array.isArray(allData.exams) && allData.exams.length > 0) {
                     const now = new Date();
                     
-                    // Categorize exams
+                    // Categorize exams accurately
                     const formattedExams = allData.exams.map(e => {
                         const subKey = `exam_submitted_${candId}_${e.exam_code}`;
                         const isSub = e.is_submitted || localStorage.getItem(subKey) === 'true';
@@ -879,7 +894,7 @@
                         };
                     });
 
-                    // 2. Find the NEXT uncompleted active/future exam (sorted by nearest start date)
+                    // 2. Filter ONLY pending active or upcoming exams (ignore expired and submitted ones)
                     const pendingExams = formattedExams
                         .filter(e => !e.is_submitted && !e.is_expired)
                         .sort((a, b) => {
@@ -889,23 +904,26 @@
                         });
 
                     if (pendingExams.length > 0) {
-                        // Pick the latest/next upcoming active exam!
+                        // Pick the next active or upcoming exam!
                         currentExamData = pendingExams[0];
                         currentExamHasSubmitted = false;
                         currentExamIsFuture = currentExamData.is_future;
                         currentExamIsExpired = false;
                     } else {
-                        // All exams either submitted or expired; pick latest submitted
-                        currentExamData = formattedExams[0];
-                        currentExamHasSubmitted = currentExamData.is_submitted;
-                        currentExamIsExpired = currentExamData.is_expired;
+                        // No pending upcoming exams (either all are expired or all are submitted)
+                        currentExamData = null;
+                        const anySubmitted = formattedExams.some(e => e.is_submitted);
+                        const anyExpired = formattedExams.some(e => e.is_expired);
+                        currentExamHasSubmitted = anySubmitted && !anyExpired;
+                        currentExamIsExpired = anyExpired;
                         currentExamIsFuture = false;
                     }
 
-                    // 3. Update Featured Exam Card in UI
+                    // 3. Update Featured Exam Card in UI if upcoming exists
                     if (currentExamData) {
-                        document.getElementById('lbl-exam-title').textContent = currentExamData.title;
-                        document.getElementById('lbl-exam-schedule').textContent = `${currentExamData.exam_date} • ${currentExamData.exam_time || '10:00 AM - 12:00 PM'}`;
+                        if (document.getElementById('lbl-exam-title')) document.getElementById('lbl-exam-title').textContent = currentExamData.title;
+                        if (document.getElementById('lbl-exam-schedule')) document.getElementById('lbl-exam-schedule').textContent = `${currentExamData.exam_date} • ${currentExamData.exam_time || '10:00 AM - 12:00 PM'}`;
+                        if (document.getElementById('lbl-exam-icon')) document.getElementById('lbl-exam-icon').textContent = currentExamData.icon || '📅';
                         sessionStorage.setItem('exam_details', JSON.stringify(currentExamData));
                     }
 
@@ -916,35 +934,42 @@
                     if (document.getElementById('lbl-cnt-upcoming')) document.getElementById('lbl-cnt-upcoming').textContent = upcomingCount;
                     if (document.getElementById('lbl-cnt-completed')) document.getElementById('lbl-cnt-completed').textContent = submittedCount;
 
-                    // 5. Render Additional Upcoming Exams in side widget
+                    // 5. Render Additional Upcoming Exams in side widget (only uncompleted, non-expired exams)
                     const extraContainer = document.getElementById('extra-exams-list');
-                    if (extraContainer && currentExamData) {
-                        const otherPending = pendingExams.filter(e => e.exam_code !== currentExamData.exam_code);
-                        if (otherPending.length > 0) {
-                            extraContainer.innerHTML = otherPending.slice(0, 2).map(e => `
-                                <div class="upcoming-exam-item" style="margin-top: 10px; border-top: 1px dashed #e2e8f0; padding-top: 10px;">
-                                    <div class="ue-left">
-                                        <div class="ue-icon">${e.icon || '📅'}</div>
-                                        <div class="ue-info">
-                                            <strong>${e.title}</strong>
-                                            <span>${e.exam_date} • ${e.exam_time || '10:00 AM'}</span>
+                    if (extraContainer) {
+                        if (currentExamData && pendingExams.length > 1) {
+                            const otherPending = pendingExams.filter(e => e.exam_code !== currentExamData.exam_code);
+                            if (otherPending.length > 0) {
+                                extraContainer.innerHTML = otherPending.slice(0, 2).map(e => `
+                                    <div class="upcoming-exam-item" style="margin-top: 10px; border-top: 1px dashed #e2e8f0; padding-top: 10px;">
+                                        <div class="ue-left">
+                                            <div class="ue-icon">${e.icon || '📅'}</div>
+                                            <div class="ue-info">
+                                                <strong>${e.title}</strong>
+                                                <span>${e.exam_date} • ${e.exam_time || '10:00 AM'}</span>
+                                            </div>
                                         </div>
+                                        ${e.is_future 
+                                            ? `<span class="btn-start-soon" style="background:#f8fafc; color:#64748b; border:1px solid #e2e8f0; font-size:11px; padding:5px 10px; cursor:not-allowed;">🔒 ${e.exam_date}</span>`
+                                            : `<a href="instructions.html?code=${encodeURIComponent(e.exam_code)}" class="btn-start-soon btn-start-active">Start Exam</a>`
+                                        }
                                     </div>
-                                    ${e.is_future 
-                                        ? `<span class="btn-start-soon" style="background:#f8fafc; color:#64748b; border:1px solid #e2e8f0; font-size:11px; padding:5px 10px; cursor:not-allowed;">🔒 ${e.exam_date}</span>`
-                                        : `<a href="instructions.html?code=${e.exam_code}" class="btn-start-soon btn-start-active">Start Exam</a>`
-                                    }
-                                </div>
-                            `).join('');
+                                `).join('');
+                            } else {
+                                extraContainer.innerHTML = '';
+                            }
                         } else {
                             extraContainer.innerHTML = '';
                         }
                     }
+                } else {
+                    currentExamData = null;
                 }
 
                 renderUpcomingExamsView();
             } catch (err) {
                 console.error('Error loading dynamic exam on dashboard:', err);
+                currentExamData = null;
                 renderUpcomingExamsView();
             }
         }
@@ -954,118 +979,85 @@
             const cardPrimary = document.getElementById('card-primary-exam');
             const btn = document.getElementById('btn-start-primary');
             const scheduleEl = document.getElementById('lbl-exam-schedule');
+            const wrapper = document.getElementById('container-upcoming-exams-wrapper');
 
             if (!cardPrimary || !btn) return;
 
-            // Remove any existing empty message
+            // Remove any existing placeholder
             const existingEmpty = document.getElementById('empty-upcoming-placeholder');
             if (existingEmpty) existingEmpty.remove();
 
-            if (currentExamHasSubmitted) {
-                // Exam is Completed!
-                btn.textContent = 'Completed ✓';
-                btn.className = 'btn-start-soon btn-exam-completed-blur';
-                btn.style.filter = 'none';
-                btn.style.opacity = '0.9';
-                btn.style.background = '#10b981';
-                btn.style.borderColor = '#10b981';
-                btn.style.color = '#ffffff';
-                btn.removeAttribute('href');
-                btn.style.cursor = 'default';
-                btn.style.pointerEvents = 'none';
-
-                if (scheduleEl && currentExamData) {
-                    scheduleEl.innerHTML = `${currentExamData.exam_date} • <span class="badge-exam-status badge-status-completed">Completed ✓</span>`;
-                }
-
-                if (filter === 'active') {
-                    cardPrimary.style.display = 'none';
-                    const emptyMsg = document.createElement('div');
-                    emptyMsg.id = 'empty-upcoming-placeholder';
-                    emptyMsg.className = 'empty-upcoming-msg';
-                    emptyMsg.innerHTML = `
-                        <div style="font-size: 26px; margin-bottom: 6px;">🎉</div>
-                        <strong style="display:block; font-size: 13px; color:#0f172a; margin-bottom: 2px;">All Active Exams Completed!</strong>
-                        <span style="display:block; font-size: 11px; color:#64748b;">You have completed your active assessments.</span>
-                    `;
-                    cardPrimary.parentNode.insertBefore(emptyMsg, cardPrimary);
-                } else {
-                    cardPrimary.style.display = 'flex';
-                }
-            } else if (currentExamIsFuture) {
-                // Scheduled in Future: Locked
-                btn.textContent = `🔒 Starts on ${currentExamData.exam_date} (${currentExamData.start_time_part || '10:00 AM'})`;
-                btn.className = 'btn-start-soon btn-exam-disabled-blur';
-                btn.style.filter = 'none';
-                btn.style.opacity = '1';
-                btn.style.background = '#f8fafc';
-                btn.style.borderColor = '#cbd5e1';
-                btn.style.color = '#64748b';
-                btn.removeAttribute('href');
-                btn.style.pointerEvents = 'none';
-                btn.style.cursor = 'not-allowed';
-
-                if (scheduleEl && currentExamData) {
-                    scheduleEl.innerHTML = `${currentExamData.exam_date} • <span class="badge-exam-status" style="background:#fef3c7; color:#b45309; border:1px solid #fde68a;">⏳ Scheduled</span>`;
-                }
+            if (currentExamData) {
+                // We have an active or future exam!
                 cardPrimary.style.display = 'flex';
-            } else if (currentExamIsExpired) {
-                // Time is Over / Expired!
-                btn.textContent = 'Time Over ⌛';
-                btn.className = 'btn-start-soon btn-exam-disabled-blur';
-                btn.style.filter = 'blur(0.8px)';
-                btn.style.opacity = '0.6';
-                btn.style.background = '#94a3b8';
-                btn.style.borderColor = '#94a3b8';
-                btn.style.color = '#ffffff';
-                btn.removeAttribute('href');
-                btn.style.pointerEvents = 'none';
-                btn.style.cursor = 'not-allowed';
+                btn.style.display = 'inline-flex';
 
-                if (scheduleEl && currentExamData) {
-                    scheduleEl.innerHTML = `${currentExamData.exam_date} • <span class="badge-exam-status badge-status-expired">Time Expired ⌛</span>`;
-                }
+                if (currentExamIsFuture) {
+                    // Scheduled in Future: Locked
+                    btn.textContent = `🔒 Starts on ${currentExamData.exam_date} (${currentExamData.start_time_part || '10:00 AM'})`;
+                    btn.className = 'btn-start-soon btn-exam-disabled-blur';
+                    btn.style.filter = 'none';
+                    btn.style.opacity = '1';
+                    btn.style.background = '#f8fafc';
+                    btn.style.borderColor = '#cbd5e1';
+                    btn.style.color = '#64748b';
+                    btn.removeAttribute('href');
+                    btn.style.pointerEvents = 'none';
+                    btn.style.cursor = 'not-allowed';
 
-                if (filter === 'active') {
-                    cardPrimary.style.display = 'none';
-                    const emptyMsg = document.createElement('div');
-                    emptyMsg.id = 'empty-upcoming-placeholder';
-                    emptyMsg.className = 'empty-upcoming-msg';
-                    emptyMsg.innerHTML = `
-                        <div style="font-size: 26px; margin-bottom: 6px;">⌛</div>
-                        <strong style="display:block; font-size: 13px; color:#0f172a; margin-bottom: 2px;">No Active Exams</strong>
-                        <span style="display:block; font-size: 11px; color:#64748b;">The exam window has ended.</span>
-                    `;
-                    cardPrimary.parentNode.insertBefore(emptyMsg, cardPrimary);
+                    if (scheduleEl) {
+                        scheduleEl.innerHTML = `${currentExamData.exam_date} • <span class="badge-exam-status" style="background:#fef3c7; color:#b45309; border:1px solid #fde68a;">⏳ Scheduled</span>`;
+                    }
                 } else {
-                    cardPrimary.style.display = 'flex';
+                    // Active and pending right now!
+                    btn.textContent = 'Start Exam →';
+                    btn.className = 'btn-start-soon btn-start-active';
+                    btn.style.filter = 'none';
+                    btn.style.opacity = '1';
+                    btn.style.background = '#4f46e5';
+                    btn.style.borderColor = '#4f46e5';
+                    btn.style.color = '#ffffff';
+                    btn.style.pointerEvents = 'auto';
+                    btn.style.cursor = 'pointer';
+                    btn.href = `instructions.html?code=${encodeURIComponent(currentExamData.exam_code)}`;
+                    
+                    if (scheduleEl) {
+                        scheduleEl.innerHTML = `${currentExamData.exam_date} • <span class="badge-exam-status badge-status-active">● Active</span>`;
+                    }
                 }
             } else {
-                // Active and pending right now!
-                btn.textContent = 'Start Exam →';
-                btn.className = 'btn-start-soon btn-start-active';
-                btn.style.filter = 'none';
-                btn.style.opacity = '1';
-                btn.style.pointerEvents = 'auto';
-                btn.style.cursor = 'pointer';
-                btn.href = `instructions.html?code=${encodeURIComponent(currentExamData.exam_code)}`;
-                if (scheduleEl && currentExamData) {
-                    scheduleEl.innerHTML = `${currentExamData.exam_date} • <span class="badge-exam-status badge-status-active">● Active</span>`;
+                // No active upcoming exams (all are expired or completed)
+                cardPrimary.style.display = 'none';
+                btn.style.display = 'none';
+
+                const emptyMsg = document.createElement('div');
+                emptyMsg.id = 'empty-upcoming-placeholder';
+                emptyMsg.className = 'empty-upcoming-msg';
+                emptyMsg.style.padding = '18px 14px';
+                emptyMsg.style.textAlign = 'center';
+                emptyMsg.style.background = '#f8fafc';
+                emptyMsg.style.borderRadius = '10px';
+                emptyMsg.style.border = '1px dashed #cbd5e1';
+                emptyMsg.style.margin = '4px 0 10px 0';
+
+                if (currentExamHasSubmitted) {
+                    emptyMsg.innerHTML = `
+                        <div style="font-size: 24px; margin-bottom: 4px;">🎉</div>
+                        <strong style="display:block; font-size: 13.5px; color:#0f172a; margin-bottom: 2px;">All Active Exams Completed!</strong>
+                        <span style="display:block; font-size: 11.5px; color:#64748b;">You have completed all your assigned assessments. View past scorecards in history.</span>
+                    `;
+                } else {
+                    emptyMsg.innerHTML = `
+                        <div style="font-size: 24px; margin-bottom: 4px;">⌛</div>
+                        <strong style="display:block; font-size: 13.5px; color:#0f172a; margin-bottom: 2px;">No Upcoming Exams Scheduled</strong>
+                        <span style="display:block; font-size: 11.5px; color:#64748b;">The exam timing window has ended. Check back later for new assessment schedules.</span>
+                    `;
                 }
 
-                if (filter === 'completed') {
-                    cardPrimary.style.display = 'none';
-                    const emptyMsg = document.createElement('div');
-                    emptyMsg.id = 'empty-upcoming-placeholder';
-                    emptyMsg.className = 'empty-upcoming-msg';
-                    emptyMsg.innerHTML = `
-                        <div style="font-size: 26px; margin-bottom: 6px;">📋</div>
-                        <strong style="display:block; font-size: 13px; color:#0f172a; margin-bottom: 2px;">No Completed Tests</strong>
-                        <span style="display:block; font-size: 11px; color:#64748b;">You haven't completed this test yet.</span>
-                    `;
-                    cardPrimary.parentNode.insertBefore(emptyMsg, cardPrimary);
+                if (wrapper) {
+                    wrapper.insertBefore(emptyMsg, wrapper.firstChild);
                 } else {
-                    cardPrimary.style.display = 'flex';
+                    cardPrimary.parentNode.insertBefore(emptyMsg, cardPrimary);
                 }
             }
         }
