@@ -2396,35 +2396,20 @@ class AssessmentEngine {
         }
 
         // ─── Successful run → render test case cards ─────────────
-        if (consoleCards && executionResult.results && executionResult.results.length > 0) {
-            const totalCount = executionResult.results.length;
-            const passedCount = executionResult.results.filter(r => r.passed).length;
+        const totalCount = executionResult.results ? executionResult.results.length : 0;
+        const passedCount = executionResult.results ? executionResult.results.filter(r => r.passed).length : 0;
 
-            if (summary) {
-                if (executionResult.allPassed) {
-                    summary.textContent = `✓ Accepted — All ${totalCount} Test Cases Passed`;
-                    summary.className = 'console-status-badge status-passed';
-                } else {
-                    summary.textContent = `✕ Wrong Answer — ${passedCount}/${totalCount} Test Cases Passed`;
-                    summary.className = 'console-status-badge status-failed';
-                }
+        if (summary) {
+            if (executionResult.allPassed) {
+                summary.textContent = `✓ Accepted — All ${totalCount} Test Cases Passed`;
+                summary.className = 'console-status-badge status-passed';
+            } else {
+                summary.textContent = `✕ Wrong Answer — ${passedCount}/${totalCount} Test Cases Passed`;
+                summary.className = 'console-status-badge status-failed';
             }
+        }
 
-        // ─── Successful run → render test case cards ─────────────
         if (consoleCards && executionResult.results && executionResult.results.length > 0) {
-            const totalCount = executionResult.results.length;
-            const passedCount = executionResult.results.filter(r => r.passed).length;
-
-            if (summary) {
-                if (executionResult.allPassed) {
-                    summary.textContent = `✓ Accepted (${passedCount}/${totalCount})`;
-                    summary.className = 'console-status-badge status-passed';
-                } else {
-                    summary.textContent = `✕ Wrong Answer (${passedCount}/${totalCount})`;
-                    summary.className = 'console-status-badge status-failed';
-                }
-            }
-
             consoleCards.innerHTML = executionResult.results.map((r, i) => {
                 const isHidden = Boolean(r.isHidden) || (r.testIndex > 2) || (i >= 2 && totalCount >= 4);
                 const runtimeText = r.runtime || `${Math.floor(Math.random() * 12 + 8)} ms`;
@@ -2501,18 +2486,6 @@ class AssessmentEngine {
             </div>`;
         }
 
-        if (summary && executionResult.results) {
-            const passedCount = executionResult.results.filter(r => r.passed).length;
-            const totalCount = executionResult.results.length;
-            if (!isErrorState) {
-                summary.textContent = executionResult.allPassed
-                    ? `✓ Accepted (${passedCount}/${totalCount})`
-                    : `✕ ${passedCount}/${totalCount} Passed`;
-                summary.className = executionResult.allPassed
-                    ? 'console-status-badge status-passed'
-                    : 'console-status-badge status-failed';
-            }
-        }
         this.answers[q.question_number] = this.answers[q.question_number] || {};
         this.answers[q.question_number].codes = this.answers[q.question_number].codes || {};
         this.answers[q.question_number].codes[this.selectedLanguage] = code;
@@ -2521,28 +2494,25 @@ class AssessmentEngine {
         this.answers[q.question_number].status = 'ANSWERED';
         this.updatePalette();
 
-        const passedCount = executionResult.results ? executionResult.results.filter(r => r.passed).length : 0;
-        const totalCount = executionResult.results ? executionResult.results.length : 0;
-
         if (isSubmitMode) {
-                // Submit Mode: reveal Next Question button & update submit button
-                const btnNext = document.getElementById('btn-code-next');
-                const lblSubmit = document.getElementById('lbl-btn-code-submit');
-                if (btnNext) btnNext.style.display = 'inline-flex';
-                if (lblSubmit) lblSubmit.textContent = 'Re-submit Code';
+            // Submit Mode: reveal Next Question button & update submit button
+            const btnNext = document.getElementById('btn-code-next');
+            const lblSubmit = document.getElementById('lbl-btn-code-submit');
+            if (btnNext) btnNext.style.display = 'inline-flex';
+            if (lblSubmit) lblSubmit.textContent = 'Re-submit Code';
 
-                if (executionResult.allPassed) {
-                    this.showToast(`🎉 Code Submitted! All ${totalCount} test cases passed. Click 'Next Question →' to proceed.`, 'success');
-                } else {
-                    this.showToast(`✅ Code Submitted (${passedCount}/${totalCount} test cases passed). You can review or click 'Next Question →'.`, 'info');
-                }
+            if (executionResult.allPassed) {
+                this.showToast(`🎉 Code Submitted! All ${totalCount} test cases passed. Click 'Next Question →' to proceed.`, 'success');
             } else {
-                if (executionResult.allPassed) {
-                    this.showToast(`✅ Test Run Passed! All ${totalCount} test cases passed.`, 'success');
-                } else {
-                    this.showToast(`Test Run Finished: ${passedCount}/${totalCount} passed. Check outputs below.`, 'warning');
-                }
+                this.showToast(`✅ Code Submitted (${passedCount}/${totalCount} test cases passed). You can review or click 'Next Question →'.`, 'info');
             }
+        } else {
+            if (executionResult.allPassed) {
+                this.showToast(`✅ Test Run Passed! All ${totalCount} test cases passed.`, 'success');
+            } else {
+                this.showToast(`Test Run Finished: ${passedCount}/${totalCount} passed. Check outputs below.`, 'warning');
+            }
+        }
 
         setTimeout(() => {
             const editorContainer = document.getElementById('coding-editor-container');
@@ -3148,9 +3118,15 @@ class AssessmentEngine {
         toast.innerHTML = `<span style="font-size:15px; font-weight:800; flex-shrink:0;">${icon}</span> <span style="line-height:1.4;">${message}</span>`;
         container.appendChild(toast);
         setTimeout(() => {
-            toast.style.opacity = '0';
-            toast.style.transform = 'translateY(-12px) scale(0.95)';
-            setTimeout(() => toast.remove(), 300);
+            if (toast && toast.style) {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(-12px) scale(0.95)';
+            }
+            setTimeout(() => {
+                if (toast && typeof toast.remove === 'function') {
+                    toast.remove();
+                }
+            }, 300);
         }, 3500);
     }
 
