@@ -107,6 +107,16 @@ class AssessmentEngine {
     }
 
     async checkExistingSubmission() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const isReattemptMode = urlParams.get('reattempt') === '1' || 
+                                sessionStorage.getItem(`is_reattempt_${this.examCode}`) === 'true' ||
+                                sessionStorage.getItem('is_reattempt') === 'true';
+
+        if (isReattemptMode) {
+            console.log('🔄 [Assessment Engine] Authorized Reattempt session active. Bypassing past submission locks.');
+            return false;
+        }
+
         const candId = this.candidate?.id || this.candidate?.student_id || 'CAND123456';
         const localKey = `exam_submitted_${candId}_${this.examCode}`;
         const timeExpiredKey = `exam_time_expired_${candId}_${this.examCode}`;
@@ -119,7 +129,6 @@ class AssessmentEngine {
                 sessionStorage.setItem(localKey, 'true');
                 return true;
             } else {
-                
                 localStorage.removeItem(localKey);
                 sessionStorage.removeItem(localKey);
                 localStorage.removeItem(`exam_submitted_${this.examCode}`);
